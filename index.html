@@ -1,348 +1,446 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" class="antialiased">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Millino Fagiolino | Research Suite</title>
+    <title>Millino Fagiolino | Research OS</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script src="js/database.js"></script> 
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 800: '#292524', 900: '#1c1917' },
-                        rose: { 50: '#fff1f2', 100: '#ffe4e6', 500: '#f43f5e', 600: '#e11d48', 700: '#be123c' }
+                        // Palette professionale "Warm Stone"
+                        stone: { 50: '#FBFBFB', 100: '#F5F5F4', 200: '#E7E5E4', 300: '#D6D3D1', 800: '#292524', 900: '#1C1917' },
+                        // Accent "Rose Clay" - meno saturo, più elegante
+                        rose: { 50: '#FFF1F2', 100: '#FFE4E6', 400: '#FB7185', 500: '#F43F5E', 600: '#E11D48', 900: '#881337' }
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         serif: ['Playfair Display', 'serif'],
                         mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    boxShadow: {
+                        'soft': '0 2px 10px rgba(0, 0, 0, 0.03)',
+                        'float': '0 10px 40px -10px rgba(0, 0, 0, 0.08)',
                     }
                 }
             }
         }
     </script>
-
     <style>
-        body { background-color: #fafaf9; color: #44403c; } /* Stone-50 background */
+        body { background-color: #FBFBFB; color: #1C1917; }
         
-        /* Navigation & Active States - Stile "Soft Pill" */
-        .nav-active { background-color: #ffe4e6; color: #be123c; font-weight: 600; }
-        .nav-item:hover:not(.nav-active) { background-color: #f5f5f4; color: #1c1917; }
+        /* Premium Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: #E7E5E4; border-radius: 99px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         
-        /* Card Styling - Effetto Carta */
-        .paper-card { 
-            background: white; 
-            border: 1px solid #e7e5e4; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
+        /* Navigation Styles */
+        .nav-item { transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+        .nav-active { 
+            background-color: white; 
+            color: #1C1917; 
+            font-weight: 500; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04); 
+            border: 1px solid #E7E5E4;
         }
-        .paper-card:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); 
-            border-color: #fecdd3; /* Rose border on hover */
+        
+        /* Card Styles */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(231, 229, 228, 0.8);
+        }
+        .pro-card {
+            background: white;
+            border: 1px solid #E7E5E4;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .pro-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-color: #D6D3D1;
+            transform: translateY(-1px);
         }
 
         /* Status Badges */
-        .status-btn { transition: all 0.2s; border: 1px solid transparent; letter-spacing: 0.05em;}
-        .status-todo { background: #f5f5f4; color: #78716c; border-color: #e7e5e4; }
-        .status-reading { background: #fff1f2; color: #be123c; border-color: #fecdd3; } /* Rose light */
-        .status-done { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; } /* Emerald softer */
+        .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.02em; border: 1px solid transparent; }
+        .badge-todo { background: #F5F5F4; color: #78716C; border-color: #E7E5E4; }
+        .badge-reading { background: #FFF1F2; color: #E11D48; border-color: #FECDD3; }
+        .badge-done { background: #F0FDF4; color: #15803D; border-color: #BBF7D0; }
 
-        /* Animations */
-        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Typography & Animation */
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Typography Override */
-        .prose p { margin-bottom: 0.8em; line-height: 1.7; color: #57534e; }
-        .prose strong { color: #1c1917; font-weight: 600; }
-        
-        /* Chat Widget */
+        .chat-widget { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
         .chat-open { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
-        .chat-closed { transform: translateY(20px) scale(0.95); opacity: 0; pointer-events: none; }
+        .chat-closed { transform: translateY(20px) scale(0.96); opacity: 0; pointer-events: none; }
         
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
-        ::-webkit-scrollbar-track { background: transparent; }
+        /* Markdown Overrides */
+        .prose p { margin-bottom: 0.75em; line-height: 1.6; color: #44403C; font-size: 0.95rem; }
+        .prose ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 0.75em; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden font-sans selection:bg-rose-100 selection:text-rose-900">
+<body class="h-screen flex overflow-hidden selection:bg-rose-100 selection:text-rose-900">
 
-    <aside class="w-72 bg-white border-r border-stone-200 flex-shrink-0 flex flex-col z-30 hidden md:flex">
-        <div class="p-8 pb-4">
-            <h1 class="text-3xl font-bold text-stone-900 tracking-tight serif">Millino<span class="text-rose-500 italic">.Fagiolino</span></h1>
-            <div class="flex items-center gap-2 mt-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <p class="text-[11px] text-stone-400 uppercase tracking-widest font-semibold">Tesi Hub v2.0</p>
-            </div>
+    <aside class="w-[280px] bg-[#FBFBFB] border-r border-stone-200 flex-shrink-0 flex flex-col z-30 hidden md:flex">
+        <div class="p-6 pt-8 pb-2">
+            <h1 class="text-2xl font-semibold text-stone-900 tracking-tight serif flex items-baseline gap-1">
+                Millino<span class="text-rose-500 italic font-serif">.F</span>
+            </h1>
+            <p class="text-[11px] text-stone-400 font-medium mt-1 tracking-wide">RESEARCH OS v2.1</p>
         </div>
         
-        <nav class="flex-1 overflow-y-auto py-4 space-y-1 px-4">
-            <div class="px-2 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-2">Esplorazione</div>
-            <button onclick="router('dashboard')" id="nav-dashboard" class="nav-item nav-active w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-colors text-sm"><span>📊</span> Panoramica</button>
-            <button onclick="router('database')" id="nav-database" class="nav-item w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 text-stone-600 transition-colors text-sm"><span>📚</span> Biblioteca</button>
+        <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-8">
+            <div>
+                <div class="px-3 mb-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Esplorazione</div>
+                <div class="space-y-1">
+                    <button onclick="router('dashboard')" id="nav-dashboard" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100">
+                        <span class="text-stone-400 text-lg">📊</span> Panoramica
+                    </button>
+                    <button onclick="router('database')" id="nav-database" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100">
+                        <span class="text-stone-400 text-lg">📚</span> Biblioteca
+                    </button>
+                    <button onclick="router('journal')" id="nav-journal" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100">
+                        <span class="text-stone-400 text-lg">📔</span> Diario
+                    </button>
+                </div>
+            </div>
             
-            <div class="px-2 py-3 text-[10px] font-bold text-stone-400 uppercase tracking-widest mt-6">Produzione</div>
-            <button onclick="router('roadmap')" id="nav-roadmap" class="nav-item w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 text-stone-600 transition-colors text-sm"><span>🗺️</span> Mappa Tesi</button>
-            <button onclick="router('citations')" id="nav-citations" class="nav-item w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 text-stone-600 transition-colors text-sm"><span>❞</span> Citazioni</button>
+            <div>
+                <div class="px-3 mb-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Produzione</div>
+                <div class="space-y-1">
+                    <button onclick="router('roadmap')" id="nav-roadmap" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100">
+                        <span class="text-stone-400 text-lg">🗺️</span> Roadmap
+                    </button>
+                    <button onclick="router('tracker')" id="nav-tracker" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100">
+                        <span class="text-stone-400 text-lg">📈</span> Tracker
+                    </button>
+                    <button onclick="router('citations')" id="nav-citations" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100">
+                        <span class="text-stone-400 text-lg">❞</span> Citazioni
+                    </button>
+                </div>
+            </div>
         </nav>
 
-        <div class="px-6 py-6 border-t border-stone-50">
-            <div class="bg-stone-50 border border-stone-200 rounded-2xl p-4">
-                <div class="flex justify-between items-center mb-3">
-                    <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Sessione Focus</span>
-                    <span id="timer-display" class="font-mono text-lg font-bold text-stone-700">25:00</span>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="toggleTimer()" id="timer-btn" class="flex-1 bg-white border border-stone-200 hover:border-rose-200 hover:text-rose-600 text-stone-600 text-xs py-2 rounded-lg font-medium transition-all shadow-sm">Avvia</button>
-                    <button onclick="resetTimer()" class="px-3 bg-stone-200 hover:bg-stone-300 text-stone-600 text-xs py-2 rounded-lg">↺</button>
-                </div>
+        <div class="p-4 border-t border-stone-100 bg-white">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Deep Work</span>
+                <span id="timer-display" class="font-mono text-sm font-semibold text-rose-600">25:00</span>
+            </div>
+            
+            <div class="flex justify-between items-center mb-4 px-2">
+                <button onclick="toggleSound('rain')" id="btn-rain" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Pioggia">🌧️</button>
+                <button onclick="toggleSound('cafe')" id="btn-cafe" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Caffè">☕</button>
+                <button onclick="toggleSound('fire')" id="btn-fire" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Camino">🔥</button>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="toggleTimer()" id="timer-btn" class="flex-1 bg-stone-900 hover:bg-black text-white text-xs py-2 rounded-md font-medium transition-all shadow-sm">Focus</button>
+                <button onclick="resetTimer()" class="px-3 bg-stone-100 hover:bg-stone-200 text-stone-500 text-xs py-2 rounded-md transition-colors">↺</button>
             </div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-stone-50/50" id="main-wrapper">
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-white" id="main-wrapper">
         
         <div class="md:hidden bg-white/80 backdrop-blur-md border-b border-stone-200 p-4 flex justify-between items-center z-30 sticky top-0">
-            <span class="font-bold serif text-xl text-stone-800">Millino.F</span>
+            <span class="font-semibold serif text-lg text-stone-900">Millino.F</span>
             <button onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute'); document.querySelector('aside').classList.toggle('h-full');" class="text-stone-600">☰</button>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-4 md:p-10 relative scroll-smooth" id="content-area">
+        <div class="flex-1 overflow-y-auto p-6 md:p-12 relative scroll-smooth" id="content-area">
             
-            <div id="view-dashboard" class="space-y-10 fade-in max-w-6xl mx-auto">
-                <div class="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-stone-200 pb-8">
+            <div id="view-dashboard" class="space-y-10 fade-in max-w-5xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-stone-100 pb-8">
                     <div>
-                        <h2 class="text-4xl text-stone-900 mb-3 serif font-medium">Bentornata.</h2>
-                        <p class="text-stone-500 font-light text-lg">Il database è attivo. DeepSeek ha accesso a <span id="dash-total-sources" class="font-bold text-rose-500">0</span> fonti.</p>
+                        <h2 class="text-3xl md:text-4xl text-stone-900 mb-2 serif font-medium tracking-tight">Panoramica</h2>
+                        <div class="flex items-center gap-3 text-sm text-stone-500">
+                            <span>Deadline Tesi:</span>
+                            <input type="date" id="deadline-input" onchange="saveDeadline()" class="bg-transparent border-b border-stone-200 focus:border-rose-500 outline-none text-stone-800 font-medium text-sm pb-0.5">
+                            <span id="days-remaining" class="text-[10px] bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide hidden"></span>
+                        </div>
                     </div>
-                    <button onclick="askAI('Fammi un riassunto di cosa mi manca da leggere')" class="bg-rose-500 hover:bg-rose-600 text-white px-6 py-3 rounded-full shadow-lg shadow-rose-200 transition-all text-sm font-medium flex items-center gap-2">
-                        <span>✨</span> Chiedi all'AI
+                    <button onclick="askAI('Fammi un briefing su cosa mi manca da leggere e suggerisci una priorità')" class="group bg-white border border-stone-200 hover:border-rose-200 hover:shadow-soft text-stone-600 px-5 py-2.5 rounded-full transition-all text-sm font-medium flex items-center gap-2">
+                        <span class="text-lg group-hover:scale-110 transition-transform">✨</span> AI Briefing
                     </button>
                 </div>
 
-                <div class="paper-card p-8 rounded-3xl">
-                    <div class="flex justify-between items-end mb-4">
-                        <h3 class="font-bold text-stone-800 text-xs uppercase tracking-widest">Stato Avanzamento</h3>
-                        <span class="text-rose-500 font-serif font-bold text-xl" id="reading-progress-text">0%</span>
+                <div class="pro-card p-8 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-rose-500"></div> <div class="flex justify-between items-end mb-6">
+                        <div>
+                            <h3 class="font-bold text-stone-400 text-[10px] uppercase tracking-widest mb-1">Avanzamento Globale</h3>
+                            <div class="text-3xl font-serif font-medium text-stone-900"><span id="reading-progress-text">0%</span> <span class="text-lg text-stone-400 italic">completato</span></div>
+                        </div>
                     </div>
-                    <div class="w-full bg-stone-100 rounded-full h-4 overflow-hidden mb-6">
-                        <div id="reading-progress-bar" class="bg-gradient-to-r from-rose-400 to-rose-600 h-4 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                    
+                    <div class="w-full bg-stone-100 rounded-full h-2 overflow-hidden mb-8">
+                        <div id="reading-progress-bar" class="bg-stone-800 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
                     </div>
-                    <div class="grid grid-cols-3 gap-4 text-center">
-                        <div class="bg-stone-50 rounded-2xl p-3 border border-stone-100">
-                            <div class="text-2xl font-bold text-stone-700 serif" id="count-todo">0</div>
-                            <div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider">Da Leggere</div>
-                        </div>
-                        <div class="bg-rose-50 rounded-2xl p-3 border border-rose-100">
-                            <div class="text-2xl font-bold text-rose-600 serif" id="count-reading">0</div>
-                            <div class="text-[10px] uppercase font-bold text-rose-400 tracking-wider">In Corso</div>
-                        </div>
-                        <div class="bg-emerald-50 rounded-2xl p-3 border border-emerald-100">
-                            <div class="text-2xl font-bold text-emerald-600 serif" id="count-done">0</div>
-                            <div class="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Completati</div>
-                        </div>
+                    
+                    <div class="grid grid-cols-3 gap-8 text-center border-t border-stone-100 pt-6">
+                        <div><div class="text-2xl font-semibold text-stone-900 serif" id="count-todo">0</div><div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider mt-1">Da Leggere</div></div>
+                        <div><div class="text-2xl font-semibold text-rose-500 serif" id="count-reading">0</div><div class="text-[10px] uppercase font-bold text-rose-300 tracking-wider mt-1">In Corso</div></div>
+                        <div><div class="text-2xl font-semibold text-stone-900 serif" id="count-done">0</div><div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider mt-1">Archiviati</div></div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="paper-card p-6 rounded-3xl border-l-4 border-rose-400">
-                        <div class="text-xs text-stone-400 uppercase font-bold tracking-wider mb-2">Focus Principale</div>
-                        <div class="text-3xl font-serif text-stone-800 mb-1">Fonti Primarie</div>
-                        <div class="text-stone-500 text-sm">Simondon, Deleuze, Guattari...</div>
-                        <div class="mt-4 text-3xl font-bold text-rose-500" id="stat-primary">0</div>
+                    <div class="pro-card p-6 flex flex-col justify-between h-32">
+                        <div class="flex justify-between items-start">
+                            <div class="text-xs text-stone-400 uppercase font-bold tracking-wider">Fonti Primarie</div>
+                            <span class="text-lg">📚</span>
+                        </div>
+                        <div class="text-3xl font-serif text-stone-900" id="stat-primary">0</div>
                     </div>
-                    <div class="paper-card p-6 rounded-3xl">
-                         <div class="text-xs text-stone-400 uppercase font-bold tracking-wider mb-2">Motore Semantico</div>
-                         <div class="flex items-center gap-3">
-                             <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg">DS</div>
-                             <div>
-                                 <div class="font-bold text-stone-800">DeepSeek v3.2</div>
-                                 <div class="text-xs text-stone-500">Reasoning & Context Aware</div>
-                             </div>
+                    <div class="pro-card p-6 flex items-center gap-4 h-32">
+                         <div class="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center text-stone-900 font-bold text-lg">DS</div>
+                         <div>
+                             <div class="font-bold text-stone-900 text-sm">DeepSeek v3.2</div>
+                             <div class="text-xs text-stone-500">Reasoning Engine Active</div>
                          </div>
                     </div>
                 </div>
             </div>
 
             <div id="view-database" class="hidden space-y-6 fade-in pb-20 max-w-5xl mx-auto">
-                <div class="bg-white/80 backdrop-blur p-4 rounded-2xl shadow-sm border border-stone-200 sticky top-0 z-20 flex flex-wrap gap-4 items-center">
-                    <div class="flex-1 relative min-w-[200px]">
-                        <span class="absolute left-4 top-3 text-stone-400">🔍</span>
-                        <input type="text" id="searchInput" placeholder="Cerca autore, titolo o anno..." 
-                            class="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none text-sm transition-all text-stone-700 placeholder-stone-400"
+                <div class="glass-card sticky top-2 z-20 p-2 rounded-xl flex gap-2 items-center shadow-soft mb-8">
+                    <div class="flex-1 relative">
+                        <span class="absolute left-3 top-2.5 text-stone-400 text-sm">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Cerca autore, titolo, anno..." 
+                            class="w-full pl-9 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm text-stone-800 placeholder-stone-400 h-9"
                             oninput="runSearch()">
                     </div>
-                    <select id="catFilter" onchange="runSearch()" class="px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-sm outline-none cursor-pointer text-stone-600 hover:border-rose-300 transition-colors">
+                    <div class="w-px h-6 bg-stone-200"></div>
+                    <select id="catFilter" onchange="runSearch()" class="bg-transparent border-none text-xs font-medium text-stone-600 outline-none cursor-pointer hover:text-stone-900 pr-8">
                         <option value="all">Tutte le Categorie</option>
                         <option value="Primary Sources">Fonti Primarie</option>
                         <option value="Comparative Studies">Studi Comparativi</option>
-                        <option value="Philosophy of Technology">Filosofia della Tecnica</option>
+                        <option value="Philosophy of Technology">Tecnica</option>
                         <option value="Ecological Philosophy">Ecologia</option>
                     </select>
                 </div>
-                <div class="grid grid-cols-1 gap-4" id="results-container"></div>
+                
+                <div class="grid grid-cols-1 gap-3" id="results-container">
+                    </div>
+            </div>
+
+            <div id="view-journal" class="hidden space-y-8 fade-in pb-20 max-w-3xl mx-auto">
+                <div class="border-b border-stone-100 pb-6 mb-6">
+                    <h2 class="text-3xl font-medium text-stone-900 serif">Diario di Bordo</h2>
+                    <p class="text-stone-500 text-sm mt-2">Annota pensieri, blocchi e intuizioni giornaliere.</p>
+                </div>
+                
+                <div class="pro-card p-1">
+                    <textarea id="journal-entry" class="w-full h-32 p-4 bg-white rounded-t-xl border-none outline-none resize-none text-sm text-stone-700 placeholder-stone-300" placeholder="A cosa stai pensando oggi?"></textarea>
+                    <div class="bg-stone-50 p-2 rounded-b-xl flex justify-end border-t border-stone-100">
+                        <button onclick="addJournalEntry()" class="bg-stone-900 text-white px-4 py-1.5 rounded-md text-xs font-medium hover:bg-black transition-colors">Salva Nota</button>
+                    </div>
+                </div>
+                
+                <div id="journal-container" class="space-y-6 relative before:absolute before:left-4 before:top-0 before:h-full before:w-px before:bg-stone-200 pl-10">
+                    </div>
+            </div>
+
+            <div id="view-tracker" class="hidden space-y-8 fade-in pb-20 max-w-5xl mx-auto">
+                <div class="border-b border-stone-100 pb-6"><h2 class="text-3xl font-medium text-stone-900 serif">Word Tracker</h2></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="pro-card p-6 rounded-xl col-span-1 h-fit">
+                        <h4 class="font-bold text-stone-900 text-sm mb-4">Aggiornamento Quotidiano</h4>
+                        <input type="number" id="word-input" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg mb-4 text-sm outline-none focus:border-rose-300 transition-colors" placeholder="Totale parole oggi...">
+                        <button onclick="updateWordCount()" class="w-full bg-stone-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-black transition-colors">Registra</button>
+                    </div>
+                    <div class="pro-card p-6 rounded-xl col-span-2">
+                        <canvas id="wordChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div id="view-roadmap" class="hidden space-y-8 fade-in pb-20 max-w-5xl mx-auto">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-stone-200 pb-6">
-                    <div>
-                        <h2 class="text-3xl font-medium text-stone-900 serif">Roadmap</h2>
-                        <p class="text-stone-500">Struttura capitolare e strategia.</p>
-                    </div>
-                    <select id="roadmapSelect" onchange="renderRoadmap()" class="bg-white border border-stone-200 text-rose-600 font-bold text-sm px-4 py-2 rounded-xl outline-none cursor-pointer shadow-sm">
+                <div class="flex justify-between items-center border-b border-stone-100 pb-6">
+                    <h2 class="text-3xl font-medium text-stone-900 serif">Roadmap</h2>
+                    <button onclick="triggerSpark()" class="bg-rose-50 text-rose-600 border border-rose-100 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-rose-100 transition-colors">
+                        <span>✨</span> Sblocco Creativo
+                    </button>
+                </div>
+                
+                <div class="flex gap-4 mb-6">
+                    <select id="roadmapSelect" onchange="renderRoadmap()" class="bg-white border border-stone-200 text-stone-700 font-medium text-sm px-4 py-2 rounded-lg outline-none cursor-pointer hover:border-stone-300">
                         <option value="A">Strategia A: Ontologica</option>
                         <option value="B">Strategia B: Tecno-Ecologica</option>
                         <option value="C">Strategia C: Politica</option>
                     </select>
                 </div>
-                <div class="bg-rose-50 border border-rose-100 p-8 rounded-3xl">
-                    <h3 class="text-rose-900 font-bold text-xl serif mb-2" id="roadmap-title"></h3>
-                    <p class="text-rose-800/80" id="roadmap-desc"></p>
+
+                <div class="bg-stone-50 border border-stone-200 p-8 rounded-xl mb-6">
+                    <h3 class="text-stone-900 font-serif text-xl mb-2" id="roadmap-title"></h3>
+                    <p class="text-stone-500 text-sm leading-relaxed" id="roadmap-desc"></p>
                 </div>
-                <div class="space-y-6" id="chapters-container"></div>
+                <div class="space-y-4" id="chapters-container"></div>
             </div>
 
-            <div id="view-citations" class="hidden space-y-6 fade-in pb-20 max-w-6xl mx-auto">
-                <div class="border-b border-stone-200 pb-6">
+            <div id="view-citations" class="hidden space-y-6 fade-in pb-20 max-w-5xl mx-auto">
+                <div class="flex justify-between items-center border-b border-stone-100 pb-6">
                     <h2 class="text-3xl font-medium text-stone-900 serif">Citation Manager</h2>
+                    <button onclick="downloadBibliography()" class="text-stone-600 text-xs font-bold border border-stone-200 px-3 py-1.5 rounded hover:bg-stone-50 transition-colors">📥 Export .txt</button>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[600px]">
-                    <div class="lg:col-span-1 paper-card rounded-2xl flex flex-col overflow-hidden">
-                        <div class="p-4 bg-stone-50 border-b border-stone-100 flex justify-between items-center">
-                            <span class="font-bold text-stone-600 text-xs uppercase tracking-wider">Fonti Disponibili</span>
-                            <button onclick="selectAllCitations()" class="text-rose-500 text-xs font-bold hover:underline">Seleziona Tutto</button>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
+                    <div class="lg:col-span-1 pro-card flex flex-col overflow-hidden">
+                        <div class="p-3 bg-stone-50 border-b border-stone-100 flex justify-between items-center">
+                            <span class="font-semibold text-stone-500 text-[10px] uppercase tracking-wider">Fonti</span>
+                            <button onclick="selectAllCitations()" class="text-rose-500 text-[10px] font-bold hover:underline">Seleziona Tutti</button>
                         </div>
                         <div class="flex-1 overflow-y-auto p-2 space-y-1" id="citation-list"></div>
                     </div>
-                    <div class="lg:col-span-2 paper-card rounded-2xl flex flex-col">
-                        <div class="p-4 bg-stone-50 border-b border-stone-100 flex gap-4 items-center">
-                             <select id="citation-style" onchange="generateBibliography()" class="bg-white border border-stone-200 rounded-lg px-3 py-1.5 text-sm outline-none text-stone-600">
+                    <div class="lg:col-span-2 pro-card flex flex-col">
+                        <div class="p-3 bg-stone-50 border-b border-stone-100 flex gap-4 items-center justify-between">
+                             <select id="citation-style" onchange="generateBibliography()" class="bg-white border border-stone-200 rounded px-2 py-1 text-xs outline-none text-stone-600">
                                 <option value="apa">APA 7</option>
                                 <option value="chicago">Chicago</option>
                                 <option value="bibtex">BibTeX</option>
                             </select>
-                            <button onclick="copyCitationOutput()" class="text-xs font-bold text-rose-500 uppercase tracking-wider flex items-center gap-1"><span>📋</span> Copia</button>
+                            <button onclick="copyCitationOutput()" class="text-xs font-bold text-stone-600 hover:text-stone-900">Copia</button>
                         </div>
-                        <textarea id="citation-output" class="flex-1 p-6 font-mono text-xs text-stone-600 outline-none resize-none bg-white" readonly placeholder="Seleziona le fonti a sinistra per generare la bibliografia..."></textarea>
+                        <textarea id="citation-output" class="flex-1 p-6 font-mono text-xs text-stone-600 outline-none resize-none bg-white" readonly placeholder="Output bibliografico..."></textarea>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="chat-widget" class="fixed bottom-6 right-6 w-[400px] h-[650px] bg-white rounded-3xl shadow-2xl shadow-stone-900/10 border border-stone-200 flex flex-col z-50 transition-all duration-300 chat-closed origin-bottom-right overflow-hidden ring-1 ring-stone-900/5">
+        <div id="book-modal" class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
+            <div class="bg-white w-full max-w-2xl rounded-2xl shadow-float p-8 transform transition-all scale-100 border border-stone-100">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <h3 id="modal-title" class="text-2xl font-serif font-medium text-stone-900 mb-1"></h3>
+                        <p id="modal-author" class="text-rose-500 text-sm font-medium"></p>
+                    </div>
+                    <button onclick="closeModal()" class="text-stone-300 hover:text-stone-600 text-2xl leading-none">&times;</button>
+                </div>
+                
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Tag</label>
+                        <input type="text" id="modal-tags" class="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 transition-colors" placeholder="es. #difficile, #capitolo1...">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Note personali</label>
+                        <textarea id="modal-notes" class="w-full h-40 p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm resize-none outline-none focus:border-stone-400 transition-colors leading-relaxed" placeholder="Scrivi qui i tuoi pensieri. DeepSeek li userà come contesto."></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-stone-100">
+                    <button onclick="askAIAboutBook()" class="px-4 py-2 bg-white border border-stone-200 text-stone-600 font-medium rounded-lg text-xs hover:border-rose-200 hover:text-rose-600 transition-all">Chiedi all'AI</button>
+                    <button onclick="saveBookDetails()" class="px-6 py-2 bg-stone-900 text-white font-medium rounded-lg text-xs hover:bg-black transition-colors shadow-soft">Salva Modifiche</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="chat-widget" class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden">
             <div class="bg-white p-4 border-b border-stone-100 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-rose-400 to-orange-400 flex items-center justify-center font-bold text-white text-sm shadow-inner">MF</div>
-                    <div><h4 class="font-bold text-stone-800 text-sm">Millino Assistant</h4><div class="text-[10px] text-rose-500 font-medium">Powered by DeepSeek</div></div>
+                    <div class="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center font-bold text-white text-[10px]">DS</div>
+                    <div><h4 class="font-semibold text-stone-900 text-sm">Assistant</h4><div class="text-[10px] text-stone-400">DeepSeek v3.2 Enhanced</div></div>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-stone-400 hover:text-stone-600 text-xs p-2">Pulsci</button>
-                    <button onclick="toggleChat()" class="text-stone-400 hover:text-stone-600 p-2">✕</button>
+                    <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-stone-300 hover:text-stone-600 text-xs px-2">Clear</button>
+                    <button onclick="toggleChat()" class="text-stone-300 hover:text-stone-600">&times;</button>
                 </div>
             </div>
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-4 bg-stone-50/30 scroll-smooth">
-                <div class="text-center text-xs text-stone-400 my-4">Chiedimi delle fonti, della tesi o di Simondon.</div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
+                <div class="text-center text-xs text-stone-300 mt-4">Research Context Active</div>
             </div>
-            <div class="p-4 bg-white border-t border-stone-100 shrink-0">
-                <div class="flex gap-2 relative">
-                    <input type="text" id="chat-input" placeholder="Scrivi qui..." class="flex-1 pl-4 pr-12 py-3.5 bg-stone-50 border border-stone-200 rounded-2xl text-sm focus:ring-2 focus:ring-rose-100 outline-none transition-all" onkeypress="if(event.key==='Enter') sendChat()">
-                    <button onclick="sendChat()" class="absolute right-2 top-2 bottom-2 w-9 h-9 rounded-xl bg-rose-500 hover:bg-rose-600 text-white flex items-center justify-center shadow-md transition-all">➤</button>
+            <div class="p-3 bg-white border-t border-stone-100 shrink-0">
+                <div class="relative">
+                    <input type="text" id="chat-input" placeholder="Chiedi..." class="w-full pl-4 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 outline-none transition-colors" onkeypress="if(event.key==='Enter') sendChat()">
+                    <button onclick="sendChat()" class="absolute right-2 top-2 bottom-2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors">↑</button>
                 </div>
             </div>
         </div>
         
-        <button onclick="toggleChat()" class="fixed bottom-6 right-6 w-14 h-14 bg-stone-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-40 group">
-            <span class="text-2xl group-hover:animate-pulse">✨</span>
+        <button onclick="toggleChat()" class="fixed bottom-6 right-6 w-12 h-12 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group">
+            <span class="text-xl">✨</span>
         </button>
 
     </main>
 
+    <audio id="audio-rain" loop src="https://assets.mixkit.co/active_storage/sfx/2499/2499-preview.mp3"></audio>
+    <audio id="audio-cafe" loop src="https://assets.mixkit.co/active_storage/sfx/248/248-preview.mp3"></audio>
+    <audio id="audio-fire" loop src="https://assets.mixkit.co/active_storage/sfx/1239/1239-preview.mp3"></audio>
+
     <script>
-        // --- DATA LAYER ---
-        const biblioData = [
-            // SIMONDON
-            { id: "S01", author: "Simondon, G.", year: "2005", title: "L'individuation à la lumière des notions de forme et d'information", pub: "Jérôme Millon", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Il testo base sull'individuatione.", status: "todo" },
-            { id: "S02", author: "Simondon, G.", year: "1958", title: "Du mode d'existence des objets techniques", pub: "Aubier", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Genesi tecnica e alienazione.", status: "todo" },
-            { id: "S03", author: "Simondon, G.", year: "1989", title: "L'individuation psychique et collective", pub: "Aubier", cat: "Primary Sources", prio: "HIGH", desc: "Transindividuale e affettività.", status: "todo" },
-            { id: "S04", author: "Simondon, G.", year: "2008", title: "Imagination et invention", pub: "La Transparence", cat: "Primary Sources", prio: "HIGH", desc: "Ciclo delle immagini.", status: "todo" },
-            { id: "S13", author: "Simondon, G.", year: "1953", title: "La mentalité technique", pub: "PUF", cat: "Primary Sources", prio: "HIGH", desc: "Schemi cognitivi tecnici.", status: "todo" },
-            // ... (Inserisci qui tutti gli altri libri)
-            { id: "D04", author: "Deleuze, G. & Guattari, F.", year: "1980", title: "Mille Plateaux", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Rizoma e agencement.", status: "todo" }
-        ];
+        // GLOBALS
+        let biblioData = []; 
+        let currentBookId = null;
+        let wordHistory = JSON.parse(localStorage.getItem('word_history')) || [];
+        let journalEntries = JSON.parse(localStorage.getItem('journal_entries')) || [];
 
-        const roadmaps = {
-            A: {
-                title: "Strategia A: Classica Comparativa",
-                desc: "Approccio fondativo metafisico che confronta i sistemi.",
-                chapters: [
-                    { title: "1. La Genesi dell'Individuo", goal: "Confrontare i meccanismi di genesi.", sources: ["S01", "D01", "C02"], structure: ["1.1 La critica all'ilemorfismo.", "1.2 Simondon: Preindividuale.", "1.3 Deleuze: Virtuale."] }
-                ]
-            },
-            B: { title: "Strategia B: Tecno-Ecologica", desc: "Philosophy of Technology.", chapters: [] },
-            C: { title: "Strategia C: Politica", desc: "Transindividuale e controllo.", chapters: [] }
-        };
-
-        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
+            mergeData(); 
             initApp();
+            initAudio();
         });
 
+        function mergeData() {
+            // Assicurati che MASTER_DB sia definito in js/database.js
+            if(typeof MASTER_DB === 'undefined') { console.error("Database missing"); return; }
+            const saved = JSON.parse(localStorage.getItem('millino_progress')) || [];
+            biblioData = MASTER_DB.map(book => {
+                const userState = saved.find(s => s.id === book.id) || {};
+                return { 
+                    ...book, 
+                    status: userState.status || 'todo',
+                    notes: userState.notes || '',
+                    tags: userState.tags || []
+                };
+            });
+        }
+
         function initApp() {
-            loadProgress(); 
+            renderDeadline();
             router('dashboard');
             renderDatabase();
             renderStats();
-            renderRoadmap();
+            renderJournal();
+            renderTracker();
+            renderRoadmap(); 
             renderCitationsList();
         }
 
-        // --- CORE LOGIC ---
-        function saveProgress() {
-            const progress = biblioData.map(item => ({ id: item.id, status: item.status }));
+        function saveData() {
+            const progress = biblioData.map(b => ({ id: b.id, status: b.status, notes: b.notes, tags: b.tags }));
             localStorage.setItem('millino_progress', JSON.stringify(progress));
-        }
-
-        function loadProgress() {
-            const saved = localStorage.getItem('millino_progress');
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    parsed.forEach(savedItem => {
-                        const item = biblioData.find(i => i.id === savedItem.id);
-                        if (item) item.status = savedItem.status;
-                    });
-                } catch(e) { console.error("Error loading progress", e); }
-            }
         }
 
         // --- ROUTING ---
         function router(viewName) {
-            ['dashboard', 'database', 'roadmap', 'citations'].forEach(v => {
+            ['dashboard', 'database', 'journal', 'tracker', 'roadmap', 'citations'].forEach(v => {
                 document.getElementById('view-' + v)?.classList.add('hidden');
-                const btn = document.getElementById('nav-' + v);
-                if (btn) { btn.classList.remove('nav-active'); btn.classList.add('text-stone-600'); }
+                document.getElementById('nav-' + v)?.classList.remove('nav-active');
             });
             document.getElementById('view-' + viewName).classList.remove('hidden');
-            const btn = document.getElementById('nav-' + viewName);
-            if (btn) { btn.classList.add('nav-active'); btn.classList.remove('text-stone-600'); }
+            document.getElementById('nav-' + viewName).classList.add('nav-active');
             if(window.innerWidth < 768) document.querySelector('aside').classList.add('hidden');
         }
 
-        // --- DATABASE UI ---
+        // --- DATABASE & MODAL ---
         function runSearch() {
             const txt = document.getElementById('searchInput').value.toLowerCase();
             const cat = document.getElementById('catFilter').value;
-            const filtered = biblioData.filter(i => {
-                const matchText = i.title.toLowerCase().includes(txt) || i.author.toLowerCase().includes(txt);
-                const matchCat = cat === 'all' || i.cat === cat;
-                return matchText && matchCat;
-            });
+            const filtered = biblioData.filter(i => (i.title.toLowerCase().includes(txt) || i.author.toLowerCase().includes(txt)) && (cat === 'all' || i.cat === cat));
             renderList(filtered);
         }
 
@@ -350,190 +448,272 @@
             const list = document.getElementById('results-container');
             list.innerHTML = '';
             data.forEach(item => {
-                const statusClass = item.status === 'done' ? 'status-done' : (item.status === 'reading' ? 'status-reading' : 'status-todo');
-                const statusLabel = item.status === 'done' ? 'Letto' : (item.status === 'reading' ? 'In Corso' : 'Da Leggere');
+                const statusClass = item.status === 'done' ? 'badge-done' : (item.status === 'reading' ? 'badge-reading' : 'badge-todo');
+                const tagBadges = (item.tags || []).map(t => `<span class="text-[9px] text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded mr-1">#${t}</span>`).join('');
                 
                 list.innerHTML += `
-                <div class="paper-card p-6 rounded-2xl flex flex-col md:flex-row gap-5 items-start">
+                <div class="pro-card p-4 flex flex-col md:flex-row gap-4 items-start cursor-pointer hover:border-stone-300" onclick="openBookModal('${item.id}')">
                     <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                            <span class="text-[10px] font-bold px-2 py-1 rounded bg-stone-100 text-stone-500 uppercase tracking-wide border border-stone-200">${item.cat}</span>
-                            <button onclick="cycleStatus('${item.id}')" class="text-[10px] px-3 py-1 rounded-full uppercase font-bold cursor-pointer status-btn ${statusClass}">${statusLabel}</button>
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider">${item.cat}</span>
+                            <button onclick="event.stopPropagation(); cycleStatus('${item.id}')" class="badge uppercase ${statusClass}">${item.status}</button>
+                            ${item.notes ? '<span class="text-rose-500 text-[10px]">●</span>' : ''}
                         </div>
-                        <h3 class="text-xl font-bold text-stone-800 serif leading-snug mb-1">${item.title}</h3>
-                        <div class="text-sm text-rose-600 font-medium font-serif italic">${item.author}, ${item.year}</div>
-                        <p class="text-sm text-stone-500 mt-3 leading-relaxed">${item.desc}</p>
-                    </div>
-                    <div class="flex md:flex-col gap-2 w-full md:w-auto">
-                        <button onclick="askAI('Analizza questo testo: ${item.title} di ${item.author}')" class="flex-1 px-4 py-2 bg-stone-800 hover:bg-stone-900 text-white text-xs font-bold rounded-lg transition-colors shadow-lg shadow-stone-200">✨ Analizza</button>
-                        <button onclick="copySingleCitation('${item.id}')" class="flex-1 px-4 py-2 bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 text-xs font-bold rounded-lg transition-colors">Cita</button>
+                        <h3 class="text-lg font-medium text-stone-900 serif leading-snug mb-0.5">${item.title}</h3>
+                        <div class="text-xs text-stone-500 font-medium">${item.author}, ${item.year}</div>
+                        <div class="mt-2">${tagBadges}</div>
                     </div>
                 </div>`;
             });
         }
 
+        function openBookModal(id) {
+            currentBookId = id;
+            const book = biblioData.find(b => b.id === id);
+            document.getElementById('modal-title').innerText = book.title;
+            document.getElementById('modal-author').innerText = book.author;
+            document.getElementById('modal-notes').value = book.notes || '';
+            document.getElementById('modal-tags').value = (book.tags || []).join(', ');
+            document.getElementById('book-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('book-modal').querySelector('div').classList.remove('scale-95', 'opacity-0'), 10);
+        }
+
+        function saveBookDetails() {
+            const book = biblioData.find(b => b.id === currentBookId);
+            book.notes = document.getElementById('modal-notes').value;
+            const rawTags = document.getElementById('modal-tags').value;
+            book.tags = rawTags.split(',').map(t => t.trim()).filter(t => t);
+            saveData();
+            closeModal();
+            runSearch();
+        }
+
+        function closeModal() { 
+            document.getElementById('book-modal').classList.add('hidden');
+        }
+        
         function cycleStatus(id) {
             const idx = biblioData.findIndex(i => i.id === id);
             const map = { 'todo': 'reading', 'reading': 'done', 'done': 'todo' };
             biblioData[idx].status = map[biblioData[idx].status || 'todo'];
-            saveProgress(); renderStats(); runSearch();
+            if(biblioData[idx].status === 'done') confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 }, colors: ['#E7E5E4', '#F43F5E'] });
+            saveData(); renderStats(); runSearch();
         }
-
+        
         function renderStats() {
-            const done = biblioData.filter(i => i.status === 'done').length;
-            const total = biblioData.length;
-            const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-            
-            document.getElementById('dash-total-sources').innerText = total;
-            document.getElementById('stat-primary').innerText = biblioData.filter(i => i.cat === 'Primary Sources').length;
-            document.getElementById('count-todo').innerText = biblioData.filter(i => i.status === 'todo').length;
-            document.getElementById('count-reading').innerText = biblioData.filter(i => i.status === 'reading').length;
-            document.getElementById('count-done').innerText = done;
-
-            document.getElementById('reading-progress-text').innerText = pct + "%";
-            document.getElementById('reading-progress-bar').style.width = pct + "%";
+             const done = biblioData.filter(i => i.status === 'done').length;
+             const total = biblioData.length;
+             const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+             document.getElementById('reading-progress-text').innerText = pct + "%";
+             document.getElementById('reading-progress-bar').style.width = pct + "%";
+             document.getElementById('count-todo').innerText = biblioData.filter(i => i.status === 'todo').length;
+             document.getElementById('count-reading').innerText = biblioData.filter(i => i.status === 'reading').length;
+             document.getElementById('count-done').innerText = done;
+             document.getElementById('stat-primary').innerText = biblioData.filter(i => i.cat === 'Primary Sources').length;
         }
 
-        // --- CITATIONS & ROADMAP ---
-        function renderCitationsList() {
-            const list = document.getElementById('citation-list');
-            list.innerHTML = '';
-            biblioData.forEach(item => {
-                list.innerHTML += `<label class="flex items-center gap-3 p-3 hover:bg-stone-50 rounded-lg cursor-pointer transition-colors border-b border-stone-50 last:border-0"><input type="checkbox" class="w-4 h-4 rounded border-stone-300 text-rose-500 focus:ring-rose-500 cite-cb" value="${item.id}" onchange="generateBibliography()"><span class="text-xs text-stone-600 font-medium truncate">${item.author} <span class="text-stone-400 mx-1">•</span> ${item.title}</span></label>`;
-            });
-        }
-        function selectAllCitations() { document.querySelectorAll('.cite-cb').forEach(cb => cb.checked = true); generateBibliography(); }
-        function copySingleCitation(id) { const i = biblioData.find(x => x.id === id); navigator.clipboard.writeText(`${i.author} (${i.year}). ${i.title}.`); alert("Copiato!"); }
-        function generateBibliography() {
-            const checked = Array.from(document.querySelectorAll('.cite-cb:checked')).map(c => c.value);
-            const items = biblioData.filter(i => checked.includes(i.id));
-            let out = "";
-            const style = document.getElementById('citation-style').value;
-            items.forEach(i => { out += style==='bibtex' ? `@book{${i.id}, title={${i.title}}...}\n` : `${i.author} (${i.year}). ${i.title}.\n\n`; });
-            document.getElementById('citation-output').value = out;
-        }
-        function copyCitationOutput() { const txt = document.getElementById('citation-output'); txt.select(); navigator.clipboard.writeText(txt.value); alert("Copiato negli appunti!"); }
-        
-        function renderRoadmap() {
-            const sel = document.getElementById('roadmapSelect').value;
-            const p = roadmaps[sel];
-            document.getElementById('roadmap-title').innerText = p.title;
-            document.getElementById('roadmap-desc').innerText = p.desc;
-            const c = document.getElementById('chapters-container');
-            c.innerHTML = '';
-            p.chapters.forEach(chap => {
-                c.innerHTML += `
-                <div class="bg-white rounded-2xl border border-stone-200 p-6 shadow-sm hover:shadow-md transition-all">
-                    <div class="flex justify-between items-start mb-4">
-                        <h4 class="font-bold text-stone-800 text-lg serif">${chap.title}</h4>
-                        <button onclick="askAI('Aiutami a strutturare il capitolo: ${chap.title}')" class="text-[10px] bg-stone-100 hover:bg-stone-200 text-stone-600 px-3 py-1.5 rounded-lg font-bold uppercase tracking-wider transition-colors">AI Help</button>
+        // --- JOURNAL ---
+        function renderJournal() {
+            const cont = document.getElementById('journal-container');
+            if(journalEntries.length === 0) { cont.innerHTML = `<div class="text-center text-xs text-stone-300 italic py-8">Il diario è vuoto.</div>`; return; }
+            cont.innerHTML = journalEntries.map(e => `
+                <div class="relative pl-6">
+                    <div class="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-stone-200 border-2 border-white"></div>
+                    <div class="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">${e.date}</div>
+                    <div class="bg-white p-4 rounded-lg border border-stone-100 shadow-sm">
+                        <p class="text-stone-700 text-sm whitespace-pre-wrap leading-relaxed">${e.text}</p>
                     </div>
-                    <p class="text-sm text-stone-600 mb-4 bg-stone-50 p-3 rounded-lg border border-stone-100 italic">${chap.goal}</p>
-                    <div class="grid grid-cols-2 gap-6 mt-4 pt-4 border-t border-stone-100">
-                        <div><h5 class="text-[10px] font-bold text-rose-400 uppercase tracking-widest mb-2">Struttura</h5><ul class="text-sm space-y-1 text-stone-600 list-disc pl-4 marker:text-rose-300">${chap.structure.map(s=>`<li>${s}</li>`).join('')}</ul></div>
-                    </div>
-                </div>`;
-            });
+                </div>
+            `).join('');
         }
-
-        // --- AI ENGINE (CONTEXT AWARE) ---
-        function toggleChat() { 
-            const widget = document.getElementById('chat-widget');
-            const btn = document.querySelector('button[onclick="toggleChat()"].fixed'); // Floating btn
-            
-            if (widget.classList.contains('chat-closed')) {
-                widget.classList.remove('chat-closed');
-                widget.classList.add('chat-open');
-                btn.classList.add('scale-0'); // Nascondi il bottone galleggiante
-            } else {
-                widget.classList.add('chat-closed');
-                widget.classList.remove('chat-open');
-                btn.classList.remove('scale-0'); // Mostra bottone
-            }
-        }
-        
-        async function sendChat() {
-            const inp = document.getElementById('chat-input');
-            const txt = inp.value.trim();
+        function addJournalEntry() {
+            const txt = document.getElementById('journal-entry').value;
             if(!txt) return;
-            
-            addMessage(txt, 'user');
-            inp.value = '';
-            
-            const loadId = 'load-' + Date.now();
-            document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="flex items-center gap-2 text-xs text-stone-400 mt-4 ml-2"><span class="w-2 h-2 bg-rose-400 rounded-full animate-pulse"></span> DeepSeek sta leggendo la biblioteca...</div>`;
+            journalEntries.unshift({ date: new Date().toLocaleDateString('it-IT', { weekday:'short', day:'numeric', month:'short' }), text: txt });
+            localStorage.setItem('journal_entries', JSON.stringify(journalEntries));
+            document.getElementById('journal-entry').value = '';
+            renderJournal();
+        }
 
-            try {
-                // INVIA I DATI BIBLIOGRAFICI NEL BODY DELLA RICHIESTA
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        message: txt,
-                        context: biblioData // <--- ECCO IL TRUCCO: Inviamo tutto il DB
-                    })
-                });
-                
-                const data = await res.json();
-                document.getElementById(loadId).remove();
-                
-                if (data.error) throw new Error(data.error);
-                addMessage(data.choices[0].message.content, 'bot');
+        // --- WORD TRACKER ---
+        let chartInstance = null;
+        function renderTracker() {
+            const ctx = document.getElementById('wordChart').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: wordHistory.map(h => h.date),
+                    datasets: [{ 
+                        label: 'Parole Totali', 
+                        data: wordHistory.map(h => h.count), 
+                        borderColor: '#1C1917', 
+                        tension: 0.3, 
+                        borderWidth: 2,
+                        pointBackgroundColor: '#FFF',
+                        pointBorderColor: '#1C1917',
+                        pointRadius: 3,
+                        fill: { target: 'origin', above: 'rgba(28, 25, 23, 0.02)' }
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1C1917', padding: 10, cornerRadius: 8 } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: '#F5F5F4' }, border: { display: false } }
+                    }
+                }
+            });
+        }
+        function updateWordCount() {
+            const val = parseInt(document.getElementById('word-input').value);
+            if(!val) return;
+            const today = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+            const idx = wordHistory.findIndex(h => h.date === today);
+            if(idx >= 0) wordHistory[idx].count = val;
+            else wordHistory.push({ date: today, count: val });
+            localStorage.setItem('word_history', JSON.stringify(wordHistory));
+            renderTracker();
+        }
 
-            } catch(e) {
-                document.getElementById(loadId).remove();
-                const localRes = localBrain(txt);
-                addMessage(`⚠️ <b>Server Error:</b> ${e.message}<br><br>🤖 <b>Local Fallback:</b> ${localRes}`, 'bot');
+        // --- DEADLINE ---
+        function saveDeadline() {
+            const d = document.getElementById('deadline-input').value;
+            localStorage.setItem('thesis_deadline', d);
+            renderDeadline();
+        }
+        function renderDeadline() {
+            const d = localStorage.getItem('thesis_deadline');
+            if(d) {
+                document.getElementById('deadline-input').value = d;
+                const days = Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24));
+                const span = document.getElementById('days-remaining');
+                span.classList.remove('hidden');
+                span.innerText = `${days} GIORNI`;
             }
         }
 
-        function localBrain(query) {
-            const q = query.toLowerCase();
-            const found = biblioData.filter(i => q.includes(i.title.toLowerCase()) || q.includes(i.author.toLowerCase().split(',')[0].toLowerCase()));
-            if(found.length > 0) return `Offline mode. Trovato: <br>${found.map(f => `- ${f.title}`).join('<br>')}`;
-            return "Nessuna connessione.";
+        // --- EXPORT BIBLIO ---
+        function downloadBibliography() {
+            const txt = biblioData.filter(b => b.status === 'done' || b.status === 'reading').map(b => `${b.author} (${b.year}). ${b.title}. ${b.pub}.`).join('\n\n');
+            const blob = new Blob([txt], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "bibliografia_millino.txt";
+            a.click();
+        }
+
+        // --- SPARK & AI ---
+        function askAIAboutBook() {
+            const book = biblioData.find(b => b.id === currentBookId);
+            const prompt = `Ho preso queste note sul libro "${book.title}": "${book.notes}". Aiutami a espanderle o collegarle a Simondon.`;
+            closeModal();
+            toggleChat();
+            askAI(prompt);
+        }
+
+        function triggerSpark() {
+            toggleChat();
+            addMessage("Analizzo lo stato della tesi per sbloccarti...", 'user');
+            sendChat('spark');
+        }
+
+        function toggleChat() { 
+            const w = document.getElementById('chat-widget');
+            w.classList.toggle('chat-closed'); w.classList.toggle('chat-open');
         }
 
         function addMessage(txt, role) {
             const box = document.getElementById('chat-messages');
-            const isUser = role === 'user';
             const html = marked.parse(txt);
+            const align = role === 'user' ? 'justify-end' : 'justify-start';
+            const style = role === 'user' ? 'bg-stone-900 text-white rounded-br-none' : 'bg-white border border-stone-200 text-stone-800 rounded-bl-none shadow-sm';
             
             box.innerHTML += `
-            <div class="flex gap-3 ${isUser ? 'flex-row-reverse' : ''} fade-in mt-4">
-                <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold shadow-sm ${isUser ? 'bg-stone-200 text-stone-600' : 'bg-rose-500 text-white'}">
-                    ${isUser ? 'TU' : 'MF'}
-                </div>
-                <div class="p-4 rounded-2xl text-sm max-w-[85%] shadow-sm prose prose-sm prose-p:leading-relaxed prose-a:text-rose-600 ${isUser ? 'bg-white border border-stone-100 text-stone-700' : 'bg-white border border-rose-100 text-stone-700'}">
+            <div class="flex ${align} fade-in">
+                <div class="py-2.5 px-4 rounded-2xl text-sm max-w-[85%] prose prose-sm prose-p:my-1 ${style}">
                     ${html}
                 </div>
             </div>`;
             box.scrollTop = box.scrollHeight;
         }
-        
-        function askAI(q) { 
-            const widget = document.getElementById('chat-widget');
-            if(widget.classList.contains('chat-closed')) toggleChat();
-            document.getElementById('chat-input').value = q; 
-            sendChat(); 
-        }
 
-        // --- POMODORO ---
-        let timer, time = 1500, running = false;
-        function toggleTimer() {
-            const btn = document.getElementById('timer-btn');
-            if(running) { clearInterval(timer); running = false; btn.innerText = "Avvia"; btn.classList.remove('bg-rose-50', 'text-rose-600', 'border-rose-200'); }
-            else {
-                running = true; btn.innerText = "Pausa"; btn.classList.add('bg-rose-50', 'text-rose-600', 'border-rose-200');
-                timer = setInterval(() => {
-                    time--;
-                    const m = Math.floor(time/60).toString().padStart(2,'0'), s = (time%60).toString().padStart(2,'0');
-                    document.getElementById('timer-display').innerText = `${m}:${s}`;
-                    if(time<=0) { clearInterval(timer); alert("Tempo!"); resetTimer(); }
-                }, 1000);
+        async function sendChat(mode = 'chat') {
+            const inp = document.getElementById('chat-input');
+            const txt = mode === 'spark' ? "Sblocco Creativo" : inp.value.trim();
+            if(!txt && mode !== 'spark') return;
+            
+            if(mode !== 'spark') { addMessage(txt, 'user'); inp.value = ''; }
+            
+            const loadId = 'load-' + Date.now();
+            document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="text-[10px] text-stone-400 mt-2 ml-2 animate-pulse">DeepSeek sta pensando...</div>`;
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: txt, context: biblioData, mode: mode })
+                });
+                const data = await res.json();
+                document.getElementById(loadId).remove();
+                addMessage(data.choices[0].message.content, 'bot');
+            } catch(e) {
+                document.getElementById(loadId).remove();
+                addMessage("Errore di connessione al server Vercel.", 'bot');
             }
         }
-        function resetTimer() { clearInterval(timer); running = false; time = 1500; document.getElementById('timer-display').innerText="25:00"; document.getElementById('timer-btn').innerText="Avvia"; document.getElementById('timer-btn').classList.remove('bg-rose-50', 'text-rose-600', 'border-rose-200');}
+        function askAI(q) { document.getElementById('chat-input').value = q; sendChat(); }
+
+        // --- SOUNDS & TIMER ---
+        function toggleSound(id) {
+            const el = document.getElementById('audio-'+id);
+            const btn = document.getElementById('btn-'+id);
+            if(el.paused) { el.play(); btn.classList.remove('text-stone-300'); btn.classList.add('text-stone-900'); }
+            else { el.pause(); btn.classList.add('text-stone-300'); btn.classList.remove('text-stone-900'); }
+        }
+        function initAudio() { 
+            // Audio init logic
+        }
+        
+        // --- TIMER ---
+        let timer, time=1500, running=false;
+        function toggleTimer() {
+            if(running) { clearInterval(timer); running=false; document.getElementById('timer-btn').innerText="Focus"; }
+            else { running=true; document.getElementById('timer-btn').innerText="Pausa"; timer=setInterval(()=>{ time--; let m=Math.floor(time/60), s=time%60; document.getElementById('timer-display').innerText=`${m}:${s.toString().padStart(2,'0')}`; if(time<=0) resetTimer(); },1000); }
+        }
+        function resetTimer() { clearInterval(timer); running=false; time=1500; document.getElementById('timer-display').innerText="25:00"; document.getElementById('timer-btn').innerText="Focus"; }
+
+        // --- UTILS ---
+        function renderRoadmap() {
+             const sel = document.getElementById('roadmapSelect').value;
+             const p = { A: {title: "Strategia Ontologica", desc: "Confronto tra Genesi in Simondon e Virtuale in Deleuze."}, B: {title: "Strategia Ecologica", desc: "Technics and Time."}, C: {title: "Strategia Politica", desc: "Il Transindividuale."} }[sel];
+             document.getElementById('roadmap-title').innerText = p.title;
+             document.getElementById('roadmap-desc').innerText = p.desc;
+             document.getElementById('chapters-container').innerHTML = `
+             <div class="pro-card p-4 text-center cursor-pointer hover:border-stone-400 transition-colors group" onclick="askAI('Genera struttura capitoli per: ${p.title}')">
+                <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">✨</span>
+                <span class="text-sm font-medium text-stone-600">Genera struttura con AI</span>
+             </div>`;
+        }
+        function selectAllCitations() { document.querySelectorAll('.cite-cb').forEach(cb => cb.checked = true); generateBibliography(); }
+        function renderCitationsList() { 
+             const list = document.getElementById('citation-list');
+             list.innerHTML = '';
+             biblioData.forEach(item => {
+                 list.innerHTML += `<label class="flex items-center gap-3 p-2 hover:bg-stone-50 rounded-lg cursor-pointer"><input type="checkbox" class="accent-stone-900 cite-cb" value="${item.id}" onchange="generateBibliography()"><span class="text-xs text-stone-600 truncate">${item.title}</span></label>`;
+             });
+        }
+        function copyCitationOutput() { const txt = document.getElementById('citation-output'); txt.select(); navigator.clipboard.writeText(txt.value); alert("Copiato."); }
+        function generateBibliography() {
+             const checked = Array.from(document.querySelectorAll('.cite-cb:checked')).map(c => c.value);
+             const items = biblioData.filter(i => checked.includes(i.id));
+             let out = "";
+             const style = document.getElementById('citation-style').value;
+             items.forEach(i => { out += style==='bibtex' ? `@book{${i.id}, title={${i.title}}...}\n` : `${i.author} (${i.year}). ${i.title}.\n\n`; });
+             document.getElementById('citation-output').value = out;
+        }
     </script>
 </body>
 </html>
