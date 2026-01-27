@@ -8,6 +8,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script> <!-- MERMAID SUPPORT -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
@@ -305,7 +306,14 @@
             </div>
             <div class="flex gap-2">
                 <button onclick="toggleTimer()" id="timer-btn"
-                    class="flex-1 bg-stone-900 hover:bg-black text-white text-xs py-2 rounded-full font-medium transition-all shadow-lg hover:shadow-rose-200">Focus</button>
+                    class="flex-1 bg-stone-900 group hover:scale-105 relative overflow-hidden text-white py-2 rounded-full shadow-lg hover:shadow-rose-200/50 transition-all flex items-center justify-center gap-2 border border-stone-800">
+                    <span id="pomo-status-icon" class="text-sm">🧠</span>
+                    <div class="flex flex-col items-start leading-none">
+                        <span id="timer-btn-text"
+                            class="text-[10px] font-bold uppercase tracking-widest text-stone-300 group-hover:text-white transition-colors">Focus
+                            Mode</span>
+                    </div>
+                </button>
                 <button onclick="toggleZenMode()"
                     class="px-3 bg-stone-100 hover:bg-stone-200 text-stone-500 text-lg py-1 rounded-md transition-colors"
                     title="Zen Mode">👁️</button>
@@ -331,8 +339,18 @@
             <div id="view-dashboard" class="space-y-10 fade-in max-w-5xl mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-stone-100 pb-8">
                     <div>
-                        <h2 class="text-3xl md:text-4xl text-stone-900 mb-2 serif font-medium tracking-tight">Panoramica
-                            Corsi</h2>
+                        <div class="flex items-center gap-3 mb-2">
+                            <h2 class="text-3xl md:text-4xl text-stone-900 serif font-medium tracking-tight">Panoramica
+                            </h2>
+                            <select id="subject-selector" onchange="switchSubject(this.value)"
+                                class="bg-stone-100 text-stone-600 text-lg font-serif border-none rounded-lg py-1 pl-3 pr-8 cursor-pointer hover:bg-stone-200 outline-none focus:ring-0">
+                                <option value="all">Tutti i Corsi</option>
+                                <option value="Theoretical Philosophy">Filosofia Teoretica</option>
+                                <option value="History">Storia</option>
+                                <option value="Political Science">Scienze Politiche</option>
+                                <option value="Thesis">Tesi</option>
+                            </select>
+                        </div>
                         <p class="text-stone-500 text-sm">Monitoraggio accademico attivo.</p>
                     </div>
                     <button onclick="askAI('Fammi un briefing sui miei corsi attivi e cosa devo studiare oggi')"
@@ -707,35 +725,153 @@
             <!-- NEW: Course Editor Modal -->
             <div id="course-modal"
                 class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden z-50 flex items-center justify-center fade-in">
-                <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden m-4">
-                    <div class="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50">
+                <div
+                    class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden m-4 flex flex-col max-h-[90vh]">
+                    <div class="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50 shrink-0">
                         <h3 id="modal-course-title" class="font-serif text-2xl font-bold text-stone-900">Nuovo Corso
                         </h3>
                         <button onclick="closeCourseModal()" class="text-stone-400 hover:text-stone-900">✕</button>
                     </div>
-                    <div class="p-6 space-y-4">
-                        <div>
-                            <label class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Nome
-                                Corso</label>
-                            <input type="text" id="edit-course-name"
-                                class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-900 outline-none font-bold text-stone-800"
-                                placeholder="Es. Filosofia Teoretica">
+
+                    <div id="course-modal-content" class="p-6 overflow-y-auto flex-1 relative">
+                        <!-- TAB NAVIGATION -->
+                        <div class="flex gap-4 mb-6 border-b border-stone-100 pb-2">
+                            <button onclick="switchCourseTab('details')" id="tab-btn-details"
+                                class="font-bold text-sm text-stone-900 border-b-2 border-stone-900 pb-2 transition-colors">Dettagli</button>
+                            <button onclick="switchCourseTab('modules')" id="tab-btn-modules"
+                                class="font-bold text-sm text-stone-400 pb-2 hover:text-stone-600 transition-colors">Sillabo</button>
+                            <button onclick="switchCourseTab('import')" id="tab-btn-import"
+                                class="font-bold text-sm text-rose-400 pb-2 hover:text-rose-600 transition-colors">✨
+                                Importa AI</button>
                         </div>
-                        <div>
-                            <label
-                                class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Professore</label>
-                            <input type="text" id="edit-course-prof"
-                                class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-900 outline-none"
-                                placeholder="Es. Prof. Simondon">
+
+                        <!-- DETAILS TAB -->
+                        <div id="tab-details" class="space-y-4">
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Nome
+                                    Corso</label>
+                                <input type="text" id="edit-course-name"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-900 outline-none font-bold text-stone-800"
+                                    placeholder="Es. Filosofia Teoretica">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label
+                                        class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Professore</label>
+                                    <input type="text" id="edit-course-prof"
+                                        class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-900 outline-none"
+                                        placeholder="Es. Prof. Simondon">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Data
+                                        Esame</label>
+                                    <input type="date" id="edit-course-date"
+                                        class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-900 outline-none">
+                                </div>
+                            </div>
+                            <!-- EXAM INFO SECTION -->
+                            <div class="mt-4 pt-4 border-t border-stone-100">
+                                <label
+                                    class="block text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-2">Info
+                                    Esame</label>
+                                <select id="edit-course-exam-mode"
+                                    class="w-full bg-white border border-stone-200 rounded-lg p-2 text-xs mb-2 text-stone-700 outline-none focus:border-rose-300">
+                                    <option value="Oral">🗣️ Orale</option>
+                                    <option value="Written">✍️ Scritto</option>
+                                    <option value="Project">🛠️ Progetto</option>
+                                    <option value="Mixed">🔄 Misto</option>
+                                </select>
+                                <textarea id="edit-course-exam-desc" rows="3"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs focus:border-rose-300 outline-none resize-none"
+                                    placeholder="Descrizione modalità d'esame e consigli..."></textarea>
+                            </div>
                         </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Data
-                                Esame</label>
-                            <input type="date" id="edit-course-date"
-                                class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-900 outline-none">
+
+                        <!-- MODULES TAB -->
+                        <div id="tab-modules" class="hidden space-y-4">
+                            <div id="modal-modules-list" class="space-y-2">
+                                <!-- Populated by JS -->
+                            </div>
                         </div>
+
+                        <!-- IMPORT TAB -->
+                        <div id="tab-import" class="hidden space-y-4">
+                            <div class="bg-rose-50 border border-rose-100 p-4 rounded-xl">
+                                <h4 class="font-bold text-rose-600 text-sm mb-2">🤖 Importatore Syllabus AI</h4>
+                                <p class="text-[10px] text-stone-600 mb-4">Incolla qui il testo del programma o l'URL
+                                    (se accessibile) e lascia che l'AI strutturi il corso per te.</p>
+
+                                <textarea id="import-text" rows="8"
+                                    class="w-full bg-white border border-rose-200 rounded-lg p-3 text-xs focus:border-rose-400 outline-none mb-3 resize-none"
+                                    placeholder="Incolla qui il programma del corso..."></textarea>
+
+                                <button onclick="runSyllabusImport()"
+                                    class="w-full bg-rose-500 text-white font-bold text-xs py-3 rounded-lg hover:bg-rose-600 transition-colors shadow-lg flex justify-center items-center gap-2">
+                                    <span>✨</span> Estrai Dati con DeepSeek
+                                </button>
+                                <div id="import-loader"
+                                    class="hidden text-center mt-2 text-[10px] text-rose-400 animate-pulse font-bold">
+                                    ANALISI IN CORSO...</div>
+                            </div>
+                        </div>
+
+                        <!-- MODULE EDITOR OVERLAY (SUB-MODAL) -->
+                        <div id="module-editor-overlay"
+                            class="hidden absolute inset-0 bg-white z-20 flex flex-col animate-fadeIn">
+                            <div
+                                class="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50 shrink-0">
+                                <h4 class="font-bold text-lg text-stone-800">Modifica Modulo</h4>
+                                <button onclick="closeModuleEditor()"
+                                    class="text-stone-400 hover:text-stone-900">✕</button>
+                            </div>
+                            <div class="p-6 space-y-4 flex-1 overflow-y-auto">
+                                <div>
+                                    <label
+                                        class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Titolo
+                                        Modulo</label>
+                                    <input type="text" id="mod-editor-title"
+                                        class="w-full bg-stone-50 border border-stone-200 rounded p-2 text-sm outline-none focus:border-stone-400 font-bold">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Obiettivo
+                                        / Goal</label>
+                                    <textarea id="mod-editor-goal" rows="3"
+                                        class="w-full bg-stone-50 border border-stone-200 rounded p-2 text-xs outline-none focus:border-stone-400 resize-none"></textarea>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Materiali
+                                        Associati</label>
+                                    <div class="flex flex-wrap gap-2 mb-3 min-h-[40px] p-2 bg-stone-50 rounded border border-stone-100"
+                                        id="mod-sources-list"></div>
+                                    <div class="relative">
+                                        <button onclick="openSourcePicker()"
+                                            class="w-full py-2 text-xs bg-white hover:bg-stone-50 border border-stone-200 border-dashed rounded-lg font-bold text-stone-500 hover:text-stone-700 transition-colors">+
+                                            Aggiungi Fonte da DB</button>
+
+                                        <!-- SOURCE PICKER DROPDOWN -->
+                                        <div id="source-picker-dropdown"
+                                            class="hidden absolute top-full left-0 mt-2 w-full bg-white border border-stone-200 shadow-xl rounded-xl max-h-48 overflow-y-auto z-30 fade-in">
+                                            <div id="source-picker-list" class="divide-y divide-stone-50"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 border-t border-stone-100 flex justify-end gap-2 bg-stone-50">
+                                <button onclick="closeModuleEditor()"
+                                    class="px-4 py-2 text-xs font-bold text-stone-500 hover:bg-stone-200 rounded-lg">Annulla</button>
+                                <button onclick="saveModule()"
+                                    class="px-6 py-2 bg-stone-900 text-white text-xs font-bold rounded-lg shadow hover:bg-black">Salva
+                                    Modulo</button>
+                            </div>
+                        </div>
+
                     </div>
-                    <div class="p-4 border-t border-stone-100 bg-stone-50 flex justify-end gap-3">
+
+                    <div class="p-4 border-t border-stone-100 bg-stone-50 flex justify-end gap-3 shrink-0">
                         <button onclick="closeCourseModal()"
                             class="px-4 py-2 text-stone-500 font-bold text-xs uppercase hover:bg-stone-200 rounded-lg">Annulla</button>
                         <button onclick="saveCourse()"
@@ -901,6 +1037,7 @@
         let journalEntries = JSON.parse(localStorage.getItem('journal_entries')) || [];
         let aiMode = 'chat';
         let currentCourseId = null;
+        let currentSubject = 'all'; // v5.0 Multi-Subject State
         let chartInstance = null;
         let customStrategy = { title: "Strategia Personalizzata", desc: "Generata da Jesse AI.", top_sources: [], chapters: [] };
 
@@ -1071,11 +1208,32 @@
 
         function forceReset() { if (confirm("Vuoi resettare tutto?")) { localStorage.removeItem('millino_progress'); localStorage.removeItem('millino_custom_books'); localStorage.removeItem('millino_pinned'); localStorage.removeItem('millino_deleted'); localStorage.removeItem('custom_roadmap'); localStorage.removeItem('millino_courses'); location.reload(); } }
 
-        // --- DYNAMIC COURSE CRUD ---
+        // --- DYNAMIC COURSE CRUD & MODULE EDITOR ---
+        function switchCourseTab(tab) {
+            ['details', 'modules', 'import'].forEach(t => {
+                const p = document.getElementById('tab-' + t);
+                const b = document.getElementById('tab-btn-' + t);
+                if (p) p.classList.add('hidden');
+                if (b) {
+                    b.classList.remove('text-stone-900', 'border-stone-900');
+                    b.classList.add('text-stone-400', 'border-transparent');
+                }
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            const btn = document.getElementById('tab-btn-' + tab);
+            btn.classList.add('text-stone-900', 'border-stone-900');
+            btn.classList.remove('text-stone-400', 'border-transparent');
+
+            if (tab === 'modules') renderModuleList();
+        }
+
         function openCourseModal(id = null) {
             editingCourseId = id;
             const modal = document.getElementById('course-modal');
             const titleEl = document.getElementById('modal-course-title');
+
+            // Reset Tab
+            switchCourseTab('details');
 
             if (id) {
                 // Edit Text
@@ -1084,16 +1242,19 @@
                 document.getElementById('edit-course-name').value = course.name;
                 document.getElementById('edit-course-prof').value = course.prof;
                 document.getElementById('edit-course-date').value = course.date;
-                // Topics area currently simple JSON or text
-                // For simplicity, we let user edit topics as JSON or basic text?
-                // Request says "modify everything". Let's assume standard fields first.
-                // Advanced: We could add a topics editor, but let's start with basic metadata.
+
+                // Load Exam Info
+                document.getElementById('edit-course-exam-mode').value = course.exam_info?.mode || 'Oral';
+                document.getElementById('edit-course-exam-desc').value = course.exam_info?.description || '';
+
             } else {
                 // New
                 titleEl.textContent = "Nuovo Corso";
                 document.getElementById('edit-course-name').value = "";
                 document.getElementById('edit-course-prof').value = "";
                 document.getElementById('edit-course-date').value = "";
+                document.getElementById('edit-course-exam-mode').value = "Oral";
+                document.getElementById('edit-course-exam-desc').value = "";
             }
             modal.classList.remove('hidden');
         }
@@ -1104,13 +1265,18 @@
             const name = document.getElementById('edit-course-name').value;
             const prof = document.getElementById('edit-course-prof').value;
             const date = document.getElementById('edit-course-date').value;
+            const examMode = document.getElementById('edit-course-exam-mode').value;
+            const examDesc = document.getElementById('edit-course-exam-desc').value;
 
-            if (!name || !prof || !date) return alert("Compila tutti i campi!");
+            if (!name || !prof) return alert("Inserisci almeno Nome e Professore!");
+
+            const examInfo = { mode: examMode, description: examDesc, tips: "" }; // Tips populated by AI if imported
 
             if (editingCourseId) {
                 // Update
                 const c = courses.find(x => x.id === editingCourseId);
                 c.name = name; c.prof = prof; c.date = date;
+                c.exam_info = { ...c.exam_info, ...examInfo }; // Merge to keep tips if any
             } else {
                 // Create
                 const newC = {
@@ -1119,7 +1285,8 @@
                     prof: prof,
                     date: date,
                     status: 'active',
-                    topics: [] // Empty topics for new course
+                    topics: [],
+                    exam_info: examInfo
                 };
                 courses.push(newC);
             }
@@ -1143,9 +1310,262 @@
             router('dashboard');
         }
 
+        // --- MODULE EDITOR & PICKER LOGIC ---
+        let currentEditingModuleIndex = -1;
+
+        function renderModuleList() {
+            const list = document.getElementById('modal-modules-list');
+
+            if (!editingCourseId) {
+                list.innerHTML = `<div class="text-center text-stone-400 text-xs py-8 italic border border-dashed border-stone-200 rounded-xl">💾 Salva il corso prima di aggiungere moduli.</div>`;
+                return;
+            }
+
+            const course = courses.find(c => c.id === editingCourseId);
+            if (!course.topics) course.topics = [];
+
+            if (course.topics.length === 0) {
+                list.innerHTML = `<div class="text-center text-stone-400 text-xs py-4">Nessun modulo. Aggiungine uno!</div>`;
+            } else {
+                list.innerHTML = course.topics.map((t, idx) => `
+                    <div class="bg-stone-50 p-3 rounded-lg border border-stone-200 flex justify-between items-center group mb-2 hover:border-stone-300 transition-colors">
+                        <div>
+                            <div class="font-bold text-sm text-stone-800">${t.title}</div>
+                            <div class="text-[10px] text-stone-500 truncate max-w-[200px]">${t.goal || 'Nessun obiettivo'}</div>
+                            <div class="text-[9px] text-rose-500 font-mono mt-1 font-bold uppercase tracking-wider">${(t.texts || []).length} FONTI</div>
+                        </div>
+                        <div class="flex gap-2 opacity-100">
+                             <button onclick="editModule(${idx})" class="text-xs text-stone-600 hover:text-stone-900 text-[10px] px-2 py-1 rounded bg-white border border-stone-200 shadow-sm font-bold">MODIFICA</button>
+                             <button onclick="deleteModule(${idx})" class="text-xs text-red-400 hover:text-red-600 px-2 py-1 text-[10px] rounded bg-white border border-stone-200 shadow-sm font-bold">×</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Add "Add Module" button
+            list.innerHTML += `
+                <button onclick="editModule(-1)" class="w-full py-3 border-2 border-dashed border-stone-300 rounded-lg text-stone-400 text-xs font-bold uppercase hover:bg-stone-50 hover:text-stone-600 transition-colors mt-2">
+                    + Aggiungi Modulo
+                </button>
+            `;
+        }
+
+        function editModule(idx) {
+            currentEditingModuleIndex = idx;
+            const modal = document.getElementById('module-editor-overlay');
+            const course = courses.find(c => c.id === editingCourseId);
+
+            if (idx >= 0) {
+                const topic = course.topics[idx];
+                document.getElementById('mod-editor-title').value = topic.title;
+                document.getElementById('mod-editor-goal').value = topic.goal;
+                renderModuleSources(topic.texts || []);
+            } else {
+                document.getElementById('mod-editor-title').value = "";
+                document.getElementById('mod-editor-goal').value = "";
+                renderModuleSources([]);
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeModuleEditor() {
+            document.getElementById('module-editor-overlay').classList.add('hidden');
+            document.getElementById('source-picker-dropdown').classList.add('hidden');
+        }
+
+        function saveModule() {
+            const title = document.getElementById('mod-editor-title').value;
+            const goal = document.getElementById('mod-editor-goal').value;
+            const sourceIds = Array.from(document.querySelectorAll('#mod-sources-list .source-chip')).map(el => el.dataset.id);
+
+            if (!title) return alert("Inserisci un titolo.");
+
+            const course = courses.find(c => c.id === editingCourseId);
+            const newModule = { title, goal, texts: sourceIds, matchTags: [] };
+
+            if (currentEditingModuleIndex >= 0) {
+                course.topics[currentEditingModuleIndex] = newModule;
+            } else {
+                course.topics.push(newModule);
+            }
+
+            saveData();
+            renderModuleList();
+            closeModuleEditor();
+        }
+
+        function deleteModule(idx) {
+            if (!confirm("Eliminare questo modulo?")) return;
+            const course = courses.find(c => c.id === editingCourseId);
+            course.topics.splice(idx, 1);
+            saveData();
+            renderModuleList();
+        }
+
+        function renderModuleSources(sourceIds) {
+            const container = document.getElementById('mod-sources-list');
+            if (sourceIds.length === 0) {
+                container.innerHTML = '<span class="text-[10px] text-stone-400 italic p-2">Nessuna fonte assegnata.</span>';
+                return;
+            }
+            container.innerHTML = sourceIds.map(id => {
+                const book = biblioData.find(b => b.id === id);
+                if (!book) return '';
+                return `<div class="source-chip bg-white border border-stone-200 rounded-full px-3 py-1 text-[10px] flex items-center gap-2 shadow-sm" data-id="${id}">
+                    <span class="font-bold truncate max-w-[100px]">${book.author}</span>
+                    <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 font-bold bg-rose-50 rounded-full w-4 h-4 flex items-center justify-center">×</button>
+                </div>`;
+            }).join('');
+        }
+
+        function openSourcePicker() {
+            const picker = document.getElementById('source-picker-dropdown');
+            if (!picker.classList.contains('hidden')) {
+                picker.classList.add('hidden');
+                return;
+            }
+
+            picker.classList.remove('hidden');
+            const list = document.getElementById('source-picker-list');
+            list.innerHTML = biblioData.slice(0, 50).map(b => `
+                <div onclick="addSourceToModule('${b.id}')" class="p-3 hover:bg-stone-50 cursor-pointer text-xs flex justify-between items-center group">
+                    <div class="truncate pr-2">
+                        <strong class="text-stone-800">${b.author}</strong> <span class="text-stone-500">- ${b.title}</span>
+                    </div>
+                    <span class="text-rose-500 text-[10px] uppercase font-bold opacity-0 group-hover:opacity-100">+ AGGIUNGI</span>
+                </div>
+            `).join('');
+        }
+
+        function addSourceToModule(id) {
+            const currentIds = Array.from(document.querySelectorAll('#mod-sources-list .source-chip')).map(el => el.dataset.id);
+            if (currentIds.includes(id)) return;
+
+            // If empty msg exists, remove it
+            const container = document.getElementById('mod-sources-list');
+            if (container.querySelector('span')) container.innerHTML = '';
+
+            const book = biblioData.find(b => b.id === id);
+            container.innerHTML += `<div class="source-chip bg-white border border-stone-200 rounded-full px-3 py-1 text-[10px] flex items-center gap-2 shadow-sm" data-id="${id}">
+                    <span class="font-bold truncate max-w-[100px]">${book.author}</span>
+                    <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 font-bold bg-rose-50 rounded-full w-4 h-4 flex items-center justify-center">×</button>
+                </div>`;
+
+            document.getElementById('source-picker-dropdown').classList.add('hidden');
+        }
+
+        // --- AI SYLLABUS IMPORTER ---
+        async function runSyllabusImport() {
+            const text = document.getElementById('import-text').value;
+            if (!text) return alert("Incolla qualcosa (Testo o URL)!");
+
+            const loader = document.getElementById('import-loader');
+            loader.classList.remove('hidden');
+
+            const systemPrompt = `
+            ROLE: You are an Academic Syllabus Parser.
+            TASK: Extract structured course modules and exam details from the provided text (which might be raw syllabus text or a URL dump).
+            OUTPUT: Valid JSON only. No markdown formatting.
+            FORMAT:
+            {
+                "topics": [ { "title": "Module Title", "goal": "Description/Objectives" } ],
+                "exam_info": { "mode": "Oral", "description": "Details about exam", "tips": "One strategic tip for the student" }
+            }
+            NOTES: 
+            - 'mode' must be one of: 'Oral', 'Written', 'Project', 'Mixed'.
+            - Translate content to ITALIAN.
+            - If text is messy, infer the most logical structure.
+            `;
+
+            try {
+                // Use the existing chat API
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: "Parse this syllabus text/content:\n\n" + text.slice(0, 10000),
+                        systemOverride: systemPrompt,
+                        model: 'deepseek/deepseek-v3.2'
+                    })
+                });
+
+                if (!response.ok) throw new Error("AI API Error");
+
+                const apiData = await response.json();
+                const raw = apiData.choices?.[0]?.message?.content || "{}";
+
+                // Flexible JSON Parsing
+                let result;
+                try {
+                    result = JSON.parse(raw);
+                } catch (e) {
+                    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+                    else throw new Error("Failed to parse AI JSON");
+                }
+
+                if (editingCourseId) {
+                    const c = courses.find(x => x.id === editingCourseId);
+
+                    // Merge Topics
+                    if (result.topics && Array.isArray(result.topics)) {
+                        c.topics = result.topics.map(t => ({ ...t, texts: [] })); // Initialize texts array
+                    }
+
+                    // Merge Exam Info
+                    if (result.exam_info) {
+                        c.exam_info = {
+                            mode: getBestModeMatch(result.exam_info.mode),
+                            description: result.exam_info.description || '',
+                            tips: result.exam_info.tips || ''
+                        };
+                    }
+
+                    saveData();
+
+                    // Update UI
+                    document.getElementById('edit-course-exam-mode').value = c.exam_info.mode;
+                    document.getElementById('edit-course-exam-desc').value = c.exam_info.description;
+
+                    alert("✅ Syllabus importato con successo! Controlla la tab 'Sillabo' e i dettagli esame.");
+                    switchCourseTab('modules');
+                } else {
+                    alert("⚠️ Attenzione: Salva il corso prima di vedere i moduli importati.");
+                }
+
+            } catch (e) {
+                alert("Errore importazione: " + e.message);
+                console.error(e);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function getBestModeMatch(val) {
+            if (!val) return 'Oral';
+            const v = val.toLowerCase();
+            if (v.includes('writ') || v.includes('scritt')) return 'Written';
+            if (v.includes('proj') || v.includes('proget')) return 'Project';
+            if (v.includes('mix')) return 'Mixed';
+            return 'Oral';
+        }
+
         // IMPLEMENTATION: Global Callback for Squad Engine
         window.receiveBookData = function (data) {
             const newId = "AUTO_" + Date.now();
+
+            // v5.0 Data Formatting
+            const structureMD = data.structure?.mermaid ? `\n### 🧠 Struttura Logica\n\`\`\`mermaid\n${data.structure.mermaid}\n\`\`\`` : '';
+
+            let relationsMD = '';
+            if (data.connections && Array.isArray(data.connections)) {
+                relationsMD = '\n### 🔗 Relazioni Concettuali\n' + data.connections.map(c => `- **${c.source}** _${c.relation}_ **${c.target}**`).join('\n');
+            }
+
+            let notesMD = '';
+            if (data.quotes && Array.isArray(data.quotes)) {
+                notesMD = '\n### 💎 Atomic Notes\n' + data.quotes.map(q => `> "${q.quote}"\n> *${q.paraphrase}* #${q.tag}`).join('\n\n');
+            }
 
             // Sanitize & Construct Book Object
             const newBook = {
@@ -1154,11 +1574,11 @@
                 title: data.title || "Untitled Document",
                 year: data.year || new Date().getFullYear().toString(),
                 pub: data.pub || "Squad Engine Ingest",
-                cat: "User Added", // Default as requested
+                cat: "User Added",
                 status: "todo",
-                notes: `[SQUAD REPORT]\n\nDESCRIZIONE:\n${data.desc || 'N/A'}\n\nDEFINIZIONI:\n${(data.definitions || []).map(d => d.term).join(', ')}\n\nQUOTE:\n${(data.quotes || []).join('\n')}\n\nCONNESSIONI:\n${(data.connections?.related_authors || []).join(', ')}`,
-                tags: ["AI_PROCESSED"],
-                subject: currentCourseId ? courses.find(c => c.id === currentCourseId).name : null
+                notes: `[SQUAD V5.0 ANALYSIS]\n\n${data.desc || ''}\n${structureMD}\n${relationsMD}\n${notesMD}`,
+                tags: ["AI_SQUAD", ...(data.quotes || []).map(q => q.tag.replace('#', ''))],
+                subject: currentCourseId ? courses.find(c => c.id === currentCourseId).name : (currentSubject !== 'all' ? currentSubject : null)
             };
 
             // Add to TOP of list (unshift)
@@ -1172,8 +1592,7 @@
             runSearch(); // Update list immediately
 
             // Success Trigger
-            // confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); // already in squad_engine
-            alert(`✅ Squad Engine Success!\n"${newBook.title}" è stato aggiunto al database.`);
+            alert(`✅ Squad Engine V5.0 Success!\n"${newBook.title}" è stato aggiunto al database con Grafici e Note Atomiche.`);
         };
 
         function initApp() {
@@ -1232,7 +1651,10 @@
                 // Cat Match
                 const catMatch = cat === 'all' || i.cat === cat;
 
-                return txtMatch && catMatch;
+                // Subject Match (New v5.0)
+                const subjectMatch = currentSubject === 'all' || i.subject === currentSubject || (currentSubject === 'Thesis' && i.cat === 'Primary Sources');
+
+                return txtMatch && catMatch && subjectMatch;
             });
 
             // Sort: Pinned First
@@ -1710,7 +2132,26 @@
             }
         }
 
-        function askAI(q, override = null) {
+        // --- JOURNAL FIX ---
+        function addJournalEntry() {
+            const txt = document.getElementById('journal-input').value;
+            if (!txt) return;
+            const entry = { date: new Date().toLocaleDateString(), text: txt, id: Date.now() };
+            // Ensure journalEntries is defined globally or get from LocalStorage
+            let journal = JSON.parse(localStorage.getItem('journal_entries') || '[]');
+            journal.unshift(entry);
+            localStorage.setItem('journal_entries', JSON.stringify(journal));
+            document.getElementById('journal-input').value = '';
+            renderJournal();
+            showToast("Diario aggiornato.");
+        }
+        function renderJournal() {
+            let journal = JSON.parse(localStorage.getItem('journal_entries') || '[]');
+            const c = document.getElementById('journal-entries');
+            if (!c) return;
+            c.innerHTML = journal.map(j => `<div class="bg-stone-50 p-3 rounded-lg text-xs text-stone-600 mb-2 border border-stone-100"><strong class="block text-stone-400 text-[10px] uppercase mb-1">${j.date}</strong>${j.text}</div>`).join('');
+        }
+        function askAI(q, override) {
             document.getElementById('chat-input').value = q;
             if (document.getElementById('chat-widget').classList.contains('chat-closed')) toggleChat();
             sendChat(null, override);
@@ -1727,19 +2168,27 @@
         let timer, time = 1500, running = false, timerMode = 'focus'; // 'focus' (25m) or 'break' (7m)
 
         function toggleTimer() {
-            const d = document.getElementById('zen-timer'); // Zen mode display
-            const mainDisplay = document.getElementById('timer-display'); // Sidebar display
+            const d = document.getElementById('zen-timer');
+            const mainDisplay = document.getElementById('timer-display');
             const btn = document.getElementById('timer-btn');
+            const modeLabel = document.getElementById('timer-mode-label');
+            const icon = document.getElementById('pomo-status-icon');
 
             if (running) {
                 clearInterval(timer);
                 running = false;
-                btn.innerText = timerMode === 'focus' ? "Riprendi Focus" : "Riprendi Pausa";
-                btn.classList.remove('animate-pulse');
+                modeLabel.innerText = "Paused";
+                modeLabel.classList.add('text-stone-400');
+                modeLabel.classList.remove('text-rose-400', 'text-teal-400');
+                btn.classList.remove('animate-pulse', 'border-rose-500');
+                btn.classList.add('border-stone-800');
             } else {
                 running = true;
-                btn.innerText = "Pausa";
+                modeLabel.innerText = timerMode === 'focus' ? "Running..." : "Chilling...";
+                modeLabel.classList.remove('text-stone-400');
+                modeLabel.classList.add(timerMode === 'focus' ? 'text-rose-400' : 'text-teal-400');
                 btn.classList.add('animate-pulse');
+                if (timerMode === 'focus') btn.classList.add('border-rose-500');
 
                 timer = setInterval(() => {
                     time--;
@@ -1747,38 +2196,36 @@
                     const t = `${m}:${s.toString().padStart(2, '0')}`;
 
                     mainDisplay.innerText = t;
-                    d.innerText = t;
+                    if (d) d.innerText = t;
                     document.title = `${t} - Millino Fagiolino`;
 
                     if (time <= 0) {
                         clearInterval(timer);
                         running = false;
-                        // Switch Mode
+                        btn.classList.remove('animate-pulse');
+
+                        // Switch Mode Forcefully
                         if (timerMode === 'focus') {
                             timerMode = 'break';
-                            time = 7 * 60; // 7 minutes
-                            alert("Ottimo lavoro! Ora 7 minuti di pausa obbligatoria.");
-                            mainDisplay.classList.remove('text-rose-600');
-                            mainDisplay.classList.add('text-teal-600'); // Greenish for break
-                            btn.innerText = "Avvia Pausa";
-                            btn.classList.remove('bg-stone-900', 'shadow-rose-200');
-                            btn.classList.add('bg-teal-600', 'hover:bg-teal-700');
+                            time = 7 * 60; // 7 Minutes
+                            icon.innerText = "☕";
+                            modeLabel.innerText = "COFFEE BREAK";
+                            modeLabel.className = "text-[8px] uppercase font-bold text-teal-400 tracking-widest";
+                            mainDisplay.className = "font-mono text-xl font-bold tracking-widest text-teal-100";
+                            alert("🧠 Focus completato. Ora 7 minuti di pausa!");
                         } else {
                             timerMode = 'focus';
-                            time = 25 * 60;
-                            alert("Pausa finita! Si torna a studiare.");
-                            mainDisplay.classList.add('text-rose-600');
-                            mainDisplay.classList.remove('text-teal-600');
-                            btn.innerText = "Avvia Focus";
-                            btn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
-                            btn.classList.add('bg-stone-900', 'shadow-rose-200');
+                            time = 25 * 60; // 25 Minutes
+                            icon.innerText = "🧠";
+                            modeLabel.innerText = "FOCUS MODE";
+                            modeLabel.className = "text-[8px] uppercase font-bold text-stone-400 tracking-widest";
+                            mainDisplay.className = "font-mono text-xl font-bold tracking-widest text-white";
+                            alert("☕ Pausa finita. Si torna a lavorare.");
                         }
-                        btn.classList.remove('animate-pulse');
-                        // Update displays to new time immediately
+
+                        // Update Display immediately
                         let m2 = Math.floor(time / 60), s2 = time % 60;
-                        const t2 = `${m2}:${s2.toString().padStart(2, '0')}`;
-                        mainDisplay.innerText = t2;
-                        d.innerText = t2;
+                        mainDisplay.innerText = `${m2}:${s2.toString().padStart(2, '0')}`;
                     }
                 }, 1000);
             }
@@ -1790,12 +2237,8 @@
             timerMode = 'focus';
             time = 1500;
             document.getElementById('timer-display').innerText = "25:00";
-            document.getElementById('timer-display').classList.add('text-rose-600');
-            document.getElementById('timer-display').classList.remove('text-teal-600');
-            document.getElementById('timer-btn').innerText = "Focus";
-            document.getElementById('timer-btn').classList.remove('bg-teal-600', 'hover:bg-teal-700', 'animate-pulse');
-            document.getElementById('timer-btn').classList.add('bg-stone-900');
-            document.title = "Millino Fagiolino";
+            document.getElementById('pomo-status-icon').innerText = "🧠";
+            document.getElementById('timer-mode-label').innerText = "FOCUS MODE";
         }
         function toggleZenMode() { const z = document.getElementById('zen-mode'); z.classList.toggle('hidden'); }
 
@@ -1825,14 +2268,28 @@
         function generateBibliography() { const c = Array.from(document.querySelectorAll('.cite-cb:checked')).map(x => x.value); const i = biblioData.filter(x => c.includes(x.id)); let o = ""; const s = document.getElementById('citation-style').value; if (s === 'classic') { copyFootnoteStyle(); return; } i.forEach(x => { o += s === 'bibtex' ? `@book{${x.id}, title={${x.title}}...}\n` : `${x.author} (${x.year}). ${x.title}.\n\n` }); document.getElementById('citation-output').value = o; }
         function downloadBibliography() { const t = biblioData.filter(b => b.status === 'done' || b.status === 'reading').map(b => `${b.author} (${b.year}). ${b.title}.`).join('\n\n'); const b = new Blob([t], { type: 'text/plain' }); const u = window.URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = "bibliografia.txt"; a.click(); }
 
+        function switchSubject(subj) {
+            currentSubject = subj;
+            showToast(`Materia attiva: ${subj === 'all' ? 'Tutte' : subj}`);
+            renderStats();
+            runSearch();
+            renderDashboard(); // Re-render dashboard to show active subject if needed
+        }
+
         function renderStats() {
-            const done = biblioData.filter(i => i.status === 'done').length;
-            const total = biblioData.length;
+            let data = biblioData;
+            // Filter by Subject (if not all)
+            if (currentSubject !== 'all') {
+                data = biblioData.filter(i => i.subject === currentSubject || (currentSubject === 'Thesis' && i.cat === 'Primary Sources'));
+            }
+
+            const done = data.filter(i => i.status === 'done').length;
+            const total = data.length;
             const pct = total === 0 ? 0 : Math.round((done / total) * 100);
             document.getElementById('reading-progress-text').innerText = pct + "%";
             document.getElementById('reading-progress-bar').style.width = pct + "%";
-            document.getElementById('count-todo').innerText = biblioData.filter(i => i.status === 'todo').length;
-            document.getElementById('count-reading').innerText = biblioData.filter(i => i.status === 'reading').length;
+            document.getElementById('count-todo').innerText = data.filter(i => i.status === 'todo').length;
+            document.getElementById('count-reading').innerText = data.filter(i => i.status === 'reading').length;
             document.getElementById('count-done').innerText = done;
             document.getElementById('total-sources-count').innerText = total;
         }
