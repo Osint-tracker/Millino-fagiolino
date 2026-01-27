@@ -613,7 +613,7 @@
         function initApp() { 
             renderDeadline(); 
             router('dashboard'); 
-            renderDatabase(); 
+            runSearch();      // <--- CORRETTO (Era renderDatabase)
             renderStats(); 
             renderJournal(); 
             renderTracker(); 
@@ -621,7 +621,6 @@
             renderCitationsList(); 
             renderConcepts(); 
         }
-
         function router(v) { 
             ['dashboard', 'database', 'journal', 'tracker', 'roadmap', 'citations', 'concepts'].forEach(x => { 
                 document.getElementById('view-'+x).classList.add('hidden'); 
