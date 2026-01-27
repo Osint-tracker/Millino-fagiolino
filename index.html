@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="it" class="antialiased">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Millino Fagiolino | Research OS v4.4 (Stable)</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="js/database.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -36,53 +40,198 @@
         }
     </script>
     <style>
-        html, body { height: 100%; width: 100%; overflow: hidden; background-color: #FBFBFB; color: #1C1917; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #E7E5E4; border-radius: 99px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        
-        .nav-item { transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
-        .nav-active { background-color: white; color: #1C1917; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,0.04); border: 1px solid #E7E5E4; }
-        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(231, 229, 228, 0.8); }
-        .pro-card { background: white; border: 1px solid #E7E5E4; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
-        .pro-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.04); border-color: #D6D3D1; transform: translateY(-1px); }
-        
-        #zen-mode { transition: opacity 0.5s ease; }
-        .hidden-zen { display: none !important; }
-        
-        details > summary { list-style: none; }
-        details > summary::-webkit-details-marker { display: none; }
-        details[open] summary ~ * { animation: sweep .3s ease-in-out; }
-        @keyframes sweep { 0% {opacity: 0; transform: translateY(-10px)} 100% {opacity: 1; transform: translateY(0)} }
-        
-        .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.02em; border: 1px solid transparent; }
-        .badge-todo { background: #F5F5F4; color: #78716C; border-color: #E7E5E4; }
-        .badge-reading { background: #FFF1F2; color: #E11D48; border-color: #FECDD3; }
-        .badge-done { background: #F0FDF4; color: #15803D; border-color: #BBF7D0; }
-        
-        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #FBFBFB;
+            color: #1C1917;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #E7E5E4;
+            border-radius: 99px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .nav-item {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .nav-active {
+            background-color: white;
+            color: #1C1917;
+            font-weight: 500;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            border: 1px solid #E7E5E4;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(231, 229, 228, 0.8);
+        }
+
+        .pro-card {
+            background: white;
+            border: 1px solid #E7E5E4;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .pro-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            border-color: #D6D3D1;
+            transform: translateY(-1px);
+        }
+
+        #zen-mode {
+            transition: opacity 0.5s ease;
+        }
+
+        .hidden-zen {
+            display: none !important;
+        }
+
+        details>summary {
+            list-style: none;
+        }
+
+        details>summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open] summary~* {
+            animation: sweep .3s ease-in-out;
+        }
+
+        @keyframes sweep {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px)
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        .badge {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 99px;
+            letter-spacing: 0.02em;
+            border: 1px solid transparent;
+        }
+
+        .badge-todo {
+            background: #F5F5F4;
+            color: #78716C;
+            border-color: #E7E5E4;
+        }
+
+        .badge-reading {
+            background: #FFF1F2;
+            color: #E11D48;
+            border-color: #FECDD3;
+        }
+
+        .badge-done {
+            background: #F0FDF4;
+            color: #15803D;
+            border-color: #BBF7D0;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* Chat Widget & Messages */
-        .chat-widget { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
-        .chat-open { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
-        .chat-closed { transform: translateY(20px) scale(0.96); opacity: 0; pointer-events: none; }
-        .msg-jesse { background-color: #F5F5F4; color: #1C1917; border-radius: 12px; border-bottom-left-radius: 2px; }
-        .msg-user { background-color: #1C1917; color: white; border-radius: 12px; border-bottom-right-radius: 2px; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        .prose p { margin-bottom: 0.75em; line-height: 1.6; font-size: 0.95rem; }
+        .chat-widget {
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+
+        .chat-open {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .chat-closed {
+            transform: translateY(20px) scale(0.96);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .msg-jesse {
+            background-color: #F5F5F4;
+            color: #1C1917;
+            border-radius: 12px;
+            border-bottom-left-radius: 2px;
+        }
+
+        .msg-user {
+            background-color: #1C1917;
+            color: white;
+            border-radius: 12px;
+            border-bottom-right-radius: 2px;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .prose p {
+            margin-bottom: 0.75em;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
     </style>
 </head>
+
 <body class="flex h-full w-full overflow-hidden">
 
-    <div id="zen-mode" class="fixed inset-0 bg-white z-[100] hidden flex flex-col items-center justify-center p-8 overflow-hidden">
+    <div id="zen-mode"
+        class="fixed inset-0 bg-white z-[100] hidden flex flex-col items-center justify-center p-8 overflow-hidden">
         <div class="absolute top-6 right-6">
-            <button onclick="toggleZenMode()" class="text-stone-400 hover:text-stone-900 transition-colors text-xs font-bold tracking-widest uppercase">ESCI ZEN</button>
+            <button onclick="toggleZenMode()"
+                class="text-stone-400 hover:text-stone-900 transition-colors text-xs font-bold tracking-widest uppercase">ESCI
+                ZEN</button>
         </div>
         <div class="w-full max-w-3xl h-full flex flex-col">
-            <textarea class="flex-1 w-full h-full text-xl leading-loose text-stone-800 placeholder-stone-300 outline-none resize-none font-serif bg-transparent" placeholder="Respira. Scrivi. Nessuna distrazione."></textarea>
+            <textarea
+                class="flex-1 w-full h-full text-xl leading-loose text-stone-800 placeholder-stone-300 outline-none resize-none font-serif bg-transparent"
+                placeholder="Respira. Scrivi. Nessuna distrazione."></textarea>
         </div>
         <div class="absolute bottom-6 flex gap-4 text-stone-300 items-center">
             <span class="text-xs font-bold tracking-widest uppercase">Focus Mode</span>
@@ -90,31 +239,46 @@
         </div>
     </div>
 
-    <aside id="app-sidebar" class="w-[280px] bg-[#FBFBFB] border-r border-stone-200 flex-shrink-0 flex flex-col z-30 hidden md:flex h-full">
+    <aside id="app-sidebar"
+        class="w-[280px] bg-[#FBFBFB] border-r border-stone-200 flex-shrink-0 flex flex-col z-30 hidden md:flex h-full">
         <div class="p-6 pt-8 pb-2">
             <h1 class="text-2xl font-semibold text-stone-900 tracking-tight serif flex items-baseline gap-1">
                 Millino<span class="text-rose-500 italic font-serif">.F</span>
             </h1>
             <p class="text-[11px] text-stone-400 font-medium mt-1 tracking-wide">RESEARCH OS v4.4</p>
         </div>
-        
+
         <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-8">
             <div>
                 <div class="px-3 mb-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Esplorazione</div>
                 <div class="space-y-1">
-                    <button onclick="router('dashboard')" id="nav-dashboard" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span class="text-lg">📊</span> Panoramica</button>
-                    <button onclick="router('database')" id="nav-database" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span class="text-lg">📚</span> Biblioteca</button>
-                    <button onclick="router('concepts')" id="nav-concepts" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span class="text-lg">🧶</span> Tessitore</button>
-                    <button onclick="router('journal')" id="nav-journal" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span class="text-lg">📔</span> Diario</button>
+                    <button onclick="router('dashboard')" id="nav-dashboard"
+                        class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span
+                            class="text-lg">📊</span> Panoramica</button>
+                    <button onclick="router('database')" id="nav-database"
+                        class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span
+                            class="text-lg">📚</span> Biblioteca</button>
+                    <button onclick="router('concepts')" id="nav-concepts"
+                        class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span
+                            class="text-lg">🧶</span> Tessitore</button>
+                    <button onclick="router('journal')" id="nav-journal"
+                        class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span
+                            class="text-lg">📔</span> Diario</button>
                 </div>
             </div>
-            
+
             <div>
                 <div class="px-3 mb-2 text-[10px] font-bold text-stone-400 uppercase tracking-widest">Produzione</div>
                 <div class="space-y-1">
-                    <button onclick="router('roadmap')" id="nav-roadmap" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span class="text-lg">🗺️</span> Roadmap</button>
-                    <button onclick="router('tracker')" id="nav-tracker" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span class="text-lg">📈</span> Tracker</button>
-                    <button onclick="router('citations')" id="nav-citations" class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span class="text-lg">❞</span> Citazioni</button>
+                    <button onclick="router('roadmap')" id="nav-roadmap"
+                        class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span
+                            class="text-lg">🗺️</span> Roadmap</button>
+                    <button onclick="router('tracker')" id="nav-tracker"
+                        class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span
+                            class="text-lg">📈</span> Tracker</button>
+                    <button onclick="router('citations')" id="nav-citations"
+                        class="nav-item w-full text-left px-3 py-2 rounded-lg flex items-center gap-3 text-sm text-stone-600 hover:bg-stone-100"><span
+                            class="text-lg">❞</span> Citazioni</button>
                 </div>
             </div>
         </nav>
@@ -125,66 +289,122 @@
                 <span id="timer-display" class="font-mono text-sm font-semibold text-rose-600">25:00</span>
             </div>
             <div class="flex justify-between items-center mb-4 px-2">
-                <button onclick="toggleSound('rain')" id="btn-rain" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Pioggia">🌧️</button>
-                <button onclick="toggleSound('cafe')" id="btn-cafe" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Caffè">☕</button>
-                <button onclick="toggleSound('fire')" id="btn-fire" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Camino">🔥</button>
-                <button onclick="stopAllSounds()" class="text-rose-400 hover:text-rose-600 transition-colors text-[10px] font-bold border border-rose-200 px-2 py-1 rounded ml-1 bg-rose-50">STOP</button>
+                <button onclick="toggleSound('rain')" id="btn-rain"
+                    class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Pioggia">🌧️</button>
+                <button onclick="toggleSound('cafe')" id="btn-cafe"
+                    class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Caffè">☕</button>
+                <button onclick="toggleSound('fire')" id="btn-fire"
+                    class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Camino">🔥</button>
+                <button onclick="stopAllSounds()"
+                    class="text-rose-400 hover:text-rose-600 transition-colors text-[10px] font-bold border border-rose-200 px-2 py-1 rounded ml-1 bg-rose-50">STOP</button>
             </div>
             <div class="flex gap-2">
-                <button onclick="toggleTimer()" id="timer-btn" class="flex-1 bg-stone-900 hover:bg-black text-white text-xs py-2 rounded-md font-medium transition-all shadow-sm">Focus</button>
-                <button onclick="toggleZenMode()" class="px-3 bg-stone-100 hover:bg-stone-200 text-stone-500 text-lg py-1 rounded-md transition-colors" title="Zen Mode">👁️</button>
+                <button onclick="toggleTimer()" id="timer-btn"
+                    class="flex-1 bg-stone-900 hover:bg-black text-white text-xs py-2 rounded-md font-medium transition-all shadow-sm">Focus</button>
+                <button onclick="toggleZenMode()"
+                    class="px-3 bg-stone-100 hover:bg-stone-200 text-stone-500 text-lg py-1 rounded-md transition-colors"
+                    title="Zen Mode">👁️</button>
             </div>
             <div class="mt-4 pt-2 border-t border-stone-100 text-center">
-                <button onclick="forceReset()" class="text-[9px] text-stone-300 hover:text-red-500 underline cursor-pointer">Fix Database</button>
+                <button onclick="forceReset()"
+                    class="text-[9px] text-stone-300 hover:text-red-500 underline cursor-pointer">Fix Database</button>
             </div>
         </div>
     </aside>
 
-    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-white" id="main-wrapper">
-        <div class="md:hidden bg-white/80 backdrop-blur-md border-b border-stone-200 p-4 flex justify-between items-center z-30 sticky top-0">
+    <main class="flex-1 flex flex-col h-full relative bg-white" id="main-wrapper">
+        <div
+            class="md:hidden bg-white/80 backdrop-blur-md border-b border-stone-200 p-4 flex justify-between items-center z-30 sticky top-0">
             <span class="font-semibold serif text-lg text-stone-900">Millino.F</span>
-            <button onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute'); document.querySelector('aside').classList.toggle('h-full');" class="text-stone-600">☰</button>
+            <button
+                onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute'); document.querySelector('aside').classList.toggle('h-full');"
+                class="text-stone-600">☰</button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-6 md:p-12 relative scroll-smooth pb-40" id="content-area">
-            
+
             <div id="view-dashboard" class="space-y-10 fade-in max-w-5xl mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-stone-100 pb-8">
                     <div>
-                        <h2 class="text-3xl md:text-4xl text-stone-900 mb-2 serif font-medium tracking-tight">Panoramica</h2>
-                        <div class="flex items-center gap-3 text-sm text-stone-500">
-                            <span>Consegna Tesi:</span>
-                            <input type="date" id="deadline-input" onchange="saveDeadline()" class="bg-transparent border-b border-stone-200 focus:border-rose-500 outline-none text-stone-800 font-medium text-sm pb-0.5">
-                            <span id="days-remaining" class="text-[10px] bg-rose-50 text-rose-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide hidden"></span>
-                        </div>
+                        <h2 class="text-3xl md:text-4xl text-stone-900 mb-2 serif font-medium tracking-tight">Panoramica
+                            Corsi</h2>
+                        <p class="text-stone-500 text-sm">Monitoraggio accademico attivo.</p>
                     </div>
-                    <button onclick="askAI('Fammi un briefing su cosa mi manca da leggere e suggerisci una priorità')" class="group bg-white border border-stone-200 hover:border-rose-200 hover:shadow-soft text-stone-600 px-5 py-2.5 rounded-full transition-all text-sm font-medium flex items-center gap-2">
-                        <img src="jesse/psicologo.jpeg" class="w-6 h-6 rounded-full object-cover border border-stone-200 group-hover:scale-110 transition-transform shadow-sm" alt="Jesse">
-                        Chiedi a Jesse
+                    <button onclick="askAI('Fammi un briefing sui miei corsi attivi e cosa devo studiare oggi')"
+                        class="group bg-white border border-stone-200 hover:border-rose-200 hover:shadow-soft text-stone-600 px-5 py-2.5 rounded-full transition-all text-sm font-medium flex items-center gap-2">
+                        <img src="jesse/psicologo.jpeg"
+                            class="w-6 h-6 rounded-full object-cover border border-stone-200 group-hover:scale-110 transition-transform shadow-sm"
+                            alt="Jesse">
+                        Briefing Mattutino
                     </button>
                 </div>
 
-                <div id="timeline-container" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
+                <div id="course-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- Course Cards will be injected here -->
+                </div>
+
+                <!-- NEW: Smart Scheduler -->
+                <div class="bg-white border border-stone-200 p-6 rounded-xl mb-8 shadow-soft">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-stone-900 text-lg serif">📅 Pianificatore Settimanale</h3>
+                        <span
+                            class="text-xs bg-rose-50 text-rose-600 px-2 py-1 rounded font-bold uppercase tracking-wider">AI
+                            Powered</span>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-4 mb-4">
+                        <input type="text" id="schedule-input"
+                            class="flex-1 bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm outline-none focus:border-rose-300"
+                            placeholder="Es: Studio Lun-Mer-Ven, lavoro Martedì...">
+                        <button onclick="calculateStudySchedule()"
+                            class="bg-stone-900 text-white px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors">Genera
+                            Programma</button>
+                    </div>
+                    <div id="schedule-output" class="hidden animate-pulse">
+                        <div class="space-y-3">
+                            <div class="bg-stone-100 h-10 rounded w-3/4"></div>
+                            <div class="bg-stone-100 h-24 rounded w-full"></div>
+                        </div>
+                    </div>
+                    <div id="schedule-result" class="hidden mt-6 pt-6 border-t border-stone-100"></div>
+                </div>
 
                 <div class="pro-card p-8 relative overflow-hidden">
                     <div class="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
                     <div class="flex justify-between items-end mb-6">
                         <div>
-                            <h3 class="font-bold text-stone-400 text-[10px] uppercase tracking-widest mb-1">Stato Ricerca</h3>
-                            <div class="text-3xl font-serif font-medium text-stone-900"><span id="reading-progress-text">0%</span> <span class="text-lg text-stone-400 italic">completato</span></div>
+                            <h3 class="font-bold text-stone-400 text-[10px] uppercase tracking-widest mb-1">Stato
+                                Ricerca</h3>
+                            <div class="text-3xl font-serif font-medium text-stone-900"><span
+                                    id="reading-progress-text">0%</span> <span
+                                    class="text-lg text-stone-400 italic">completato</span></div>
                         </div>
                         <div class="text-right">
-                             <div class="text-3xl font-serif text-stone-900" id="total-sources-count">0</div>
-                             <div class="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Fonti Totali</div>
+                            <div class="text-3xl font-serif text-stone-900" id="total-sources-count">0</div>
+                            <div class="text-[10px] text-stone-400 uppercase font-bold tracking-wider">Fonti Totali
+                            </div>
                         </div>
                     </div>
                     <div class="w-full bg-stone-100 rounded-full h-2 overflow-hidden mb-8">
-                        <div id="reading-progress-bar" class="bg-stone-800 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                        <div id="reading-progress-bar"
+                            class="bg-stone-800 h-2 rounded-full transition-all duration-1000 ease-out"
+                            style="width: 0%"></div>
                     </div>
                     <div class="grid grid-cols-3 gap-8 text-center border-t border-stone-100 pt-6">
-                        <div><div class="text-2xl font-semibold text-stone-900 serif" id="count-todo">0</div><div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider mt-1">Da Leggere</div></div>
-                        <div><div class="text-2xl font-semibold text-rose-500 serif" id="count-reading">0</div><div class="text-[10px] uppercase font-bold text-rose-300 tracking-wider mt-1">In Corso</div></div>
-                        <div><div class="text-2xl font-semibold text-stone-900 serif" id="count-done">0</div><div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider mt-1">Archiviati</div></div>
+                        <div>
+                            <div class="text-2xl font-semibold text-stone-900 serif" id="count-todo">0</div>
+                            <div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider mt-1">Da Leggere
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-semibold text-rose-500 serif" id="count-reading">0</div>
+                            <div class="text-[10px] uppercase font-bold text-rose-300 tracking-wider mt-1">In Corso
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-semibold text-stone-900 serif" id="count-done">0</div>
+                            <div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider mt-1">Archiviati
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -193,12 +413,13 @@
                 <div class="glass-card sticky top-2 z-20 p-2 rounded-xl flex gap-2 items-center shadow-soft mb-8">
                     <div class="flex-1 relative">
                         <span class="absolute left-3 top-2.5 text-stone-400 text-sm">🔍</span>
-                        <input type="text" id="searchInput" placeholder="Cerca o aggiungi..." 
+                        <input type="text" id="searchInput" placeholder="Cerca o aggiungi..."
                             class="w-full pl-9 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm text-stone-800 placeholder-stone-400 h-9"
                             oninput="runSearch()">
                     </div>
                     <div class="w-px h-6 bg-stone-200"></div>
-                    <select id="catFilter" onchange="runSearch()" class="bg-transparent border-none text-xs font-medium text-stone-600 outline-none cursor-pointer hover:text-stone-900 pr-2">
+                    <select id="catFilter" onchange="runSearch()"
+                        class="bg-transparent border-none text-xs font-medium text-stone-600 outline-none cursor-pointer hover:text-stone-900 pr-2">
                         <option value="all">Tutte</option>
                         <option value="User Added">Le Mie Fonti</option>
                         <option value="Primary Sources">Primarie</option>
@@ -207,7 +428,9 @@
                         <option value="Ecological Philosophy">Ecologia</option>
                         <option value="Background">Background</option>
                     </select>
-                    <button onclick="addNewSourcePrompt()" class="ml-2 bg-stone-900 text-white w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black transition-colors text-lg font-bold" title="Aggiungi Libro">+</button>
+                    <button onclick="addNewSourcePrompt()"
+                        class="ml-2 bg-stone-900 text-white w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black transition-colors text-lg font-bold"
+                        title="Aggiungi Libro">+</button>
                 </div>
                 <div class="grid grid-cols-1 gap-3" id="results-container"></div>
             </div>
@@ -215,10 +438,12 @@
             <div id="view-concepts" class="hidden space-y-8 fade-in pb-20 max-w-5xl mx-auto">
                 <div class="border-b border-stone-100 pb-6 mb-6">
                     <h2 class="text-3xl font-medium text-stone-900 serif">Il Tessitore</h2>
-                    <p class="text-stone-500 text-sm mt-2">Collega i punti. Clicca su un tag per vedere le connessioni.</p>
+                    <p class="text-stone-500 text-sm mt-2">Collega i punti. Clicca su un tag per vedere le connessioni.
+                    </p>
                 </div>
                 <div class="bg-stone-50 border border-stone-200 p-6 rounded-xl mb-8">
-                    <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-4">Mappa Concettuale</h3>
+                    <h3 class="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-4">Mappa Concettuale
+                    </h3>
                     <div id="concept-cloud" class="flex flex-wrap gap-2"></div>
                 </div>
                 <div id="concept-results" class="grid grid-cols-1 gap-3"></div>
@@ -227,24 +452,36 @@
             <div id="view-journal" class="hidden space-y-8 fade-in pb-20 max-w-3xl mx-auto">
                 <div class="border-b border-stone-100 pb-6 mb-6">
                     <h2 class="text-3xl font-medium text-stone-900 serif">Diario di Bordo</h2>
-                    <p class="text-stone-500 text-sm mt-2">Usa <span class="text-rose-500 bg-rose-50 px-1 rounded">@Autore</span> per collegare le note.</p>
+                    <p class="text-stone-500 text-sm mt-2">Usa <span
+                            class="text-rose-500 bg-rose-50 px-1 rounded">@Autore</span> per collegare le note.</p>
                 </div>
                 <div class="pro-card p-1">
-                    <textarea id="journal-entry" class="w-full h-32 p-4 bg-white rounded-t-xl border-none outline-none resize-none text-sm text-stone-700 placeholder-stone-300" placeholder="Caro Jesse, oggi ho capito che..."></textarea>
+                    <textarea id="journal-entry"
+                        class="w-full h-32 p-4 bg-white rounded-t-xl border-none outline-none resize-none text-sm text-stone-700 placeholder-stone-300"
+                        placeholder="Caro Jesse, oggi ho capito che..."></textarea>
                     <div class="bg-stone-50 p-2 rounded-b-xl flex justify-end border-t border-stone-100">
-                        <button onclick="addJournalEntry()" class="bg-stone-900 text-white px-4 py-1.5 rounded-md text-xs font-medium hover:bg-black transition-colors">Salva Nota</button>
+                        <button onclick="addJournalEntry()"
+                            class="bg-stone-900 text-white px-4 py-1.5 rounded-md text-xs font-medium hover:bg-black transition-colors">Salva
+                            Nota</button>
                     </div>
                 </div>
-                <div id="journal-container" class="space-y-6 relative before:absolute before:left-4 before:top-0 before:h-full before:w-px before:bg-stone-200 pl-10"></div>
+                <div id="journal-container"
+                    class="space-y-6 relative before:absolute before:left-4 before:top-0 before:h-full before:w-px before:bg-stone-200 pl-10">
+                </div>
             </div>
 
             <div id="view-tracker" class="hidden space-y-8 fade-in pb-20 max-w-5xl mx-auto">
-                <div class="border-b border-stone-100 pb-6"><h2 class="text-3xl font-medium text-stone-900 serif">Word Tracker</h2></div>
+                <div class="border-b border-stone-100 pb-6">
+                    <h2 class="text-3xl font-medium text-stone-900 serif">Word Tracker</h2>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="pro-card p-6 rounded-xl col-span-1 h-fit">
                         <h4 class="font-bold text-stone-900 text-sm mb-4">Aggiornamento Quotidiano</h4>
-                        <input type="number" id="word-input" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg mb-4 text-sm outline-none focus:border-rose-300 transition-colors" placeholder="Totale parole oggi...">
-                        <button onclick="updateWordCount()" class="w-full bg-stone-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-black transition-colors">Registra</button>
+                        <input type="number" id="word-input"
+                            class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg mb-4 text-sm outline-none focus:border-rose-300 transition-colors"
+                            placeholder="Totale parole oggi...">
+                        <button onclick="updateWordCount()"
+                            class="w-full bg-stone-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-black transition-colors">Registra</button>
                     </div>
                     <div class="pro-card p-6 rounded-xl col-span-2"><canvas id="wordChart"></canvas></div>
                 </div>
@@ -252,82 +489,169 @@
 
             <div id="view-roadmap" class="hidden space-y-8 fade-in pb-40 min-h-full max-w-5xl mx-auto">
                 <div class="flex justify-between items-end border-b border-stone-100 pb-6">
-                    <div><h2 class="text-3xl font-medium text-stone-900 serif">Roadmap Strategica</h2><p class="text-stone-500 text-sm mt-1">Percorsi di ricerca per la Tesi.</p></div>
+                    <div>
+                        <h2 class="text-3xl font-medium text-stone-900 serif">Roadmap Tesi</h2>
+                        <p class="text-stone-500 text-sm mt-1">Seleziona la strategia per la tua Tesi di Laurea.</p>
+                    </div>
                 </div>
-                <div class="mb-8"><div class="relative"><select id="roadmapSelect" onchange="renderRoadmap()" class="w-full md:w-1/2 bg-white border border-stone-200 text-stone-900 font-medium text-sm px-4 py-3 rounded-lg outline-none cursor-pointer hover:border-stone-300 focus:ring-2 focus:ring-stone-100 appearance-none shadow-sm"><option value="A">Strategia A: Ontologica</option><option value="B">Strategia B: Tecno-Ecologica</option><option value="C">Strategia C: Politica</option><option value="custom">Strategia D: Personalizzata (Jesse AI)</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 md:right-1/2 mr-4">▼</div></div></div>
+                <div class="mb-8">
+                    <div class="relative"><select id="roadmapSelect" onchange="renderRoadmap()"
+                            class="w-full md:w-1/2 bg-white border border-stone-200 text-stone-900 font-medium text-sm px-4 py-3 rounded-lg outline-none cursor-pointer hover:border-stone-300 focus:ring-2 focus:ring-stone-100 appearance-none shadow-sm">
+                            <option value="A">Strategia A: Ontologica</option>
+                            <option value="B">Strategia B: Tecno-Ecologica</option>
+                            <option value="C">Strategia C: Politica</option>
+                            <option value="custom">Strategia D: Personalizzata (Jesse AI)</option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 md:right-1/2 mr-4">
+                            ▼</div>
+                    </div>
+                </div>
                 <div class="bg-stone-50 border border-stone-200 p-6 rounded-xl mb-8 flex flex-col gap-4">
-                    <div class="flex gap-4 items-start"><span class="text-2xl">💡</span><div class="flex-1"><h3 class="text-stone-900 font-bold text-sm uppercase tracking-wide mb-1" id="roadmap-title"></h3><p class="text-stone-600 text-sm leading-relaxed" id="roadmap-desc"></p></div></div>
-                    
+                    <div class="flex gap-4 items-start"><span class="text-2xl">💡</span>
+                        <div class="flex-1">
+                            <h3 class="text-stone-900 font-bold text-sm uppercase tracking-wide mb-1"
+                                id="roadmap-title"></h3>
+                            <p class="text-stone-600 text-sm leading-relaxed" id="roadmap-desc"></p>
+                        </div>
+                    </div>
+
                     <div id="roadmap-biblio" class="mt-4 pt-4 border-t border-stone-200 hidden">
-                        <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-2 block">Biblio Essenziale per questo percorso:</span>
+                        <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-2 block">Biblio
+                            Essenziale per questo percorso:</span>
                         <div id="roadmap-biblio-list" class="flex flex-wrap gap-2"></div>
                     </div>
 
                     <div id="custom-controls" class="hidden border-t border-stone-200 pt-4 flex gap-2 justify-end">
-                        <button onclick="generateCustomStrategy()" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-rose-600 transition-colors shadow-soft flex items-center gap-2">✨ Chiedi a Jesse</button>
-                        <button onclick="toggleEditMode()" class="bg-white border border-stone-300 text-stone-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-stone-50 transition-colors">✏️ Modifica</button>
+                        <button onclick="generateCustomStrategy()"
+                            class="bg-rose-500 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-rose-600 transition-colors shadow-soft flex items-center gap-2">✨
+                            Chiedi a Jesse</button>
+                        <button onclick="toggleEditMode()"
+                            class="bg-white border border-stone-300 text-stone-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-stone-50 transition-colors">✏️
+                            Modifica</button>
                     </div>
                 </div>
                 <div class="space-y-6" id="chapters-container"></div>
             </div>
 
+            <!-- NEW VIEW: COURSE DETAIL -->
+            <div id="view-course-detail" class="hidden space-y-8 fade-in pb-40 min-h-full max-w-5xl mx-auto">
+                <div class="flex justify-between items-end border-b border-stone-100 pb-6">
+                    <div>
+                        <button onclick="router('dashboard')"
+                            class="text-xs text-stone-400 font-bold uppercase tracking-wider mb-1 hover:text-stone-900">←
+                            Torna alla Dashboard</button>
+                        <h2 class="text-3xl font-medium text-stone-900 serif" id="course-title">Dettaglio Corso</h2>
+                        <p class="text-stone-500 text-sm mt-1" id="course-prof"></p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-mono text-rose-500 font-bold" id="course-date"></div>
+                        <span class="text-[10px] text-stone-400 uppercase font-bold">Data Esame</span>
+                    </div>
+                </div>
+
+                <div id="course-syllabus-container" class="space-y-6"></div>
+            </div>
+
             <div id="view-citations" class="hidden space-y-6 fade-in pb-20 max-w-5xl mx-auto">
                 <div class="flex justify-between items-center border-b border-stone-100 pb-6">
                     <h2 class="text-3xl font-medium text-stone-900 serif">Citation Manager</h2>
-                    <button onclick="downloadBibliography()" class="text-stone-600 text-xs font-bold border border-stone-200 px-3 py-1.5 rounded hover:bg-stone-50 transition-colors">📥 Export .txt</button>
+                    <button onclick="downloadBibliography()"
+                        class="text-stone-600 text-xs font-bold border border-stone-200 px-3 py-1.5 rounded hover:bg-stone-50 transition-colors">📥
+                        Export .txt</button>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
                     <div class="lg:col-span-1 pro-card flex flex-col overflow-hidden">
-                        <div class="p-3 bg-stone-50 border-b border-stone-100 flex justify-between items-center"><span class="font-semibold text-stone-500 text-[10px] uppercase tracking-wider">Fonti</span><button onclick="selectAllCitations()" class="text-rose-500 text-[10px] font-bold hover:underline">Seleziona Tutti</button></div>
+                        <div class="p-3 bg-stone-50 border-b border-stone-100 flex justify-between items-center"><span
+                                class="font-semibold text-stone-500 text-[10px] uppercase tracking-wider">Fonti</span><button
+                                onclick="selectAllCitations()"
+                                class="text-rose-500 text-[10px] font-bold hover:underline">Seleziona Tutti</button>
+                        </div>
                         <div class="flex-1 overflow-y-auto p-2 space-y-1" id="citation-list"></div>
                     </div>
                     <div class="lg:col-span-2 pro-card flex flex-col">
                         <div class="p-3 bg-stone-50 border-b border-stone-100 flex gap-4 items-center justify-between">
-                             <select id="citation-style" onchange="generateBibliography()" class="bg-white border border-stone-200 rounded px-2 py-1 text-xs outline-none text-stone-600"><option value="classic">🇮🇹 Classica (Note)</option><option value="apa">APA 7</option><option value="chicago">Chicago</option><option value="bibtex">BibTeX</option></select>
+                            <select id="citation-style" onchange="generateBibliography()"
+                                class="bg-white border border-stone-200 rounded px-2 py-1 text-xs outline-none text-stone-600">
+                                <option value="classic">🇮🇹 Classica (Note)</option>
+                                <option value="apa">APA 7</option>
+                                <option value="chicago">Chicago</option>
+                                <option value="bibtex">BibTeX</option>
+                            </select>
                             <div class="flex gap-2">
-                                <button onclick="copyFootnoteStyle()" class="text-xs font-bold text-rose-600 border border-rose-100 bg-rose-50 px-2 py-1 rounded hover:bg-rose-100">Copia Nota</button>
-                                <button onclick="copyCitationOutput()" class="text-xs font-bold text-stone-600 hover:text-stone-900">Copia Biblio</button>
+                                <button onclick="copyFootnoteStyle()"
+                                    class="text-xs font-bold text-rose-600 border border-rose-100 bg-rose-50 px-2 py-1 rounded hover:bg-rose-100">Copia
+                                    Nota</button>
+                                <button onclick="copyCitationOutput()"
+                                    class="text-xs font-bold text-stone-600 hover:text-stone-900">Copia Biblio</button>
                             </div>
                         </div>
-                        <textarea id="citation-output" class="flex-1 p-6 font-mono text-xs text-stone-600 outline-none resize-none bg-white" readonly placeholder="Output bibliografico..."></textarea>
+                        <textarea id="citation-output"
+                            class="flex-1 p-6 font-mono text-xs text-stone-600 outline-none resize-none bg-white"
+                            readonly placeholder="Output bibliografico..."></textarea>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="book-modal" class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
-            <div class="bg-white w-full max-w-2xl rounded-2xl shadow-float p-8 transform transition-all scale-100 border border-stone-100">
+        <div id="book-modal"
+            class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
+            <div
+                class="bg-white w-full max-w-2xl rounded-2xl shadow-float p-8 transform transition-all scale-100 border border-stone-100">
                 <div class="flex justify-between items-start mb-8">
-                    <div><h3 id="modal-title" class="text-2xl font-serif font-medium text-stone-900 mb-1"></h3><p id="modal-author" class="text-rose-500 text-sm font-medium"></p></div>
-                    <button onclick="closeModal()" class="text-stone-300 hover:text-stone-600 text-2xl leading-none">&times;</button>
+                    <div>
+                        <h3 id="modal-title" class="text-2xl font-serif font-medium text-stone-900 mb-1"></h3>
+                        <p id="modal-author" class="text-rose-500 text-sm font-medium"></p>
+                    </div>
+                    <button onclick="closeModal()"
+                        class="text-stone-300 hover:text-stone-600 text-2xl leading-none">&times;</button>
                 </div>
                 <div class="space-y-6">
-                    <div><label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Tag</label><input type="text" id="modal-tags" class="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 transition-colors" placeholder="#angoscia, #capitolo1..."></div>
-                    <div><label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Note personali</label><textarea id="modal-notes" class="w-full h-40 p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm resize-none outline-none focus:border-stone-400 transition-colors leading-relaxed"></textarea></div>
+                    <div><label
+                            class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Tag</label><input
+                            type="text" id="modal-tags"
+                            class="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 transition-colors"
+                            placeholder="#angoscia, #capitolo1..."></div>
+                    <div><label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Note
+                            personali</label><textarea id="modal-notes"
+                            class="w-full h-40 p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm resize-none outline-none focus:border-stone-400 transition-colors leading-relaxed"></textarea>
+                    </div>
                 </div>
                 <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-stone-100">
-                    <button onclick="askAIAboutBook()" class="px-4 py-2 bg-white border border-stone-200 text-stone-600 font-medium rounded-lg text-xs hover:border-rose-200 hover:text-rose-600 transition-all">Chiedi a Jesse</button>
-                    <button onclick="saveBookDetails()" class="px-6 py-2 bg-stone-900 text-white font-medium rounded-lg text-xs hover:bg-black transition-colors shadow-soft">Salva Modifiche</button>
+                    <button onclick="askAIAboutBook()"
+                        class="px-4 py-2 bg-white border border-stone-200 text-stone-600 font-medium rounded-lg text-xs hover:border-rose-200 hover:text-rose-600 transition-all">Chiedi
+                        a Jesse</button>
+                    <button onclick="saveBookDetails()"
+                        class="px-6 py-2 bg-stone-900 text-white font-medium rounded-lg text-xs hover:bg-black transition-colors shadow-soft">Salva
+                        Modifiche</button>
                 </div>
             </div>
         </div>
 
-        <div id="custom-modal" class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-             <div class="bg-white w-full max-w-lg rounded-2xl shadow-float p-8 border border-stone-100">
-                 <h3 class="text-xl font-serif font-bold mb-4">Genera Strategia con AI</h3>
-                 <p class="text-sm text-stone-600 mb-4">Descrivi brevemente a Jesse di cosa vuoi che parli la tua tesi.</p>
-                 <textarea id="custom-prompt-input" class="w-full h-32 p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm mb-4 outline-none focus:border-rose-300" placeholder="Es: Voglio esplorare il concetto di alienazione in Marx e Simondon..."></textarea>
-                 <div class="flex justify-end gap-2">
-                     <button onclick="document.getElementById('custom-modal').classList.add('hidden')" class="px-4 py-2 text-stone-500 text-xs font-bold hover:bg-stone-50 rounded-lg">Annulla</button>
-                     <button onclick="runCustomAiGeneration()" class="px-4 py-2 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600">Genera</button>
-                 </div>
-             </div>
+        <div id="custom-modal"
+            class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-lg rounded-2xl shadow-float p-8 border border-stone-100">
+                <h3 class="text-xl font-serif font-bold mb-4">Genera Strategia con AI</h3>
+                <p class="text-sm text-stone-600 mb-4">Descrivi brevemente a Jesse di cosa vuoi che parli la tua tesi.
+                </p>
+                <textarea id="custom-prompt-input"
+                    class="w-full h-32 p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm mb-4 outline-none focus:border-rose-300"
+                    placeholder="Es: Voglio esplorare il concetto di alienazione in Marx e Simondon..."></textarea>
+                <div class="flex justify-end gap-2">
+                    <button onclick="document.getElementById('custom-modal').classList.add('hidden')"
+                        class="px-4 py-2 text-stone-500 text-xs font-bold hover:bg-stone-50 rounded-lg">Annulla</button>
+                    <button onclick="runCustomAiGeneration()"
+                        class="px-4 py-2 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600">Genera</button>
+                </div>
+            </div>
         </div>
 
-        <div id="chat-widget" class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden origin-bottom-right transition-all duration-300">
+        <div id="chat-widget"
+            class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden origin-bottom-right transition-all duration-300">
             <div class="bg-stone-900 p-4 flex justify-between items-center shrink-0 w-full text-white">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-rose-500 relative shrink-0">
+                    <div
+                        class="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-rose-500 relative shrink-0">
                         <img id="jesse-avatar" src="" alt="Jesse" class="w-full h-full object-cover">
                     </div>
                     <div class="flex flex-col">
@@ -336,28 +660,42 @@
                     </div>
                 </div>
                 <div class="flex gap-1">
-                    <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors" title="Pulisci Chat">🗑️</button>
-                    <button onclick="toggleChat()" class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors text-lg font-bold leading-none" title="Chiudi">×</button>
+                    <button onclick="document.getElementById('chat-messages').innerHTML=''"
+                        class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors"
+                        title="Pulisci Chat">🗑️</button>
+                    <button onclick="toggleChat()"
+                        class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors text-lg font-bold leading-none"
+                        title="Chiudi">×</button>
                 </div>
             </div>
             <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
                 <div class="flex gap-3 fade-in mt-2">
-                    <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0"><img src="jesse/psicologo.jpeg" class="w-full h-full object-cover jesse-mini-avatar"></div>
-                    <div class="p-3 rounded-2xl text-sm max-w-[85%] msg-jesse">Bau! Ciao padrona, io sono Jesse. Sto analizzando la tua richiesta... Se ti è stato utile padrona, dammi del cibo, ho fame!!</div>
+                    <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0"><img
+                            src="jesse/psicologo.jpeg" class="w-full h-full object-cover jesse-mini-avatar"></div>
+                    <div class="p-3 rounded-2xl text-sm max-w-[85%] msg-jesse">Bau! Ciao padrona, io sono Jesse. Sto
+                        analizzando la tua richiesta... Se ti è stato utile padrona, dammi del cibo, ho fame!!</div>
                 </div>
             </div>
             <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
-                <button onclick="setMode('Socrajess')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrajess</button>
-                <button onclick="setMode('critic')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Relatore</button>
-                <button onclick="setMode('discuss')" class="whitespace-nowrap bg-stone-800 text-white hover:bg-stone-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors">🎓 Discussione</button>
+                <button onclick="setMode('Socrajess')"
+                    class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrajess</button>
+                <button onclick="setMode('critic')"
+                    class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Relatore</button>
+                <button onclick="setMode('discuss')"
+                    class="whitespace-nowrap bg-stone-800 text-white hover:bg-stone-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors">🎓
+                    Discussione</button>
             </div>
             <div class="p-3 bg-white border-t border-stone-100 shrink-0 relative">
-                <input type="text" id="chat-input" placeholder="Chiedi a Jesse..." class="w-full pl-4 pr-12 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 focus:bg-white outline-none transition-all placeholder-stone-400 text-stone-800" onkeypress="if(event.key==='Enter') sendChat()">
-                <button onclick="sendChat()" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors shadow-sm text-sm">➤</button>
+                <input type="text" id="chat-input" placeholder="Chiedi a Jesse..."
+                    class="w-full pl-4 pr-12 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 focus:bg-white outline-none transition-all placeholder-stone-400 text-stone-800"
+                    onkeypress="if(event.key==='Enter') sendChat()">
+                <button onclick="sendChat()"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors shadow-sm text-sm">➤</button>
             </div>
         </div>
-        
-        <button onclick="toggleChat()" class="fixed bottom-6 right-6 w-14 h-14 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group overflow-hidden border-2 border-white">
+
+        <button onclick="toggleChat()"
+            class="fixed bottom-6 right-6 w-14 h-14 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group overflow-hidden border-2 border-white">
             <img src="" class="w-full h-full object-cover jesse-mini-avatar" alt="Chat">
         </button>
 
@@ -369,204 +707,80 @@
 
     <script>
         // --- CONFIGURAZIONE JESSE ---
-        const JESSE_IMG = "jesse/psicologo.jpeg"; 
-        
+        const JESSE_IMG = "jesse/psicologo.jpeg";
+
         // --- ALBUM FOTO JESSE (67 FOTO) ---
         const JESSE_GALLERY = [
             "jesse/WhatsApp Image 2026-01-27 at 15.31.41.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.45.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.51 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.51.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.52.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.54 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.54.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.55.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.56.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.57 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.57.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.58.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.59.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.00 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.00.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.01.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.04 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.04.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.06.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.07 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.07.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.09.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.10 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.10.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.13.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.15.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.16 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.16.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.18.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.19.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.20.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.21 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.21.jpeg"
         ];
 
         // --- VARIABILI GLOBALI (UNICA DICHIARAZIONE) ---
-        let biblioData = []; 
+        let biblioData = [];
         let currentBookId = null;
         let wordHistory = JSON.parse(localStorage.getItem('word_history')) || [];
         let journalEntries = JSON.parse(localStorage.getItem('journal_entries')) || [];
-        let aiMode = 'chat'; 
-        let customStrategy = { title: "Strategia D: Personalizzata", desc: "Creata da Jesse su misura.", chapters: [] };
+        let aiMode = 'chat';
+        let currentCourseId = null;
         let chartInstance = null;
+        let customStrategy = { title: "Strategia Personalizzata", desc: "Generata da Jesse AI.", top_sources: [], chapters: [] };
+
+
+        // NEW: Advanced Source Management State
+        let pinnedSources = JSON.parse(localStorage.getItem('millino_pinned')) || [];
+        let deletedSources = JSON.parse(localStorage.getItem('millino_deleted')) || [];
+        let aiSelectedSources = []; // Temporary, per session
 
         // --- MASTER DB (85 Fonti) ---
-        const MASTER_DB = [
-            { id: "S01", author: "Simondon, G.", year: "2005", title: "L'individuation à la lumière des notions de forme et d'information", pub: "Jérôme Millon", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Il testo base sull'individuatione." },
-            { id: "S02", author: "Simondon, G.", year: "1958", title: "Du mode d'existence des objets techniques", pub: "Aubier", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Genesi tecnica e alienazione." },
-            { id: "S03", author: "Simondon, G.", year: "1989", title: "L'individuation psychique et collective", pub: "Aubier", cat: "Primary Sources", prio: "HIGH", desc: "Transindividuale e affettività." },
-            { id: "S04", author: "Simondon, G.", year: "2008", title: "Imagination et invention", pub: "La Transparence", cat: "Primary Sources", prio: "HIGH", desc: "Ciclo delle immagini." },
-            { id: "S05", author: "Simondon, G.", year: "2010", title: "Communication et information", pub: "La Transparence", cat: "Primary Sources", prio: "MEDIUM", desc: "Cibernetica." },
-            { id: "S11", author: "Simondon, G.", year: "1960", title: "Forme, information, potentiels", pub: "Bulletin SFP", cat: "Primary Sources", prio: "HIGH", desc: "Articolo chiave." },
-            { id: "S13", author: "Simondon, G.", year: "1953", title: "La mentalité technique", pub: "PUF", cat: "Primary Sources", prio: "HIGH", desc: "Schemi cognitivi." },
-            { id: "S06", author: "Simondon, G.", year: "2006", title: "L'invention dans les techniques", pub: "Seuil", cat: "Primary Sources", prio: "MEDIUM", desc: "L'atto inventivo." },
-            { id: "S07", author: "Simondon, G.", year: "2014", title: "Sur la technique", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Saggi vari." },
-            { id: "S08", author: "Simondon, G.", year: "2015", title: "Sur la psychologie", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Scritti psicologici." },
-            { id: "S09", author: "Simondon, G.", year: "2016", title: "Sur la philosophie", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Storia della filosofia." },
-            { id: "S10", author: "Simondon, G.", year: "2004", title: "Deux leçons sur l'animal et l'homme", pub: "Ellipses", cat: "Primary Sources", prio: "MEDIUM", desc: "Antropologia." },
-            { id: "S12", author: "Simondon, G.", year: "1965", title: "Culture et technique", pub: "Bulletin I.P.S.O.", cat: "Primary Sources", prio: "MEDIUM", desc: "Rapporto cultura/tecnica." },
-            { id: "S14", author: "Simondon, G.", year: "1983", title: "L'histoire de la notion d'individu", pub: "Vrin", cat: "Primary Sources", prio: "MEDIUM", desc: "Corso storico." },
-            { id: "S15", author: "Simondon, G.", year: "1992", title: "Perception et modulation", pub: "Vrin", cat: "Primary Sources", prio: "MEDIUM", desc: "Percezione." },
-            { id: "D01", author: "Deleuze, G.", year: "1968", title: "Différence et répétition", pub: "PUF", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Ontologia della differenza." },
-            { id: "D02", author: "Deleuze, G.", year: "1969", title: "Logique du sens", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Evento e singolarità." },
-            { id: "D04", author: "Deleuze, G. & Guattari, F.", year: "1980", title: "Mille Plateaux", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Rizoma e agencement." },
-            { id: "D05", author: "Deleuze, G.", year: "1988", title: "Le Pli", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Modulazione." },
-            { id: "D03", author: "Deleuze, G. & Guattari, F.", year: "1972", title: "L'Anti-Œdipe", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Macchine desideranti." },
-            { id: "D06", author: "Deleuze, G.", year: "2002", title: "L'île déserte", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Testi vari." },
-            { id: "D07", author: "Deleuze, G.", year: "1966", title: "Le Bergsonisme", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Virtuale." },
-            { id: "D08", author: "Deleuze, G.", year: "1981", title: "Spinoza: Philosophie pratique", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Affetti." },
-            { id: "D09", author: "Deleuze, G.", year: "1990", title: "Pourparlers", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Controllo." },
-            { id: "D10", author: "Deleuze, G. & Guattari, F.", year: "1991", title: "Qu'est-ce que la philosophie?", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Concetti." },
-            { id: "D11", author: "Deleuze, G.", year: "1962", title: "Nietzsche et la philosophie", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Forza." },
-            { id: "D12", author: "Deleuze, G.", year: "1983", title: "Cinéma 1: L'Image-Mouvement", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Immagine." },
-            { id: "D13", author: "Deleuze, G.", year: "1985", title: "Cinéma 2: L'Image-Temps", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Tempo." },
-            { id: "D14", author: "Deleuze, G.", year: "1964", title: "Proust et les signes", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Segni." },
-            { id: "D15", author: "Deleuze, G.", year: "2003", title: "Deux régimes de fous", pub: "Minuit", cat: "Primary Sources", prio: "LOW", desc: "Postumi." },
-            { id: "C01", author: "Combes, M.", year: "1999", title: "Simondon. Individu et collectivité", pub: "PUF", cat: "Comparative Studies", prio: "ESSENTIAL", desc: "Politica transindividuale." },
-            { id: "C02", author: "Barthélémy, J.H.", year: "2005", title: "Penser l'individuation", pub: "L'Harmattan", cat: "Comparative Studies", prio: "HIGH", desc: "Studio rigoroso." },
-            { id: "C03", author: "Barthélémy, J.H.", year: "2008", title: "Simondon ou l'encyclopédisme génétique", pub: "PUF", cat: "Comparative Studies", prio: "HIGH", desc: "Sistematica." },
-            { id: "C04", author: "Garelli, G.", year: "2004", title: "Il problema dell'individuazione", pub: "Aut Aut", cat: "Comparative Studies", prio: "HIGH", desc: "Confronto." },
-            { id: "C05", author: "Toscano, A.", year: "2006", title: "The Theatre of Production", pub: "Palgrave", cat: "Comparative Studies", prio: "HIGH", desc: "Ontologia produttiva." },
-            { id: "C06", author: "Sauvagnargues, A.", year: "2009", title: "Deleuze, l'empirisme transcendantal", pub: "PUF", cat: "Comparative Studies", prio: "MEDIUM", desc: "Empirismo." },
-            { id: "C07", author: "Chabot, P.", year: "2003", title: "La philosophie de Simondon", pub: "Vrin", cat: "Comparative Studies", prio: "MEDIUM", desc: "Intro." },
-            { id: "C08", author: "De Boever, A.", year: "2013", title: "Gilbert Simondon: Being and Technology", pub: "Edinburgh UP", cat: "Comparative Studies", prio: "MEDIUM", desc: "Tecnica." },
-            { id: "C09", author: "Bardin, A.", year: "2015", title: "Epistemology and Political Philosophy in Simondon", pub: "Springer", cat: "Comparative Studies", prio: "HIGH", desc: "Politica." },
-            { id: "C10", author: "Vignola, P.", year: "2011", title: "La lingua animale", pub: "Quodlibet", cat: "Comparative Studies", prio: "MEDIUM", desc: "Animalità." },
-            { id: "C11", author: "Montebello, P.", year: "2002", title: "L'autre métaphysique", pub: "Desclée", cat: "Comparative Studies", prio: "HIGH", desc: "Natura." },
-            { id: "C12", author: "Roffe, J.", year: "2012", title: "Badiou's Deleuze", pub: "Acumen", cat: "Comparative Studies", prio: "LOW", desc: "Critica." },
-            { id: "C13", author: "Stiegler, B.", year: "2018", title: "The Age of Disruption", pub: "Polity", cat: "Comparative Studies", prio: "MEDIUM", desc: "Disagio." },
-            { id: "C14", author: "Massumi, B.", year: "2002", title: "Parables for the Virtual", pub: "Duke UP", cat: "Comparative Studies", prio: "MEDIUM", desc: "Virtuale." },
-            { id: "C15", author: "Guchet, X.", year: "2010", title: "Pour un humanisme technologique", pub: "PUF", cat: "Comparative Studies", prio: "HIGH", desc: "Umanesimo." },
-            { id: "T01", author: "Stiegler, B.", year: "1994", title: "La technique et le temps 1", pub: "Galilée", cat: "Philosophy of Technology", prio: "ESSENTIAL", desc: "Epifilogenesi." },
-            { id: "T03", author: "Hui, Y.", year: "2016", title: "On the Existence of Digital Objects", pub: "Minnesota UP", cat: "Philosophy of Technology", prio: "HIGH", desc: "Oggetti digitali." },
-            { id: "T02", author: "Stiegler, B.", year: "1996", title: "La technique et le temps 2", pub: "Galilée", cat: "Philosophy of Technology", prio: "HIGH", desc: "Disorientamento." },
-            { id: "T04", author: "Hui, Y.", year: "2017", title: "The Question Concerning Technology in China", pub: "Urbanomic", cat: "Philosophy of Technology", prio: "HIGH", desc: "Cosmotecnica." },
-            { id: "T05", author: "Hui, Y.", year: "2019", title: "Recursivity and Contingency", pub: "Rowman", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Ricorsività." },
-            { id: "T06", author: "Heidegger, M.", year: "1954", title: "Die Frage nach der Technik", pub: "Neske", cat: "Philosophy of Technology", prio: "HIGH", desc: "Gestell." },
-            { id: "T07", author: "Ellul, J.", year: "1954", title: "La Technique ou l'Enjeu du siècle", pub: "Colin", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Sistema tecnico." },
-            { id: "T08", author: "Wiener, N.", year: "1948", title: "Cybernetics", pub: "MIT", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Cibernetica." },
-            { id: "T09", author: "Leroi-Gourhan, A.", year: "1964", title: "Le Geste et la Parole", pub: "Albin Michel", cat: "Philosophy of Technology", prio: "HIGH", desc: "Evoluzione." },
-            { id: "T10", author: "Simondon, G.", year: "1959", title: "L'Amplification dans les processus d'information", pub: "-", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Amplificazione." },
-            { id: "T11", author: "Feenberg, A.", year: "1999", title: "Questioning Technology", pub: "Routledge", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Teoria critica." },
-            { id: "T12", author: "Ihde, D.", year: "1990", title: "Technology and the Lifeworld", pub: "Indiana UP", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Post-fenomenologia." },
-            { id: "T13", author: "Verbeek, P.P.", year: "2005", title: "What Things Do", pub: "Penn State", cat: "Philosophy of Technology", prio: "LOW", desc: "Mediazione." },
-            { id: "T14", author: "Hayles, N.K.", year: "1999", title: "How We Became Posthuman", pub: "Chicago UP", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Posthuman." },
-            { id: "T15", author: "Kittler, F.", year: "1986", title: "Grammophon, Film, Typewriter", pub: "Brinkmann", cat: "Philosophy of Technology", prio: "LOW", desc: "Media." },
-            { id: "E01", author: "Guattari, F.", year: "1989", title: "Les trois écologies", pub: "Galilée", cat: "Ecological Philosophy", prio: "ESSENTIAL", desc: "Ecosofia." },
-            { id: "E02", author: "Guattari, F.", year: "1992", title: "Chaosmose", pub: "Galilée", cat: "Ecological Philosophy", prio: "HIGH", desc: "Caosmosi." },
-            { id: "E03", author: "Haraway, D.", year: "2016", title: "Staying with the Trouble", pub: "Duke UP", cat: "Ecological Philosophy", prio: "HIGH", desc: "Chthulucene." },
-            { id: "E04", author: "Bennett, J.", year: "2010", title: "Vibrant Matter", pub: "Duke UP", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Materia." },
-            { id: "E05", author: "Morton, T.", year: "2010", title: "The Ecological Thought", pub: "Harvard UP", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Dark ecology." },
-            { id: "E06", author: "Latour, B.", year: "1991", title: "Nous n'avons jamais été modernes", pub: "La Découverte", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Modernità." },
-            { id: "E07", author: "Latour, B.", year: "1999", title: "Politiques de la nature", pub: "La Découverte", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Politica natura." },
-            { id: "E08", author: "Descola, P.", year: "2005", title: "Par-delà nature et culture", pub: "Gallimard", cat: "Ecological Philosophy", prio: "HIGH", desc: "Natura/Cultura." },
-            { id: "E09", author: "Serres, M.", year: "1990", title: "Le Contrat naturel", pub: "Bourin", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Contratto." },
-            { id: "E10", author: "Stengers, I.", year: "2009", title: "Au temps des catastrophes", pub: "La Découverte", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Gaia." },
-            { id: "E11", author: "Braidotti, R.", year: "2013", title: "The Posthuman", pub: "Polity", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Nomadismo." },
-            { id: "E12", author: "Citton, Y.", year: "2014", title: "Pour une écologie de l'attention", pub: "Seuil", cat: "Ecological Philosophy", prio: "LOW", desc: "Attenzione." },
-            { id: "E13", author: "Hui, Y.", year: "2021", title: "Art and Cosmotechnics", pub: "Minnesota UP", cat: "Ecological Philosophy", prio: "HIGH", desc: "Arte." },
-            { id: "E14", author: "Tsing, A.", year: "2015", title: "The Mushroom at the End of the World", pub: "Princeton UP", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Fungo." },
-            { id: "E15", author: "Viveiros de Castro, E.", year: "2009", title: "Métaphysiques cannibales", pub: "PUF", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Prospettivismo." },
-            { id: "B01", author: "Bergson, H.", year: "1907", title: "L'évolution créatrice", pub: "Alcan", cat: "Background", prio: "HIGH", desc: "Slancio vitale." },
-            { id: "B02", author: "Spinoza, B.", year: "1677", title: "Ethica", pub: "-", cat: "Background", prio: "HIGH", desc: "Sostanza." },
-            { id: "B03", author: "Canguilhem, G.", year: "1952", title: "La connaissance de la vie", pub: "Vrin", cat: "Background", prio: "HIGH", desc: "Normatività." },
-            { id: "B04", author: "Merleau-Ponty, M.", year: "1945", title: "Phénoménologie de la perception", pub: "Gallimard", cat: "Background", prio: "MEDIUM", desc: "Corpo." },
-            { id: "B05", author: "Ruyer, R.", year: "1952", title: "Néo-finalisme", pub: "PUF", cat: "Background", prio: "MEDIUM", desc: "Embriogenesi." },
-            { id: "B06", author: "Whitehead, A.N.", year: "1929", title: "Process and Reality", pub: "Macmillan", cat: "Background", prio: "MEDIUM", desc: "Processo." },
-            { id: "B07", author: "Bachelard, G.", year: "1934", title: "Le nouvel esprit scientifique", pub: "PUF", cat: "Background", prio: "MEDIUM", desc: "Epistemologia." },
-            { id: "B08", author: "Nietzsche, F.", year: "1887", title: "Zur Genealogie der Moral", pub: "-", cat: "Background", prio: "MEDIUM", desc: "Genealogia." },
-            { id: "B09", author: "Leibniz, G.W.", year: "1714", title: "Monadologie", pub: "-", cat: "Background", prio: "MEDIUM", desc: "Monade." },
-            { id: "B10", author: "Uexküll, J. von", year: "1934", title: "Streifzüge durch die Umwelten", pub: "-", cat: "Background", prio: "MEDIUM", desc: "Umwelt." }
-        ];
-
         // --- ROADMAP DENSA (Con Obiettivi e Metodo) ---
         let detailedRoadmaps = {
             A: {
                 title: "Strategia A: Ontologica (Simondon/Deleuze)",
-                desc: "Un'indagine sui fondamenti dell'essere: dal 'principio' al 'processo'. Questa strategia decostruisce l'individuo statico per rivelare il divenire preindividuale.",
-                top_sources: ["S01", "D01", "S02", "D13", "S11"], 
+                desc: "Un'indagine sui fondamenti dell'essere: dal 'principio' al 'processo'.",
+                top_sources: ["S01", "D01", "S02", "D13", "S11"],
                 chapters: [
-                    { 
-                        title: "1. La Crisi dell'Ilemorfismo", 
-                        goal: "Dimostrare perché lo schema forma-materia è insufficiente per spiegare la realtà.",
-                        focus: "Leggi l'Introduzione di (S01) e il Cap. 1 di (D01). Cerca le definizioni di 'Principio di Individuazione' vs 'Operazione di Individuazione'.",
-                        concepts: "Preindividuale (Realtà più che una, carica di potenziale), Metastabilità (Equilibrio instabile pronto a mutare).",
-                        method: "Confronta la critica di Simondon allo stampo (moule) con la critica di Deleuze alla rappresentazione.",
+                    {
+                        title: "1. La Crisi dell'Ilemorfismo",
+                        goal: "Dimostrare perché lo schema forma-materia è insufficiente.",
+                        focus: "Leggi l'Introduzione di (S01) e il Cap. 1 di (D01).",
+                        concepts: "Preindividuale, Metastabilità.",
+                        method: "Confronta Simondon vs Deleuze.",
                         texts: ["S01", "D01", "S11"]
                     },
                     {
                         title: "2. Il Tempo come Genesi",
-                        goal: "Analizzare come il tempo non sia un contenitore in cui avvengono le cose, ma il risultato del processo stesso.",
-                        focus: "Studia la 'Cronogenesi' in (S01) e l'Immagine-Cristallo in (D13).",
-                        concepts: "Transduzione (Operazione che si propaga da vicino a vicino), Aion (Il tempo dell'evento illimitato).",
-                        method: "Collega la ritenzione biologica di Simondon con la sintesi del tempo in Deleuze.",
+                        goal: "Analizzare come il tempo sia risultato del processo.",
+                        focus: "Cronogenesi (S01) e Immagine-Cristallo (D13).",
+                        concepts: "Transduzione, Aion.",
+                        method: "Ritenzione biologica vs Sintesi del tempo.",
                         texts: ["S01", "D13", "D07"]
                     },
                     {
                         title: "3. Etica del Divenire",
-                        goal: "Se l'individuo è un processo, come bisogna vivere? L'etica come accompagnamento del potenziale.",
-                        focus: "Analizza le note sull'Angoscia nel soggetto (S03) e il concetto di 'Amor Fati' (D02).",
-                        concepts: "Evento (Ciò che accade e ci trasforma), Divenire-Impercettibile (Perdere l'identità rigida).",
-                        method: "Definisci l'etica non come morale, ma come 'capacità di essere affetti'.",
+                        goal: "L'etica come accompagnamento del potenziale.",
+                        focus: "Angoscia (S03) e Amor Fati (D02).",
+                        concepts: "Evento, Divenire-Impercettibile.",
+                        method: "Etica come capacità di essere affetti.",
                         texts: ["D02", "S03", "D08"]
                     }
                 ]
             },
             B: {
                 title: "Strategia B: Tecno-Ecologica (Stiegler/Hui)",
-                desc: "L'oggetto tecnico non è uno strumento neutro, ma il milieu in cui evolviamo. Analisi della crisi ecologica e tecnologica.",
+                desc: "L'oggetto tecnico come milieu. Crisi ecologica e tecnologica.",
                 top_sources: ["S02", "T01", "E01", "T03", "T04"],
                 chapters: [
-                    { 
-                        title: "1. L'Oggetto Tecnico", 
-                        goal: "Definire lo statuto ontologico della macchina: non utensile, ma mediatore.",
-                        focus: "Concentrati sulla Parte I di (S02): differenza tra Elemento, Individuo e Insieme tecnico.",
-                        concepts: "Concretizzazione (Convergenza funzionale interna), Milieu Associato (L'ambiente creato dalla macchina).",
-                        method: "Usa l'esempio della Turbina Guimbal (S02) per spiegare l'evoluzione tecnica.",
-                        texts: ["S02", "T10", "S13"]
-                    },
-                    {
-                        title: "2. Cosmotecniche e Diversità",
-                        goal: "Superare l'idea di una tecnologia universale unica per riscoprire le tecniche locali.",
-                        focus: "Leggi l'introduzione di (T04) di Yuk Hui. Cos'è la cosmotecnica?",
-                        concepts: "Cosmotecnica (Unificazione di cosmo e morale tramite la tecnica), Epifilogenesi (Evoluzione della vita tramite strumenti).",
-                        method: "Critica la visione di Heidegger (T06) usando gli argomenti di Hui.",
-                        texts: ["T03", "T04", "T06"]
-                    },
-                    {
-                        title: "3. Terapia dell'Antropocene",
-                        goal: "Proporre nuove pratiche di cura in un mondo tossico.",
-                        focus: "Le tre ecologie di Guattari (E01) e il concetto di Farmaco in Stiegler (T01).",
-                        concepts: "Pharmakon (La tecnica è sia veleno che cura), Ecosofia (Articolazione etica-politica-estetica).",
-                        method: "Sintetizza come la cura di sé diventi cura del mondo.",
-                        texts: ["T01", "E01", "E03"]
-                    }
+                    { title: "1. L'Oggetto Tecnico", goal: "Ontologia della macchina.", focus: "Parte I di (S02).", texts: ["S02", "T10"] },
+                    { title: "2. Cosmotecniche", goal: "Tecniche locali vs universali.", focus: "Intro (T04).", texts: ["T03", "T04"] },
+                    { title: "3. Terapia Antropocene", goal: "Pratiche di cura.", focus: "Tre ecologie (E01).", texts: ["T01", "E01"] }
                 ]
             },
             C: {
-                title: "Strategia C: Politica del Transindividuale",
-                desc: "Dal controllo cibernetico alla liberazione collettiva. Come organizzarsi politicamente oggi?",
-                top_sources: ["S03", "D09", "C01", "D04", "S05"],
+                title: "Strategia C: Politica",
+                desc: "Dal controllo alla liberazione collettiva.",
+                top_sources: ["S03", "D09", "C01"],
                 chapters: [
-                    { 
-                        title: "1. Mappare il Controllo", 
-                        goal: "Capire come il potere moderno non disciplina più i corpi, ma modula le informazioni.",
-                        focus: "Il 'Poscritto sulle società di controllo' in (D09) e la Cibernetica in (S05).",
-                        concepts: "Dividuale (Dati smembrati dell'individuo), Modulazione (Controllo continuo e variabile).",
-                        method: "Confronta il Panopticon (Foucault) con i Big Data attuali.",
-                        texts: ["D09", "S05", "T08"]
-                    },
-                    {
-                        title: "2. Il Collettivo Transindividuale",
-                        goal: "L'unica vera politica è quella che non sopprime l'individuo ma lo espande.",
-                        focus: "Il concetto di 'Transindividuale' in (S03) e la lettura di Muriel Combes (C01).",
-                        concepts: "Transindividuale (Relazione che costituisce gli individui), Angoscia (Segnale di un salto di fase mancato).",
-                        method: "Analizza come l'emozione sia il collante del collettivo.",
-                        texts: ["S03", "C01", "C09"]
-                    },
-                    {
-                        title: "3. Macchine da Guerra",
-                        goal: "Strategie di resistenza attiva e creativa.",
-                        focus: "Il Trattato di Nomadologia in 'Mille Piani' (D04).",
-                        concepts: "Rizoma (Connessione non gerarchica), Agencement (Disposizione collettiva di enunciazione).",
-                        method: "Descrivi una forma di organizzazione politica 'nomade' vs 'statale'.",
-                        texts: ["D04", "S02", "C05"]
-                    }
+                    { title: "1. Mappare il Controllo", goal: "Società di controllo.", focus: "Poscritto (D09).", texts: ["D09", "S05"] },
+                    { title: "2. Transindividuale", goal: "Politica espansiva.", focus: "Transindividuale (S03).", texts: ["S03", "C01"] }
                 ]
             }
         };
@@ -575,11 +789,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Setup Immagini
             const mainAvatar = document.getElementById('jesse-avatar');
-            if(mainAvatar) mainAvatar.src = JESSE_IMG;
+            if (mainAvatar) mainAvatar.src = JESSE_IMG;
             document.querySelectorAll('.jesse-mini-avatar').forEach(img => img.src = JESSE_IMG);
-            
+
             // Avvio App
-            mergeData(); 
+            mergeData();
             initApp();
             initAudio();
         });
@@ -588,7 +802,7 @@
         function mergeData() {
             const savedProgress = JSON.parse(localStorage.getItem('millino_progress')) || [];
             const savedCustomBooks = JSON.parse(localStorage.getItem('millino_custom_books')) || [];
-            
+
             let mergedMaster = MASTER_DB.map(m => {
                 const s = savedProgress.find(x => x.id === m.id);
                 return s ? { ...m, ...s } : { ...m, status: 'todo', notes: '', tags: [] };
@@ -596,9 +810,11 @@
 
             // Combina Custom + Master
             biblioData = [...savedCustomBooks, ...mergedMaster];
-            
+
+            // OLD Saved Data Compat if needed, but COURSES are static now.
+            // Still loading progress
             const savedCustomStrategy = localStorage.getItem('custom_roadmap');
-            if(savedCustomStrategy) customStrategy = JSON.parse(savedCustomStrategy);
+            if (savedCustomStrategy) customStrategy = JSON.parse(savedCustomStrategy);
         }
 
         function saveData() {
@@ -606,50 +822,136 @@
             localStorage.setItem('millino_progress', JSON.stringify(progress));
             const customBooks = biblioData.filter(b => !MASTER_DB.some(m => m.id === b.id));
             localStorage.setItem('millino_custom_books', JSON.stringify(customBooks));
+
+            // NEW: Persist Pin/Delete
+            localStorage.setItem('millino_pinned', JSON.stringify(pinnedSources));
+            localStorage.setItem('millino_deleted', JSON.stringify(deletedSources));
         }
 
-        function forceReset() { if(confirm("Vuoi resettare tutto?")) { localStorage.removeItem('millino_progress'); localStorage.removeItem('millino_custom_books'); location.reload(); } }
-        
-        function initApp() { 
-            renderDeadline(); 
-            router('dashboard'); 
-            runSearch();      // <--- CORRETTO (Era renderDatabase)
-            renderStats(); 
-            renderJournal(); 
-            renderTracker(); 
-            renderRoadmap(); 
-            renderCitationsList(); 
-            renderConcepts(); 
+        function forceReset() { if (confirm("Vuoi resettare tutto?")) { localStorage.removeItem('millino_progress'); localStorage.removeItem('millino_custom_books'); localStorage.removeItem('millino_pinned'); localStorage.removeItem('millino_deleted'); localStorage.removeItem('custom_roadmap'); location.reload(); } }
+
+        function initApp() {
+            renderDashboard();
+            router('dashboard');
+            runSearch();
+            renderStats();
+            renderJournal();
+            renderTracker();
+            renderRoadmap(); // Initial render might be empty if no course selected? Or default
+            renderCitationsList();
+            renderConcepts();
         }
-        function router(v) { 
-            ['dashboard', 'database', 'journal', 'tracker', 'roadmap', 'citations', 'concepts'].forEach(x => { 
-                document.getElementById('view-'+x).classList.add('hidden'); 
-                document.getElementById('nav-'+x).classList.remove('nav-active'); 
-            }); 
-            document.getElementById('view-'+v).classList.remove('hidden'); 
-            document.getElementById('nav-'+v).classList.add('nav-active'); 
-            
+        function router(v) {
+            ['dashboard', 'database', 'journal', 'tracker', 'roadmap', 'citations', 'concepts', 'course-detail'].forEach(x => {
+                const el = document.getElementById('view-' + x);
+                const nav = document.getElementById('nav-' + x);
+                if (el) el.classList.add('hidden');
+                if (nav) nav.classList.remove('nav-active');
+            });
+            const el = document.getElementById('view-' + v);
+            const nav = document.getElementById('nav-' + v);
+            if (el) el.classList.remove('hidden');
+            if (nav) nav.classList.add('nav-active');
+
             // Mobile Sidebar handling
-            if(window.innerWidth < 768) document.querySelector('aside').classList.add('hidden'); 
+            if (window.innerWidth < 768) document.querySelector('aside').classList.add('hidden');
         }
 
         // --- DATABASE LOGIC ---
         function runSearch() {
             const txt = document.getElementById('searchInput').value.toLowerCase();
             const cat = document.getElementById('catFilter').value;
-            const filtered = biblioData.filter(i => (i.title.toLowerCase().includes(txt) || i.author.toLowerCase().includes(txt)) && (cat === 'all' || i.cat === cat));
+
+            // Filter Logic: Search Text + Category + NOT Deleted + (Optional) Current Course Context
+            let filtered = biblioData.filter(i => {
+                // 1. Exclude Deleted
+                if (deletedSources.includes(i.id)) return false;
+
+                // 2. Filter by Course (if active and not "All")
+                // Note: If we are in "Database" view, maybe we want to see everything unless filtered?
+                // Let's stick to the plan: Context filters Database View.
+                if (currentCourseId) {
+                    const course = COURSES.find(c => c.id === currentCourseId);
+                    // If course exists, show only matching Subject OR items added by user (often no subject)
+                    // Or keep it simpler: Matches Subject.
+                    if (course && i.subject !== course.name && i.cat !== 'User Added') return false;
+                }
+
+                // 3. Text & Category
+                return (i.title.toLowerCase().includes(txt) || i.author.toLowerCase().includes(txt)) && (cat === 'all' || i.cat === cat);
+            });
+
+            // Sort: Pinned First
+            filtered.sort((a, b) => {
+                const isPinnedA = pinnedSources.includes(a.id);
+                const isPinnedB = pinnedSources.includes(b.id);
+                if (isPinnedA && !isPinnedB) return -1;
+                if (!isPinnedA && isPinnedB) return 1;
+                return 0;
+            });
+
             const list = document.getElementById('results-container');
             list.innerHTML = filtered.length ? '' : '<div class="text-center text-stone-400 py-8">Nessun libro trovato.</div>';
+
             filtered.forEach(item => {
+                const isPinned = pinnedSources.includes(item.id);
+                const isAiSelected = aiSelectedSources.includes(item.id);
+
                 list.innerHTML += `
-                <div class="pro-card p-4 flex flex-col md:flex-row gap-4 items-start cursor-pointer hover:border-stone-300" onclick="openBookModal('${item.id}')">
+                <div class="pro-card p-4 flex flex-col md:flex-row gap-4 items-start cursor-pointer hover:border-stone-300 transition-colors ${isPinned ? 'border-l-4 border-l-rose-400 bg-rose-50/10' : ''}" onclick="openBookModal('${item.id}')">
                     <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1.5"><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider">${item.cat}</span><button onclick="event.stopPropagation(); cycleStatus('${item.id}')" class="badge uppercase ${item.status==='done'?'badge-done':(item.status==='reading'?'badge-reading':'badge-todo')}">${item.status}</button>${item.notes ? '<span class="text-rose-500 text-[10px]">●</span>' : ''}</div>
+                        <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                            <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider">${item.cat}</span>
+                            ${item.subject ? `<span class="text-[9px] font-bold text-rose-400 uppercase tracking-wider">• ${item.subject}</span>` : ''}
+                            <button onclick="event.stopPropagation(); cycleStatus('${item.id}')" class="badge uppercase ${item.status === 'done' ? 'badge-done' : (item.status === 'reading' ? 'badge-reading' : 'badge-todo')}">${item.status}</button>
+                            ${item.notes ? '<span class="text-rose-500 text-[10px]">●</span>' : ''}
+                            ${isPinned ? '<span class="text-xs">📌</span>' : ''}
+                        </div>
                         <h3 class="text-lg font-medium text-stone-900 serif leading-snug mb-0.5">${item.title}</h3>
                         <div class="text-xs text-stone-500 font-medium">${item.author}, ${item.year}</div>
                     </div>
+                    
+                    <div class="flex items-center gap-2 md:self-center" onclick="event.stopPropagation()">
+                        <button onclick="togglePin('${item.id}')" class="p-2 rounded-full hover:bg-stone-100 ${isPinned ? 'text-rose-500' : 'text-stone-300'}" title="${isPinned ? 'Rimuovi Pin' : 'Fissa in alto'}">
+                           📍
+                        </button>
+                         <label class="flex items-center gap-1 cursor-pointer p-2 rounded-full hover:bg-stone-100" title="Seleziona per AI">
+                            <input type="checkbox" class="accent-stone-900 w-4 h-4" ${isAiSelected ? 'checked' : ''} onchange="toggleAiSelect('${item.id}')">
+                            <span class="text-[10px] uppercase font-bold text-stone-400">AI</span>
+                        </label>
+                         <button onclick="deleteSource('${item.id}')" class="p-2 rounded-full hover:bg-red-50 text-stone-300 hover:text-red-500 transition-colors" title="Elimina">
+                           🗑️
+                        </button>
+                    </div>
                 </div>`;
             });
+        }
+
+        // --- SOURCE MANAGEMENT ACTIONS ---
+        function togglePin(id) {
+            if (pinnedSources.includes(id)) pinnedSources = pinnedSources.filter(x => x !== id);
+            else pinnedSources.push(id);
+            saveData();
+            runSearch();
+        }
+
+        function toggleAiSelect(id) {
+            if (aiSelectedSources.includes(id)) aiSelectedSources = aiSelectedSources.filter(x => x !== id);
+            else aiSelectedSources.push(id);
+            // No save needed for session-only select, but re-render might help if we had visual state outside checkbox
+            // runSearch(); // Optional, checkbox checked state is enough usually, but re-render is safer for syncing
+        }
+
+        function deleteSource(id) {
+            const book = biblioData.find(b => b.id === id);
+            if (confirm(`Sei sicuro di voler eliminare "${book.title}"?`)) {
+                deletedSources.push(id);
+                // Also remove from Pinned/AI Select to be clean
+                pinnedSources = pinnedSources.filter(x => x !== id);
+                aiSelectedSources = aiSelectedSources.filter(x => x !== id);
+                saveData();
+                runSearch();
+            }
         }
 
         function addNewSourcePrompt() {
@@ -658,10 +960,10 @@
             const title = prompt("Titolo del libro:");
             if (!title) return;
             const year = prompt("Anno:");
-            
-            const newId = "U" + Date.now(); 
+
+            const newId = "U" + Date.now();
             const newBook = { id: newId, author: author, title: title, year: year || "????", pub: "User Added", cat: "User Added", status: "todo", notes: "", tags: [] };
-            
+
             biblioData.unshift(newBook);
             saveData();
             runSearch();
@@ -670,14 +972,94 @@
 
         function openBookModal(id) { currentBookId = id; const b = biblioData.find(x => x.id === id); document.getElementById('modal-title').innerText = b.title; document.getElementById('modal-author').innerText = b.author; document.getElementById('modal-notes').value = b.notes || ''; document.getElementById('modal-tags').value = (b.tags || []).join(', '); document.getElementById('book-modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('book-modal').classList.add('hidden'); }
-        function saveBookDetails() { const b = biblioData.find(x => x.id === currentBookId); b.notes = document.getElementById('modal-notes').value; b.tags = document.getElementById('modal-tags').value.split(',').map(t=>t.trim()).filter(t=>t); saveData(); closeModal(); runSearch(); renderConcepts(); }
-        function cycleStatus(id) { const i = biblioData.findIndex(x => x.id === id); const map = { 'todo': 'reading', 'reading': 'done', 'done': 'todo' }; biblioData[i].status = map[biblioData[i].status]; if(biblioData[i].status==='done') confetti({particleCount:60,spread:60,origin:{y:0.6},colors:['#E7E5E4','#F43F5E']}); saveData(); renderStats(); runSearch(); }
+        function saveBookDetails() { const b = biblioData.find(x => x.id === currentBookId); b.notes = document.getElementById('modal-notes').value; b.tags = document.getElementById('modal-tags').value.split(',').map(t => t.trim()).filter(t => t); saveData(); closeModal(); runSearch(); renderConcepts(); }
+        function cycleStatus(id) { const i = biblioData.findIndex(x => x.id === id); const map = { 'todo': 'reading', 'reading': 'done', 'done': 'todo' }; biblioData[i].status = map[biblioData[i].status]; if (biblioData[i].status === 'done') confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 }, colors: ['#E7E5E4', '#F43F5E'] }); saveData(); renderStats(); runSearch(); }
 
-        // --- ROADMAP LOGIC ---
+
+        // --- DASHBOARD LOGIC (NEW) ---
+        function renderDashboard() {
+            const container = document.getElementById('course-grid');
+            container.innerHTML = COURSES.map(course => {
+                const daysLeft = Math.ceil((new Date(course.date) - new Date()) / (1000 * 60 * 60 * 24));
+                const totalTopics = course.topics.length;
+                // Quick fake progress: count how many primary sources of this subject are "done"
+                // Better metric: we don't have per-topic progress yet, so let's stick to reading stats for that subject
+                const subjBooks = biblioData.filter(b => b.subject === course.name);
+                const doneCount = subjBooks.filter(b => b.status === 'done').length;
+                const progress = subjBooks.length > 0 ? Math.round((doneCount / subjBooks.length) * 100) : 0;
+
+                return `
+                <div class="pro-card p-6 border-l-4 ${daysLeft < 30 ? 'border-l-rose-500' : 'border-l-stone-800'} relative group cursor-pointer" onclick="selectCourse('${course.id}')">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">${course.prof}</span>
+                            <h3 class="text-xl font-serif text-stone-900 font-medium">${course.name}</h3>
+                        </div>
+                        <div class="text-right">
+                             <div class="text-lg font-mono font-bold ${daysLeft < 30 ? 'text-rose-600' : 'text-stone-700'}">${daysLeft}gg</div>
+                             <div class="text-[9px] uppercase font-bold text-stone-400">All'esame</div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-xs text-stone-500">
+                            <span>Sillabo: ${totalTopics} Moduli</span>
+                            <span>Letture: ${progress}%</span>
+                        </div>
+                        <div class="w-full bg-stone-100 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-stone-800 h-1.5 rounded-full" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <span class="text-xs bg-stone-900 text-white px-2 py-1 rounded">Vai al corso →</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function selectCourse(id) {
+            currentCourseId = id;
+            renderCourseDetail(id);
+            router('course-detail');
+        }
+
+        function renderCourseDetail(id) {
+            const course = COURSES.find(c => c.id === id);
+            if (!course) return;
+
+            document.getElementById('course-title').innerText = course.name;
+            document.getElementById('course-prof').innerText = "Prof. " + course.prof;
+            document.getElementById('course-date').innerText = course.date;
+
+            const box = document.getElementById('course-syllabus-container');
+            box.innerHTML = '';
+
+            course.topics.forEach((topic, idx) => {
+                box.innerHTML += `
+                <details class="group bg-white border border-stone-200 rounded-xl overflow-hidden hover:border-stone-300 transition-colors" ${idx === 0 ? 'open' : ''}>
+                    <summary class="flex justify-between items-center p-5 cursor-pointer bg-stone-50/50 hover:bg-stone-50">
+                        <h4 class="font-bold text-stone-800 text-lg serif">${topic.title}</h4>
+                        <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <div class="p-6 border-t border-stone-100 bg-white space-y-5">
+                       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Obiettivo</span><p class="text-sm text-stone-800 font-medium leading-relaxed">${topic.goal}</p></div>
+                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Materiali</span><p class="text-sm text-stone-600 leading-relaxed">${(topic.texts || []).join(', ')}</p></div>
+                        </div>
+                         <div class="pt-4 mt-2 border-t border-stone-100 flex justify-end gap-2">
+                             <button onclick="askAI('Spiegami ${topic.title} del corso ${course.name}')" class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-colors">Chiedi a Jesse</button>
+                        </div>
+                    </div>
+                </details>`;
+            });
+        }
+
+        // --- ROADMAP LOGIC (THESIS ONLY) ---
         function renderRoadmap() {
             const sel = document.getElementById('roadmapSelect').value;
             const st = sel === 'custom' ? customStrategy : detailedRoadmaps[sel];
-            
+
             document.getElementById('roadmap-title').innerText = st.title;
             document.getElementById('roadmap-desc').innerText = st.desc;
             document.getElementById('custom-controls').className = sel === 'custom' ? 'border-t border-stone-200 pt-4 flex gap-2 justify-end' : 'hidden';
@@ -685,7 +1067,7 @@
             // Top Sources
             let bibContainer = document.getElementById('roadmap-biblio');
             let bibList = document.getElementById('roadmap-biblio-list');
-            
+
             if (!bibContainer) {
                 const descBox = document.getElementById('roadmap-desc').parentNode.parentNode;
                 bibContainer = document.createElement('div');
@@ -707,20 +1089,15 @@
             }
 
             // Chapters
-            const c = document.getElementById('chapters-container'); 
+            const c = document.getElementById('chapters-container');
             c.innerHTML = '';
-            
-            if (st.chapters.length === 0 && sel === 'custom') { 
-                c.innerHTML = '<div class="text-center text-stone-400 py-10 italic">Nessun capitolo. Chiedi a Jesse!</div>'; 
-                return; 
+
+            if (st.chapters.length === 0 && sel === 'custom') {
+                c.innerHTML = '<div class="text-center text-stone-400 py-10 italic">Nessun capitolo. Chiedi a Jesse!</div>';
+                return;
             }
 
             st.chapters.forEach(ch => {
-                const textLinks = (ch.texts || []).map(tid => { 
-                    const b = biblioData.find(x => x.id === tid); 
-                    return b ? `<span class="inline-block bg-stone-50 border border-stone-200 text-stone-500 px-1.5 py-0.5 rounded text-[10px] mr-1 mb-1">${b.author}</span>` : ''; 
-                }).join('');
-
                 c.innerHTML += `
                 <details class="group bg-white border border-stone-200 rounded-xl overflow-hidden hover:border-stone-300 transition-colors">
                     <summary class="flex justify-between items-center p-5 cursor-pointer bg-stone-50/50 hover:bg-stone-50">
@@ -728,22 +1105,9 @@
                         <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
                     </summary>
                     <div class="p-6 border-t border-stone-100 bg-white space-y-5">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Obiettivo Filosofico</span><p class="text-sm text-stone-800 font-medium leading-relaxed">${ch.goal}</p></div>
-                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Metodologia</span><p class="text-sm text-stone-600 leading-relaxed">${ch.method || "Analisi comparativa."}</p></div>
-                        </div>
-                        <div class="bg-yellow-50/50 border border-yellow-100 p-4 rounded-lg">
-                            <span class="text-[9px] font-bold text-yellow-600 uppercase tracking-wider block mb-1">🔍 Focus di Lettura</span>
-                            <p class="text-sm text-stone-700 italic">"${ch.focus || 'Definire focus...'}"</p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Concetti Chiave</span><div class="text-sm text-rose-600 font-medium">${ch.concepts || '-'}</div></div>
-                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Fonti</span><div>${textLinks}</div></div>
-                        </div>
-                        <div class="pt-4 mt-2 border-t border-stone-100 flex justify-end">
-                            <button onclick="askAI('Aiutami a scrivere il capitolo: ${ch.title}. Focus: ${ch.focus}. Concetti: ${ch.concepts}.')" class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-sm">
-                                <span>🐕</span> Scrivi bozza con Jesse
-                            </button>
+                       <p class="text-sm text-stone-800">${ch.goal}</p>
+                        <div class="pt-4 mt-2 border-t border-stone-100 flex justify-end gap-2">
+                             <button onclick="askAI('Aiutami con il capitolo thesis: ${ch.title}')" class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-colors">Chiedi a Jesse</button>
                         </div>
                     </div>
                 </details>`;
@@ -751,16 +1115,16 @@
         }
 
         // --- JESSE & CHAT ---
-        function setMode(m) { 
-            aiMode = m; 
+        function setMode(m) {
+            aiMode = m;
             const msg = m === 'discuss' ? "Grrr... facciamo sul serio! Sono la commissione di laurea. Difendi la tua tesi, padrona!" : (m === 'Socrajess' ? "Modalità Socrajess on: ti risponderò solo con domande, bau!" : "Modalità Relatore Severo: preparati, sarò pignolissimo!");
             addMessage(msg, 'bot');
         }
 
-        function toggleChat() { 
-            const w=document.getElementById('chat-widget'); 
-            w.classList.toggle('chat-closed'); 
-            w.classList.toggle('chat-open'); 
+        function toggleChat() {
+            const w = document.getElementById('chat-widget');
+            w.classList.toggle('chat-closed');
+            w.classList.toggle('chat-open');
         }
 
         function addMessage(txt, role) {
@@ -779,98 +1143,285 @@
             box.scrollTop = box.scrollHeight;
         }
 
-        async function sendChat(mode=null) {
+        async function sendChat(mode = null, personaOverride = null) {
             const inp = document.getElementById('chat-input');
             const activeMode = mode || aiMode;
             const txt = inp.value.trim();
-            if(!txt && activeMode==='chat') return;
-            
+            if (!txt && activeMode === 'chat') return;
+
             addMessage(txt, 'user');
             inp.value = '';
-            
+
             const loadId = 'load-' + Date.now();
             document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="flex items-center gap-2 mt-4 ml-2"><img src="${JESSE_IMG}" class="w-6 h-6 rounded-full border border-stone-200 grayscale opacity-70"><span class="text-xs text-stone-500 italic animate-pulse">Jesse sta pensando...</span></div>`;
+
+            // CONTEXT LOGIC: Selected > Pinned > Current Course > All
+            let contextData = biblioData;
+            // If user explicitly selected sources, use ONLY those
+            if (aiSelectedSources.length > 0) {
+                contextData = biblioData.filter(b => aiSelectedSources.includes(b.id));
+            } else if (pinnedSources.length > 0) {
+                // If nothing selected but items are pinned, maybe prioritizing pinned? 
+                // User request: "passes ONLY the selected/pinned sources". 
+                // Let's union them if exists.
+                contextData = biblioData.filter(b => pinnedSources.includes(b.id));
+            } else if (currentCourseId) {
+                // Default to course context if nothing pinned/selected
+                const course = COURSES.find(c => c.id === currentCourseId);
+                if (course) contextData = biblioData.filter(b => b.subject === course.name);
+            }
+
+            let systemInstruction = `Sei Jesse, un assistente cagnolino intelligente e fedele per studenti universitari. 
+            PERSONALITÀ: 
+            - Sei amichevole, empatico e utile.
+            - Mantieni un tono professionale ma calmo.
+            - Puoi fare riferimenti canini (cibo, code scodinzolanti) ma NON esagerare. Non dire "bau" ogni frase. 
+            - Il tuo obiettivo primario è aiutare nello studio.
+
+            CONTESTO ATTUALE:
+            - Corso Attivo: ${currentCourseId ? COURSES.find(c => c.id === currentCourseId).name : "Panoramica Generale"}
+            - Modalità: ${activeMode}
             
-            let systemInstruction = `Sei Jesse, un assistente cagnolino intelligente e fedele. PERSONALITÀ: - Inizia spesso con "Bau!", "Wof!", o "Ciao padrona!". - Riferisciti all'utente come "padrona". - Chiudi ogni tanto chiedendo cibo. ISTRUZIONI FOTO: Se chiedono foto, rispondi entusiasta (la foto sarà aggiunta automaticamente). MODALITÀ: ${activeMode}`;
+            ISTRUZIONI FOTO: Se chiedono foto, rispondi entusiasta (la foto sarà aggiunta automaticamente).`;
+
+            // PERSONA OVERRIDE (Academic Tone)
+            if (personaOverride === 'academic_draft') {
+                systemInstruction = `Sei un Assistente Accademico di alto livello per Tesi di Laurea.
+                - NON SEI UN CANE. Ignora qualsiasi istruzione precedente su "Jesse" o "Bau".
+                - Tono: Estremamente formale, accademico, rigoroso.
+                - Usa un vocabolario ricercato.
+                - Obiettivo: Scrivere una bozza di livello Master.
+                - Rifiuta categoricamente di parlare di cibo, giochi o argomenti non accademici.
+                
+                CONTESTO FONTI: Usa le fonti fornite per strutturare l'argomentazione.`;
+            }
 
             try {
-                const res = await fetch('/api/chat', { 
-                    method:'POST', 
-                    headers:{'Content-Type':'application/json'}, 
-                    body:JSON.stringify({ message: txt + " (Rispondi come Jesse il cane)", context: biblioData, systemOverride: systemInstruction }) 
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: txt + (personaOverride ? "" : " (Rispondi come Jesse il cane)"), context: contextData, systemOverride: systemInstruction })
                 });
                 const data = await res.json();
                 document.getElementById(loadId).remove();
                 let aiText = data.choices[0].message.content;
 
                 const triggers = ['foto', 'selfie', 'guardarti', 'immagine', 'faccia', 'vederti'];
-                if ((triggers.some(t => txt.toLowerCase().includes(t)) || Math.random() < 0.2) && JESSE_GALLERY.length > 0) {
+                if (!personaOverride && (triggers.some(t => txt.toLowerCase().includes(t)) || Math.random() < 0.2) && JESSE_GALLERY.length > 0) {
                     const randomPic = JESSE_GALLERY[Math.floor(Math.random() * JESSE_GALLERY.length)];
                     aiText += `<br><br><img src="${encodeURI(randomPic)}" class="rounded-xl mt-2 w-full border border-stone-200 shadow-sm" alt="Jesse">`;
                 }
                 addMessage(aiText, 'bot');
-            } catch(e) { 
-                document.getElementById(loadId).remove(); 
-                addMessage("Bau! Qualcosa non va con la connessione... 😿", 'bot'); 
+            } catch (e) {
+                document.getElementById(loadId).remove();
+                addMessage("Bau! Qualcosa non va con la connessione... 😿", 'bot');
             }
         }
 
-        function askAI(q) { 
-            document.getElementById('chat-input').value=q; 
-            if(document.getElementById('chat-widget').classList.contains('chat-closed')) toggleChat(); 
-            sendChat(); 
+        function askAI(q, override = null) {
+            document.getElementById('chat-input').value = q;
+            if (document.getElementById('chat-widget').classList.contains('chat-closed')) toggleChat();
+            sendChat(null, override);
         }
-        function askAIAboutBook() { const b=biblioData.find(x=>x.id===currentBookId); closeModal(); toggleChat(); askAI(`Ho preso queste note su "${b.title}": "${b.notes}". Aiutami a espanderle.`); }
+        function askAIAboutBook() { const b = biblioData.find(x => x.id === currentBookId); closeModal(); toggleChat(); askAI(`Ho preso queste note su "${b.title}": "${b.notes}". Aiutami a espanderle.`); }
 
         // --- UTILS (Audio, Timer, Chart) ---
         function initAudio() {
-            ['rain', 'cafe', 'fire'].forEach(id => { const el = document.getElementById('audio-'+id); if(el) el.volume = 0.5; });
+            ['rain', 'cafe', 'fire'].forEach(id => { const el = document.getElementById('audio-' + id); if (el) el.volume = 0.5; });
         }
-        function toggleSound(id) { const el=document.getElementById('audio-'+id); const btn=document.getElementById('btn-'+id); if(el.paused){el.play(); btn.classList.remove('text-stone-300'); btn.classList.add('text-stone-900');}else{el.pause(); btn.classList.add('text-stone-300'); btn.classList.remove('text-stone-900');} }
-        function stopAllSounds() { ['rain','cafe','fire'].forEach(id => { document.getElementById('audio-'+id).pause(); document.getElementById('btn-'+id).classList.add('text-stone-300'); document.getElementById('btn-'+id).classList.remove('text-stone-900'); }); }
-        
-        let timer,time=1500,running=false;
-        function toggleTimer(){ const d=document.getElementById('zen-timer'); if(running){clearInterval(timer);running=false;document.getElementById('timer-btn').innerText="Focus";}else{running=true;document.getElementById('timer-btn').innerText="Pausa";timer=setInterval(()=>{time--;let m=Math.floor(time/60),s=time%60;const t=`${m}:${s.toString().padStart(2,'0')}`;document.getElementById('timer-display').innerText=t;d.innerText=t;if(time<=0)resetTimer();},1000);} }
-        function resetTimer(){clearInterval(timer);running=false;time=1500;document.getElementById('timer-display').innerText="25:00";document.getElementById('timer-btn').innerText="Focus";}
-        function toggleZenMode() { const z=document.getElementById('zen-mode'); z.classList.toggle('hidden'); }
+        function toggleSound(id) { const el = document.getElementById('audio-' + id); const btn = document.getElementById('btn-' + id); if (el.paused) { el.play(); btn.classList.remove('text-stone-300'); btn.classList.add('text-stone-900'); } else { el.pause(); btn.classList.add('text-stone-300'); btn.classList.remove('text-stone-900'); } }
+        function stopAllSounds() { ['rain', 'cafe', 'fire'].forEach(id => { document.getElementById('audio-' + id).pause(); document.getElementById('btn-' + id).classList.add('text-stone-300'); document.getElementById('btn-' + id).classList.remove('text-stone-900'); }); }
+
+        let timer, time = 1500, running = false, timerMode = 'focus'; // 'focus' (25m) or 'break' (7m)
+
+        function toggleTimer() {
+            const d = document.getElementById('zen-timer'); // Zen mode display
+            const mainDisplay = document.getElementById('timer-display'); // Sidebar display
+            const btn = document.getElementById('timer-btn');
+
+            if (running) {
+                clearInterval(timer);
+                running = false;
+                btn.innerText = timerMode === 'focus' ? "Riprendi Focus" : "Riprendi Pausa";
+                btn.classList.remove('animate-pulse');
+            } else {
+                running = true;
+                btn.innerText = "Pausa";
+                btn.classList.add('animate-pulse');
+
+                timer = setInterval(() => {
+                    time--;
+                    let m = Math.floor(time / 60), s = time % 60;
+                    const t = `${m}:${s.toString().padStart(2, '0')}`;
+
+                    mainDisplay.innerText = t;
+                    d.innerText = t;
+                    document.title = `${t} - Millino Fagiolino`;
+
+                    if (time <= 0) {
+                        clearInterval(timer);
+                        running = false;
+                        // Switch Mode
+                        if (timerMode === 'focus') {
+                            timerMode = 'break';
+                            time = 7 * 60; // 7 minutes
+                            alert("Ottimo lavoro! Ora 7 minuti di pausa obbligatoria.");
+                            mainDisplay.classList.remove('text-rose-600');
+                            mainDisplay.classList.add('text-teal-600'); // Greenish for break
+                            btn.innerText = "Avvia Pausa";
+                            btn.classList.remove('bg-stone-900');
+                            btn.classList.add('bg-teal-600', 'hover:bg-teal-700');
+                        } else {
+                            timerMode = 'focus';
+                            time = 25 * 60;
+                            alert("Pausa finita! Si torna a studiare.");
+                            mainDisplay.classList.add('text-rose-600');
+                            mainDisplay.classList.remove('text-teal-600');
+                            btn.innerText = "Avvia Focus";
+                            btn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
+                            btn.classList.add('bg-stone-900');
+                        }
+                        btn.classList.remove('animate-pulse');
+                        // Update displays to new time immediately
+                        let m2 = Math.floor(time / 60), s2 = time % 60;
+                        const t2 = `${m2}:${s2.toString().padStart(2, '0')}`;
+                        mainDisplay.innerText = t2;
+                        d.innerText = t2;
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            running = false;
+            timerMode = 'focus';
+            time = 1500;
+            document.getElementById('timer-display').innerText = "25:00";
+            document.getElementById('timer-display').classList.add('text-rose-600');
+            document.getElementById('timer-display').classList.remove('text-teal-600');
+            document.getElementById('timer-btn').innerText = "Focus";
+            document.getElementById('timer-btn').classList.remove('bg-teal-600', 'hover:bg-teal-700', 'animate-pulse');
+            document.getElementById('timer-btn').classList.add('bg-stone-900');
+            document.title = "Millino Fagiolino";
+        }
+        function toggleZenMode() { const z = document.getElementById('zen-mode'); z.classList.toggle('hidden'); }
 
         function renderTracker() {
             const ctx = document.getElementById('wordChart').getContext('2d');
             if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, { type: 'line', data: { labels: wordHistory.map(h=>h.date), datasets:[{label:'Parole',data:wordHistory.map(h=>h.count), borderColor:'#1C1917', backgroundColor: 'rgba(28, 25, 23, 0.1)', tension:0.3, fill:true}] }, options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#F5F5F4'},border:{display:false}}}}}); 
+            chartInstance = new Chart(ctx, { type: 'line', data: { labels: wordHistory.map(h => h.date), datasets: [{ label: 'Parole', data: wordHistory.map(h => h.count), borderColor: '#1C1917', backgroundColor: 'rgba(28, 25, 23, 0.1)', tension: 0.3, fill: true }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#F5F5F4' }, border: { display: false } } } } });
         }
-        function updateWordCount() { const v=parseInt(document.getElementById('word-input').value); if(v) { const d=new Date().toLocaleDateString('it-IT'); const i=wordHistory.findIndex(h=>h.date===d); if(i>=0) wordHistory[i].count=v; else wordHistory.push({date:d,count:v}); localStorage.setItem('word_history', JSON.stringify(wordHistory)); renderTracker(); } }
+        function updateWordCount() { const v = parseInt(document.getElementById('word-input').value); if (v) { const d = new Date().toLocaleDateString('it-IT'); const i = wordHistory.findIndex(h => h.date === d); if (i >= 0) wordHistory[i].count = v; else wordHistory.push({ date: d, count: v }); localStorage.setItem('word_history', JSON.stringify(wordHistory)); renderTracker(); } }
 
-        function selectAllCitations(){document.querySelectorAll('.cite-cb').forEach(cb=>cb.checked=true);generateBibliography();}
-        function renderCitationsList(){ const l=document.getElementById('citation-list'); l.innerHTML=''; biblioData.forEach(i=>{l.innerHTML+=`<label class="flex items-center gap-3 p-2 hover:bg-stone-50 rounded-lg cursor-pointer"><input type="checkbox" class="accent-stone-900 cite-cb" value="${i.id}" onchange="generateBibliography()"><span class="text-xs text-stone-600 truncate">${i.title}</span></label>`}); }
-        function copyCitationOutput(){const t=document.getElementById('citation-output'); t.select(); navigator.clipboard.writeText(t.value); alert("Copiato.");}
-        function copyFootnoteStyle(){ const c=Array.from(document.querySelectorAll('.cite-cb:checked')).map(x=>x.value); const i=biblioData.filter(x=>c.includes(x.id)); let o = i.map(x => `${x.author.split(',')[1].trim()} ${x.author.split(',')[0]}, *${x.title}*, ${x.pub}, Paris ${x.year}.`).join('\n'); document.getElementById('citation-output').value=o; copyCitationOutput(); }
-        function generateBibliography(){ const c=Array.from(document.querySelectorAll('.cite-cb:checked')).map(x=>x.value); const i=biblioData.filter(x=>c.includes(x.id)); let o=""; const s=document.getElementById('citation-style').value; if(s==='classic'){copyFootnoteStyle(); return;} i.forEach(x=>{o+=s==='bibtex'?`@book{${x.id}, title={${x.title}}...}\n`:`${x.author} (${x.year}). ${x.title}.\n\n`}); document.getElementById('citation-output').value=o; }
-        function downloadBibliography(){ const t=biblioData.filter(b=>b.status==='done'||b.status==='reading').map(b=>`${b.author} (${b.year}). ${b.title}.`).join('\n\n'); const b=new Blob([t],{type:'text/plain'}); const u=window.URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download="bibliografia.txt"; a.click(); }
-        
+        function selectAllCitations() { document.querySelectorAll('.cite-cb').forEach(cb => cb.checked = true); generateBibliography(); }
+        function renderCitationsList() { const l = document.getElementById('citation-list'); l.innerHTML = ''; biblioData.forEach(i => { l.innerHTML += `<label class="flex items-center gap-3 p-2 hover:bg-stone-50 rounded-lg cursor-pointer"><input type="checkbox" class="accent-stone-900 cite-cb" value="${i.id}" onchange="generateBibliography()"><span class="text-xs text-stone-600 truncate">${i.title}</span></label>` }); }
+        function copyCitationOutput() { const t = document.getElementById('citation-output'); t.select(); navigator.clipboard.writeText(t.value); alert("Copiato."); }
+        function copyFootnoteStyle() { const c = Array.from(document.querySelectorAll('.cite-cb:checked')).map(x => x.value); const i = biblioData.filter(x => c.includes(x.id)); let o = i.map(x => `${x.author.split(',')[1].trim()} ${x.author.split(',')[0]}, *${x.title}*, ${x.pub}, Paris ${x.year}.`).join('\n'); document.getElementById('citation-output').value = o; copyCitationOutput(); }
+        function generateBibliography() { const c = Array.from(document.querySelectorAll('.cite-cb:checked')).map(x => x.value); const i = biblioData.filter(x => c.includes(x.id)); let o = ""; const s = document.getElementById('citation-style').value; if (s === 'classic') { copyFootnoteStyle(); return; } i.forEach(x => { o += s === 'bibtex' ? `@book{${x.id}, title={${x.title}}...}\n` : `${x.author} (${x.year}). ${x.title}.\n\n` }); document.getElementById('citation-output').value = o; }
+        function downloadBibliography() { const t = biblioData.filter(b => b.status === 'done' || b.status === 'reading').map(b => `${b.author} (${b.year}). ${b.title}.`).join('\n\n'); const b = new Blob([t], { type: 'text/plain' }); const u = window.URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = "bibliografia.txt"; a.click(); }
+
         function renderStats() {
-             const done = biblioData.filter(i => i.status === 'done').length;
-             const total = biblioData.length;
-             const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-             document.getElementById('reading-progress-text').innerText = pct + "%";
-             document.getElementById('reading-progress-bar').style.width = pct + "%";
-             document.getElementById('count-todo').innerText = biblioData.filter(i => i.status === 'todo').length;
-             document.getElementById('count-reading').innerText = biblioData.filter(i => i.status === 'reading').length;
-             document.getElementById('count-done').innerText = done;
-             document.getElementById('total-sources-count').innerText = total;
+            const done = biblioData.filter(i => i.status === 'done').length;
+            const total = biblioData.length;
+            const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+            document.getElementById('reading-progress-text').innerText = pct + "%";
+            document.getElementById('reading-progress-bar').style.width = pct + "%";
+            document.getElementById('count-todo').innerText = biblioData.filter(i => i.status === 'todo').length;
+            document.getElementById('count-reading').innerText = biblioData.filter(i => i.status === 'reading').length;
+            document.getElementById('count-done').innerText = done;
+            document.getElementById('total-sources-count').innerText = total;
         }
         function renderConcepts() {
-            const tags = {}; biblioData.forEach(b => (b.tags||[]).forEach(t => { if(!tags[t]) tags[t]=[]; tags[t].push(b.title); }));
+            const tags = {}; biblioData.forEach(b => (b.tags || []).forEach(t => { if (!tags[t]) tags[t] = []; tags[t].push(b.title); }));
             const cloud = document.getElementById('concept-cloud');
             cloud.innerHTML = Object.keys(tags).length === 0 ? '<span class="text-stone-400 text-sm italic">Aggiungi tag ai libri per vedere le connessioni.</span>' : '';
             Object.keys(tags).forEach(tag => cloud.innerHTML += `<button onclick="filterByTag('${tag}')" class="bg-white border border-stone-200 px-3 py-1 rounded-full text-xs text-stone-600 hover:border-rose-300 hover:text-rose-600 transition-colors">#${tag} (${tags[tag].length})</button>`);
         }
-        function filterByTag(tag) { document.getElementById('concept-results').innerHTML = `<h4 class="text-sm font-bold text-stone-900 mb-2">Libri collegati a #${tag}:</h4>` + biblioData.filter(b => (b.tags||[]).includes(tag)).map(b => `<div class="bg-white p-3 rounded-lg border border-stone-100 text-sm text-stone-600">${b.title}</div>`).join(''); }
-        function renderDeadline() { const d = localStorage.getItem('thesis_deadline'); if(d) { document.getElementById('deadline-input').value = d; const days = Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24)); document.getElementById('days-remaining').innerText = `${days} GIORNI`; document.getElementById('days-remaining').classList.remove('hidden'); document.getElementById('timeline-container').classList.remove('hidden'); document.getElementById('timeline-container').innerHTML = [{ title: "Bozza", days: 60 }, { title: "Revisione", days: 30 }, { title: "Impaginazione", days: 15 }].map(m => { const x = new Date(d); x.setDate(new Date(d).getDate() - m.days); return `<div class="bg-white p-4 rounded-xl border border-stone-100 shadow-sm"><div class="text-[10px] uppercase font-bold text-rose-400 tracking-wider mb-1">Entro il ${x.toLocaleDateString()}</div><h4 class="font-serif text-lg text-stone-800">${m.title}</h4></div>`; }).join(''); } }
-        function saveDeadline(){ localStorage.setItem('thesis_deadline', document.getElementById('deadline-input').value); renderDeadline(); }
+        function filterByTag(tag) { document.getElementById('concept-results').innerHTML = `<h4 class="text-sm font-bold text-stone-900 mb-2">Libri collegati a #${tag}:</h4>` + biblioData.filter(b => (b.tags || []).includes(tag)).map(b => `<div class="bg-white p-3 rounded-lg border border-stone-100 text-sm text-stone-600">${b.title}</div>`).join(''); }
+        function renderDeadline() { const d = localStorage.getItem('thesis_deadline'); if (d) { document.getElementById('deadline-input').value = d; const days = Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24)); document.getElementById('days-remaining').innerText = `${days} GIORNI`; document.getElementById('days-remaining').classList.remove('hidden'); document.getElementById('timeline-container').classList.remove('hidden'); document.getElementById('timeline-container').innerHTML = [{ title: "Bozza", days: 60 }, { title: "Revisione", days: 30 }, { title: "Impaginazione", days: 15 }].map(m => { const x = new Date(d); x.setDate(new Date(d).getDate() - m.days); return `<div class="bg-white p-4 rounded-xl border border-stone-100 shadow-sm"><div class="text-[10px] uppercase font-bold text-rose-400 tracking-wider mb-1">Entro il ${x.toLocaleDateString()}</div><h4 class="font-serif text-lg text-stone-800">${m.title}</h4></div>`; }).join(''); } }
+        function saveDeadline() { localStorage.setItem('thesis_deadline', document.getElementById('deadline-input').value); renderDeadline(); }
         function generateCustomStrategy() { document.getElementById('custom-modal').classList.remove('hidden'); }
         async function runCustomAiGeneration() { const p = document.getElementById('custom-prompt-input').value; document.getElementById('custom-modal').classList.add('hidden'); toggleChat(); addMessage(`Jesse, crea una strategia per: ${p}`, 'user'); sendChat('chat'); }
-        function toggleEditMode() { const t = prompt("Nuovo Titolo:", customStrategy.title); if(t) { customStrategy.title = t; localStorage.setItem('custom_roadmap', JSON.stringify(customStrategy)); renderRoadmap(); } }
+        function toggleEditMode() { const t = prompt("Nuovo Titolo:", customStrategy.title); if (t) { customStrategy.title = t; localStorage.setItem('custom_roadmap', JSON.stringify(customStrategy)); renderRoadmap(); } }
+
+        // --- SMART SCHEDULER LOGIC ---
+        function calculateStudySchedule() {
+            const input = document.getElementById('schedule-input').value.toLowerCase();
+            const resultBox = document.getElementById('schedule-result');
+            const loader = document.getElementById('schedule-output');
+
+            if (!input) return alert("Inserisci la tua disponibilità!");
+
+            // Show loader
+            loader.classList.remove('hidden');
+            resultBox.innerHTML = '';
+
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                resultBox.classList.remove('hidden');
+
+                // Heuristic Logic
+                const daysMap = { 'lun': 'Lunedì', 'mar': 'Martedì', 'mer': 'Mercoledì', 'gio': 'Giovedì', 'ven': 'Venerdì', 'sab': 'Sabato', 'dom': 'Domenica' };
+                const availableDays = Object.keys(daysMap).filter(d => input.includes(d)).map(d => daysMap[d]);
+
+                // If no specific days found, assume "Tutti i giorni" or parse generic
+                const daysCount = availableDays.length || 5;
+
+                // Calculate Workload
+                // Total incomplete items in Database
+                const todoCount = biblioData.filter(b => b.status === 'todo').length;
+                // Nearest Exam
+                const nextCourse = COURSES.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+                const daysLeft = Math.ceil((new Date(nextCourse.date) - new Date()) / (1000 * 60 * 60 * 24));
+
+                const intensity = daysLeft < 14 ? "ALTA 🔥" : (daysLeft < 30 ? "MEDIA ⚖️" : "BASSA 🧘");
+                const hoursPerDay = Math.ceil((todoCount * 2) / (daysLeft > 0 ? daysLeft : 1)); // Assume 2h per source? Rough estimate
+
+                let html = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-rose-50 p-4 rounded-xl border border-rose-100">
+                        <span class="text-[10px] items-center flex gap-1 font-bold text-rose-500 uppercase tracking-wider mb-1">🔥 Intensità</span>
+                        <div class="text-xl font-serif text-stone-900">${intensity}</div>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                        <span class="text-[10px] items-center flex gap-1 font-bold text-stone-400 uppercase tracking-wider mb-1">⏳ Stima Studio</span>
+                        <div class="text-xl font-serif text-stone-900">${hoursPerDay > 0 ? hoursPerDay : 1}h <span class="text-sm text-stone-500 font-sans">al giorno</span></div>
+                    </div>
+                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                         <span class="text-[10px] items-center flex gap-1 font-bold text-stone-400 uppercase tracking-wider mb-1">📅 Prossimo Esame</span>
+                        <div class="text-xl font-serif text-stone-900">${nextCourse.name}</div>
+                    </div>
+                </div>
+                
+                <h4 class="font-bold text-xs uppercase tracking-widest text-stone-400 mb-4">Programma Orario Suggerito</h4>
+                <div class="space-y-3">`;
+
+                const scheduleDays = availableDays.length > 0 ? availableDays : ["Lunedì", "Mercoledì", "Venerdì"];
+
+                scheduleDays.forEach(day => {
+                    html += `
+                    <div class="flex items-start gap-4 p-3 hover:bg-stone-50 rounded-lg transition-colors border border-transparent hover:border-stone-100">
+                        <div class="w-24 font-bold text-stone-900 text-sm mt-1">${day}</div>
+                        <div class="flex-1 space-y-2">
+                             <div class="flex gap-2 items-center">
+                                <span class="bg-stone-900 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">09:00 - 11:30</span>
+                                <span class="text-sm text-stone-600">Deep Work: ${nextCourse.name} (Moduli)</span>
+                             </div>
+                             <div class="flex gap-2 items-center">
+                                <span class="bg-rose-100 text-rose-600 text-[10px] font-bold px-1.5 py-0.5 rounded">15:00 - 16:30</span>
+                                <span class="text-sm text-stone-600">Lettura Fonti & Ripasso</span>
+                             </div>
+                        </div>
+                    </div>`;
+                });
+
+                html += `</div>`;
+                resultBox.innerHTML = html;
+            }, 1000);
+        }
+
     </script>
 </body>
+
 </html>
