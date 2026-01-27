@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Atlas.phil | v5.3 Research Suite</title>
+    <title>Atlas.phil | v5.4 Research Suite</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
@@ -50,13 +50,12 @@
 </head>
 <body class="h-screen flex overflow-hidden bg-slate-50">
 
-    <!-- SIDEBAR -->
     <aside class="w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col z-30 hidden md:flex shadow-sm">
         <div class="p-6 border-b border-slate-100">
             <h1 class="text-2xl font-bold text-slate-900 tracking-tight serif">Atlas<span class="text-indigo-600">.phil</span></h1>
             <div class="flex justify-between items-center mt-1">
                 <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Simondon/Deleuze</p>
-                <span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-bold">v5.3.1</span>
+                <span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-bold">v5.4</span>
             </div>
         </div>
         
@@ -70,7 +69,6 @@
             <button onclick="router('citations')" id="nav-citations" class="nav-item w-full text-left px-4 py-2.5 rounded-md flex items-center gap-3 text-slate-600 transition-colors text-sm font-medium"><span>❞</span> Citation Manager</button>
         </nav>
 
-        <!-- POMODORO -->
         <div class="px-4 py-3 border-t border-slate-50 bg-slate-50/50">
             <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
                 <div class="flex justify-between items-center mb-2">
@@ -91,19 +89,15 @@
         </div>
     </aside>
 
-    <!-- MAIN CONTENT -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative" id="main-wrapper">
         
-        <!-- Mobile Header -->
         <div class="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center z-30">
             <span class="font-bold serif text-lg text-slate-900">Atlas.phil</span>
             <button onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute'); document.querySelector('aside').classList.toggle('h-full');" class="text-slate-600">☰</button>
         </div>
 
-        <!-- Scrollable Views -->
         <div class="flex-1 overflow-y-auto p-4 md:p-8 relative scroll-smooth" id="content-area">
             
-            <!-- VIEW: DASHBOARD -->
             <div id="view-dashboard" class="space-y-8 fade-in">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
@@ -113,7 +107,6 @@
                     <button onclick="toggleSettings()" class="text-slate-400 hover:text-indigo-600 transition-colors">⚙️ Configura</button>
                 </div>
 
-                <!-- Progress Tracker -->
                 <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                     <div class="flex justify-between items-end mb-2">
                         <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Avanzamento Letture</h3>
@@ -147,7 +140,6 @@
                 </div>
             </div>
 
-            <!-- VIEW: DATABASE -->
             <div id="view-database" class="hidden space-y-6 fade-in pb-20">
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 sticky top-0 z-20 flex flex-wrap gap-4 items-center">
                     <div class="flex-1 relative min-w-[200px]">
@@ -166,11 +158,9 @@
                 </div>
 
                 <div class="space-y-3" id="results-container">
-                    <!-- Populated by JS -->
-                </div>
+                    </div>
             </div>
 
-            <!-- VIEW: ROADMAP -->
             <div id="view-roadmap" class="hidden space-y-8 fade-in pb-20">
                 <div class="flex justify-between items-center gap-4 border-b border-slate-200 pb-6">
                     <div>
@@ -188,11 +178,9 @@
                     <p class="text-indigo-800 text-sm" id="roadmap-desc"></p>
                 </div>
                 <div class="space-y-4" id="chapters-container">
-                    <!-- Populated by JS -->
-                </div>
+                    </div>
             </div>
 
-            <!-- VIEW: CITATIONS -->
             <div id="view-citations" class="hidden space-y-6 fade-in pb-20">
                 <div class="flex justify-between items-center border-b border-slate-200 pb-6">
                     <h2 class="text-3xl font-bold text-slate-900 serif">Citation Manager</h2>
@@ -235,7 +223,6 @@
 
         </div>
 
-        <!-- AI CHAT WIDGET -->
         <div id="chat-widget" class="fixed bottom-6 right-6 w-96 h-[600px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-50 transition-all duration-300 chat-closed origin-bottom-right overflow-hidden ring-1 ring-slate-900/5">
             <div class="bg-slate-900 p-4 flex justify-between items-center text-white shrink-0">
                 <div class="flex items-center gap-3">
@@ -256,7 +243,6 @@
             </div>
         </div>
 
-        <!-- SETTINGS MODAL -->
         <div id="settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] hidden flex items-center justify-center fade-in">
             <div class="bg-white rounded-xl shadow-2xl p-6 w-96 max-w-full">
                 <h3 class="text-lg font-bold text-slate-900 mb-4">Configurazione API</h3>
@@ -272,6 +258,7 @@
 
     <script>
         // --- CONFIG ---
+        // NOTA DI SICUREZZA: API Key rimossa. L'utente deve inserirla nelle impostazioni.
         const DEFAULT_API_KEY = ""; 
         let userApiKey = localStorage.getItem('gemini_api_key') || DEFAULT_API_KEY;
 
@@ -414,11 +401,31 @@
         });
 
         function initApp() {
+            loadProgress(); // CARICA I DATI SALVATI
             router('dashboard');
             renderDatabase();
             renderStats();
             renderRoadmap();
             renderCitationsList();
+        }
+
+        // --- DATA PERSISTENCE (NUOVO) ---
+        function saveProgress() {
+            const progress = biblioData.map(item => ({ id: item.id, status: item.status }));
+            localStorage.setItem('atlas_progress', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('atlas_progress');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    parsed.forEach(savedItem => {
+                        const item = biblioData.find(i => i.id === savedItem.id);
+                        if (item) item.status = savedItem.status;
+                    });
+                } catch(e) { console.error("Errore caricamento dati", e); }
+            }
         }
 
         // --- ROUTING ---
@@ -440,7 +447,13 @@
 
         function runSearch() {
             const txt = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = biblioData.filter(i => i.title.toLowerCase().includes(txt) || i.author.toLowerCase().includes(txt));
+            const cat = document.getElementById('catFilter').value;
+            
+            const filtered = biblioData.filter(i => {
+                const matchText = i.title.toLowerCase().includes(txt) || i.author.toLowerCase().includes(txt);
+                const matchCat = cat === 'all' || i.cat === cat;
+                return matchText && matchCat;
+            });
             renderList(filtered);
         }
 
@@ -474,17 +487,30 @@
             const idx = biblioData.findIndex(i => i.id === id);
             const map = { 'todo': 'reading', 'reading': 'done', 'done': 'todo' };
             biblioData[idx].status = map[biblioData[idx].status || 'todo'];
-            renderList(biblioData);
+            
+            saveProgress(); // SALVA LO STATO
+            
+            renderList(biblioData); // Rerender full list to update view if filtering is off, or ideally re-run search
+            runSearch(); // Keep filter active
             renderStats();
-            saveProgress(); 
         }
 
         function renderStats() {
             const done = biblioData.filter(i => i.status === 'done').length;
+            const reading = biblioData.filter(i => i.status === 'reading').length;
+            const todo = biblioData.filter(i => i.status === 'todo').length;
             const total = biblioData.length;
-            const pct = Math.round((done / total) * 100);
+            
+            const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+            
             document.getElementById('stat-total').innerText = total;
             document.getElementById('count-done').innerText = done;
+            document.getElementById('count-reading').innerText = reading;
+            document.getElementById('count-todo').innerText = todo;
+            
+            const prim = biblioData.filter(i => i.cat === 'Primary Sources').length;
+            document.getElementById('stat-primary').innerText = prim;
+
             document.getElementById('reading-progress-text').innerText = pct + "%";
             document.getElementById('reading-progress-bar').style.width = pct + "%";
         }
@@ -504,16 +530,41 @@
             navigator.clipboard.writeText(txt);
             alert("Citazione copiata!");
         }
+        
+        function selectAllCitations() {
+            document.querySelectorAll('.cite-cb').forEach(cb => cb.checked = true);
+            generateBibliography();
+        }
 
         function generateBibliography() {
             const checked = Array.from(document.querySelectorAll('.cite-cb:checked')).map(c => c.value);
             const items = biblioData.filter(i => checked.includes(i.id));
             let out = "";
-            items.forEach(i => { out += `${i.author} (${i.year}). ${i.title}. ${i.pub}.\n\n`; });
+            const style = document.getElementById('citation-style').value;
+            
+            items.forEach(i => { 
+                if(style === 'bibtex') {
+                    out += `@book{${i.id},\n  author = {${i.author}},\n  title = {${i.title}},\n  year = {${i.year}},\n  publisher = {${i.pub}}\n}\n\n`;
+                } else {
+                    out += `${i.author} (${i.year}). ${i.title}. ${i.pub}.\n\n`; 
+                }
+            });
             document.getElementById('citation-output').value = out;
         }
 
-        // --- ROADMAP RESTORED ---
+        function copyCitationOutput() {
+            const txt = document.getElementById('citation-output');
+            txt.select();
+            navigator.clipboard.writeText(txt.value);
+            alert("Bibliografia copiata!");
+        }
+
+        function addExternalCitation() {
+            // Placeholder logic for manual add - in a real app this would push to array
+            alert("Funzione demo: Inserisci i dati direttamente nel codice biblioData per persistenza.");
+        }
+
+        // --- ROADMAP ---
         function renderRoadmap() {
             const sel = document.getElementById('roadmapSelect').value;
             const p = roadmaps[sel];
@@ -539,7 +590,7 @@
             });
         }
 
-        // --- HYBRID AI ENGINE (Gemini 2.5 + Local Fallback) ---
+        // --- HYBRID AI ENGINE ---
         function toggleChat() { document.getElementById('chat-widget').classList.toggle('chat-closed'); document.getElementById('chat-widget').classList.toggle('chat-open'); }
         
         async function sendChat() {
@@ -554,11 +605,13 @@
 
             // Try API
             try {
+                if(!userApiKey) throw new Error("No API Key");
+                
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`;
                 const res = await fetch(url, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Sei un esperto di Simondon/Deleuze. " + txt }] }] })
+                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Sei un esperto di Simondon/Deleuze. Rispondi in italiano accademico. " + txt }] }] })
                 });
                 
                 if(!res.ok) throw new Error("API Fail");
@@ -570,7 +623,8 @@
                 // FALLBACK: Local Logic
                 document.getElementById(loadId).remove();
                 const localRes = localBrain(txt);
-                addMessage(`(Offline Mode) ${localRes}`, 'bot');
+                const prefix = userApiKey ? "(Errore API) " : "(Offline - Configura API Key) ";
+                addMessage(`${prefix}${localRes}`, 'bot');
             }
         }
 
@@ -581,7 +635,7 @@
                 return `Ho trovato queste fonti nel tuo database locale: <br>${found.map(f => `- <b>${f.title}</b> (${f.desc})`).join('<br>')}`;
             }
             if(q.includes("individuazione")) return "L'individuazione per Simondon non è l'individuo, ma il processo di presa di forma da uno stato metastabile.";
-            return "Non ho accesso all'API e non ho trovato riscontri locali precisi. Prova a cercare il titolo di un libro.";
+            return "Non ho accesso all'API. Prova a cercare il titolo di un libro nel database.";
         }
 
         function addMessage(txt, role) {
@@ -596,7 +650,12 @@
 
         // --- SETTINGS ---
         function toggleSettings() { document.getElementById('settings-modal').classList.toggle('hidden'); }
-        function saveSettings() { userApiKey = document.getElementById('api-key-input').value; localStorage.setItem('gemini_api_key', userApiKey); toggleSettings(); alert("Salvato"); }
+        function saveSettings() { 
+            userApiKey = document.getElementById('api-key-input').value; 
+            localStorage.setItem('gemini_api_key', userApiKey); 
+            toggleSettings(); 
+            alert("API Key Salvata!"); 
+        }
 
         // --- POMODORO ---
         let timer, time = 1500, running = false;
