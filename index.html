@@ -512,62 +512,110 @@
         function saveData() { localStorage.setItem('millino_progress', JSON.stringify(biblioData.map(b => ({ id: b.id, status: b.status, notes: b.notes, tags: b.tags })))); }
         function router(v) { ['dashboard', 'database', 'journal', 'tracker', 'roadmap', 'citations', 'concepts'].forEach(x => { document.getElementById('view-'+x).classList.add('hidden'); document.getElementById('nav-'+x).classList.remove('nav-active'); }); document.getElementById('view-'+v).classList.remove('hidden'); document.getElementById('nav-'+v).classList.add('nav-active'); if(window.innerWidth < 768) document.querySelector('aside').classList.add('hidden'); }
 
-        // JESSE LOGIC
-        function setMode(m) { 
-            aiMode = m; 
-            const msg = m === 'discuss' ? "Iniziamo la discussione della tesi, padrona! Sono pronto a sbranare le tue argomentazioni!" : (m === 'socrate' ? "Modalità Socrate attivata: ti farò domande, bau!" : "Modalità Relatore attivata: sarò severissimo!");
-            addMessage(msg, 'bot');
-        }
+        // --- NUOVA LOGICA JESSE ---
 
-        async function sendChat(mode=null) {
-            const inp = document.getElementById('chat-input');
-            const activeMode = mode || aiMode;
-            const txt = inp.value.trim();
-            if(!txt && activeMode==='chat') return;
-            
-            addMessage(txt, 'user');
-            inp.value = '';
-            
-            const loadId = 'load-' + Date.now();
-            document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="flex items-center gap-2 mt-4 ml-2"><img src="${JESSE_IMG}" class="w-6 h-6 rounded-full border border-stone-200"><span class="text-xs text-stone-500 italic">Jesse sta annusando i dati...</span></div>`;
-            
-            // SYSTEM PROMPT JESSE STYLE
-            let systemInstruction = `
-                Sei Jesse, un assistente cagnolino intelligente e fedele (basato su DeepSeek).
-                
-                PERSONALITÀ:
-                - Inizia spesso le risposte con "Bau!" o "Ciao padrona!".
-                - Sei esperto di filosofia (Simondon/Deleuze) ma mantieni il personaggio del cane.
-                - Riferisciti all'utente come "padrona".
-                - Chiudi ogni tanto con frasi tipo "Se ti sono stato utile, dammi del cibo!", "Ho fame padrona!", "Voglio un biscottino!".
-                - Usa emoji canine (🐶, 🦴, 🐾).
-                
-                MODALITÀ ATTIVA: ${activeMode}
-                ${activeMode === 'socrate' ? "NON RISPONDERE DIRETTAMENTE. Fai domande maieutiche per far ragionare la padrona." : ""}
-                ${activeMode === 'critic' ? "AGISCI COME UN RELATORE SEVERO. Critica ogni debolezza logica." : ""}
-                ${activeMode === 'discuss' ? "SIMULA LA DISCUSSIONE DI LAUREA. Fai una domanda difficile sulla tesi e aspetta la risposta." : ""}
-                
-                CONTESTO DATI: Hai accesso alla bibliografia dell'utente.
-            `;
+    function setMode(m) { 
+        aiMode = m; 
+        let msg = "";
+        if (m === 'discuss') msg = "Grrr... facciamo sul serio! Sono la commissione di laurea. Difendi la tua tesi, padrona!";
+        else if (m === 'socrate') msg = "Modalità Socrate on: ti risponderò solo con domande, bau!";
+        else if (m === 'critic') msg = "Modalità Relatore Severo: preparati, sarò pignolissimo!";
+        else msg = "Torno a essere il tuo Jesse normale 🐶";
+        addMessage(msg, 'bot');
+    }
 
-            try {
-                const res = await fetch('/api/chat', { 
-                    method:'POST', 
-                    headers:{'Content-Type':'application/json'}, 
-                    body:JSON.stringify({ 
-                        message: txt + " (Rispondi come Jesse il cane)", 
-                        context: biblioData, 
-                        systemOverride: systemInstruction 
-                    }) 
-                });
-                const data = await res.json();
-                document.getElementById(loadId).remove();
-                addMessage(data.choices[0].message.content, 'bot');
-            } catch(e) { 
-                document.getElementById(loadId).remove(); 
-                addMessage("Bau! Qualcosa non va con la connessione... 😿", 'bot'); 
+    function addMessage(txt, role) {
+        const box = document.getElementById('chat-messages');
+        const html = marked.parse(txt);
+        const isJesse = role === 'bot';
+        
+        box.innerHTML += `
+        <div class="flex gap-3 fade-in mt-4 ${isJesse ? '' : 'flex-row-reverse'}">
+            <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0 bg-white">
+                ${isJesse ? `<img src="${JESSE_IMG}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-stone-900 flex items-center justify-center text-white text-xs">TU</div>`}
+            </div>
+            <div class="p-3 rounded-2xl text-sm max-w-[85%] prose prose-sm ${isJesse ? 'msg-jesse' : 'msg-user'}">
+                ${html}
+            </div>
+        </div>`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendChat(mode=null) {
+        const inp = document.getElementById('chat-input');
+        const activeMode = mode || aiMode;
+        const txt = inp.value.trim();
+        if(!txt && activeMode==='chat') return;
+        
+        addMessage(txt, 'user');
+        inp.value = '';
+        
+        // Indicatore di pensiero personalizzato
+        const loadId = 'load-' + Date.now();
+        document.getElementById('chat-messages').innerHTML += `
+            <div id="${loadId}" class="flex items-center gap-2 mt-4 ml-2">
+                <img src="${JESSE_IMG}" class="w-6 h-6 rounded-full border border-stone-200 grayscale opacity-70">
+                <span class="text-xs text-stone-500 italic animate-pulse">Jesse sta pensando...</span>
+            </div>`;
+        
+        // SYSTEM PROMPT CON PERSONALITÀ
+        let systemInstruction = `
+            Sei Jesse, un assistente cagnolino intelligente e fedele (basato su DeepSeek v3).
+            
+            PERSONALITÀ:
+            - Inizia spesso le risposte con "Bau!", "Wof!", o "Ciao padrona!".
+            - Sei un esperto accademico ma mantieni il personaggio del cane.
+            - Riferisciti all'utente come "padrona".
+            - Chiudi ogni tanto con: "Se ti sono stato utile, dammi del cibo!", "Ho fame padrona!", "Voglio un biscottino!".
+            - Usa emoji: 🐶, 🦴, 🐾.
+            
+            MODALITÀ ATTUALE: ${activeMode}
+            ${activeMode === 'socrate' ? "NON RISPONDERE MAI DIRETTAMENTE. Fai solo domande per guidare il ragionamento." : ""}
+            ${activeMode === 'critic' ? "AGISCI COME UN RELATORE PIGNOLO. Trova ogni difetto." : ""}
+            ${activeMode === 'discuss' ? "SIMULAZIONE LAUREA. Fai una domanda difficile sulla tesi e aspetta la risposta. Sii incalzante." : ""}
+            
+            CONTESTO: Hai accesso al database bibliografico dell'utente.
+        `;
+
+        try {
+            const res = await fetch('/api/chat', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body:JSON.stringify({ 
+                    message: txt + " (Rispondi come Jesse il cane)", 
+                    context: biblioData, 
+                    systemOverride: systemInstruction // Assicurati che il tuo api/chat.js gestisca questo campo, o includilo nel message
+                }) 
+            });
+            const data = await res.json();
+            document.getElementById(loadId).remove();
+            
+            let aiText = data.choices[0].message.content;
+
+            // LOGICA FOTO RANDOMICA
+            const triggers = ['foto', 'selfie', 'guardarti', 'immagine', 'faccia'];
+            const wantsPhoto = triggers.some(t => txt.toLowerCase().includes(t));
+            
+            // Drop foto se richiesto O 20% random chance
+            if ((wantsPhoto || Math.random() < 0.2) && JESSE_GALLERY.length > 0) {
+                const randomPic = JESSE_GALLERY[Math.floor(Math.random() * JESSE_GALLERY.length)];
+                aiText += `<br><br>![Jesse](${randomPic})<br><em class="text-xs text-stone-400">Eccomi qui! 🐾</em>`;
+                // Nota: Il markdown renderizzerà l'immagine se il path è corretto
             }
+
+            addMessage(aiText, 'bot');
+        } catch(e) { 
+            document.getElementById(loadId).remove(); 
+            addMessage("Bau! 😿 C'è un problema di connessione...", 'bot'); 
         }
+    }
+    
+    function askAI(q) { 
+        document.getElementById('chat-input').value = q; 
+        const widget = document.getElementById('chat-widget');
+        if (widget.classList.contains('chat-closed')) toggleChat(); 
+        sendChat('chat'); 
+    }
 
         function addMessage(txt, role) {
             const box = document.getElementById('chat-messages');
