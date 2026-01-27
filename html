@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas.phil | v5.3 Research Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; }
+        h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Navigation & Active States */
+        .nav-active { background-color: #1e293b; color: white; border-left: 4px solid #f59e0b; }
+        .nav-item:hover:not(.nav-active) { background-color: #e2e8f0; color: #1e293b; }
+        
+        /* Interactive Elements */
+        .card-hover { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1); }
+        .btn-action:active { transform: scale(0.98); }
+        
+        /* Status Badges (Interactive) */
+        .status-btn { transition: all 0.2s; border: 1px solid transparent; }
+        .status-todo { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+        .status-reading { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+        .status-done { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+        .status-btn:hover { filter: brightness(0.95); cursor: pointer; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Chat Widget */
+        .chat-open { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
+        .chat-closed { transform: translateY(20px) scale(0.95); opacity: 0; pointer-events: none; }
+        
+        /* Typography */
+        .prose p { margin-bottom: 0.8em; line-height: 1.6; }
+        .prose ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 0.8em; }
+        .prose strong { color: #1e293b; font-weight: 600; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden bg-slate-50">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col z-30 hidden md:flex shadow-sm">
+        <div class="p-6 border-b border-slate-100">
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight serif">Atlas<span class="text-indigo-600">.phil</span></h1>
+            <div class="flex justify-between items-center mt-1">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Simondon/Deleuze</p>
+                <span class="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-bold">v5.3.1</span>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto py-6 space-y-1 px-3">
+            <div class="px-3 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ricerca</div>
+            <button onclick="router('dashboard')" id="nav-dashboard" class="nav-item nav-active w-full text-left px-4 py-2.5 rounded-md flex items-center gap-3 transition-colors text-sm font-medium"><span>📊</span> Dashboard</button>
+            <button onclick="router('database')" id="nav-database" class="nav-item w-full text-left px-4 py-2.5 rounded-md flex items-center gap-3 text-slate-600 transition-colors text-sm font-medium"><span>📚</span> Archivio Fonti</button>
+            
+            <div class="px-3 py-2 mt-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Scrittura</div>
+            <button onclick="router('roadmap')" id="nav-roadmap" class="nav-item w-full text-left px-4 py-2.5 rounded-md flex items-center gap-3 text-slate-600 transition-colors text-sm font-medium"><span>🗺️</span> Roadmap Tesi</button>
+            <button onclick="router('citations')" id="nav-citations" class="nav-item w-full text-left px-4 py-2.5 rounded-md flex items-center gap-3 text-slate-600 transition-colors text-sm font-medium"><span>❞</span> Citation Manager</button>
+        </nav>
+
+        <!-- POMODORO -->
+        <div class="px-4 py-3 border-t border-slate-50 bg-slate-50/50">
+            <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase">Focus</span>
+                    <span id="timer-display" class="font-mono text-sm font-bold text-indigo-600">25:00</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleTimer()" id="timer-btn" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs py-1.5 rounded font-medium transition-colors">Start</button>
+                    <button onclick="resetTimer()" class="px-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs py-1.5 rounded">↺</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 border-t border-slate-100">
+            <button onclick="toggleChat()" class="w-full bg-slate-900 hover:bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all transform hover:scale-[1.02] group">
+                <span class="group-hover:animate-pulse">✨</span> Assistant
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative" id="main-wrapper">
+        
+        <!-- Mobile Header -->
+        <div class="md:hidden bg-white border-b border-slate-200 p-4 flex justify-between items-center z-30">
+            <span class="font-bold serif text-lg text-slate-900">Atlas.phil</span>
+            <button onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute'); document.querySelector('aside').classList.toggle('h-full');" class="text-slate-600">☰</button>
+        </div>
+
+        <!-- Scrollable Views -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 relative scroll-smooth" id="content-area">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="space-y-8 fade-in">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h2 class="text-3xl md:text-4xl text-slate-900 mb-2 serif font-bold">Dashboard</h2>
+                        <p class="text-slate-600 font-light text-lg">Stato della ricerca bibliografica.</p>
+                    </div>
+                    <button onclick="toggleSettings()" class="text-slate-400 hover:text-indigo-600 transition-colors">⚙️ Configura</button>
+                </div>
+
+                <!-- Progress Tracker -->
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-end mb-2">
+                        <h3 class="font-bold text-slate-800 text-sm uppercase tracking-wider">Avanzamento Letture</h3>
+                        <span class="text-indigo-600 font-bold" id="reading-progress-text">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                        <div id="reading-progress-bar" class="bg-indigo-600 h-3 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                    <div class="flex gap-6 mt-4 text-xs font-medium">
+                        <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-200"></span> Da Leggere: <b id="count-todo">0</b></span>
+                        <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-200"></span> In Lettura: <b id="count-reading">0</b></span>
+                        <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Completati: <b id="count-done">0</b></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Database Totale</div>
+                        <div class="text-3xl font-bold text-slate-800" id="stat-total">0</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm border-l-4 border-indigo-500">
+                        <div class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Fonti Primarie</div>
+                        <div class="text-3xl font-bold text-indigo-600" id="stat-primary">0</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Motore AI</div>
+                        <div class="text-lg font-bold text-emerald-600 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Gemini 2.5 Flash
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: DATABASE -->
+            <div id="view-database" class="hidden space-y-6 fade-in pb-20">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 sticky top-0 z-20 flex flex-wrap gap-4 items-center">
+                    <div class="flex-1 relative min-w-[200px]">
+                        <span class="absolute left-3 top-2.5 text-slate-400">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Cerca titolo, autore..." 
+                            class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all"
+                            oninput="runSearch()">
+                    </div>
+                    <select id="catFilter" onchange="runSearch()" class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm outline-none cursor-pointer">
+                        <option value="all">Tutte le Categorie</option>
+                        <option value="Primary Sources">Fonti Primarie</option>
+                        <option value="Comparative Studies">Studi Comparativi</option>
+                        <option value="Philosophy of Technology">Filosofia della Tecnica</option>
+                        <option value="Ecological Philosophy">Ecologia</option>
+                    </select>
+                </div>
+
+                <div class="space-y-3" id="results-container">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- VIEW: ROADMAP -->
+            <div id="view-roadmap" class="hidden space-y-8 fade-in pb-20">
+                <div class="flex justify-between items-center gap-4 border-b border-slate-200 pb-6">
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-900 serif">Roadmap & Struttura</h2>
+                        <p class="text-slate-600">Pianificazione strategica dei capitoli.</p>
+                    </div>
+                    <select id="roadmapSelect" onchange="renderRoadmap()" class="bg-white border border-slate-200 text-indigo-700 font-bold text-sm px-4 py-2 rounded-lg outline-none cursor-pointer">
+                        <option value="A">Strategia A: Ontologica</option>
+                        <option value="B">Strategia B: Tecno-Ecologica</option>
+                        <option value="C">Strategia C: Politica</option>
+                    </select>
+                </div>
+                <div class="bg-indigo-50 border border-indigo-100 p-6 rounded-xl">
+                    <h3 class="text-indigo-900 font-bold mb-2" id="roadmap-title"></h3>
+                    <p class="text-indigo-800 text-sm" id="roadmap-desc"></p>
+                </div>
+                <div class="space-y-4" id="chapters-container">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- VIEW: CITATIONS -->
+            <div id="view-citations" class="hidden space-y-6 fade-in pb-20">
+                <div class="flex justify-between items-center border-b border-slate-200 pb-6">
+                    <h2 class="text-3xl font-bold text-slate-900 serif">Citation Manager</h2>
+                </div>
+                
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
+                    <h3 class="font-bold text-slate-700 mb-3 text-sm">Aggiungi Fonte Esterna (Manuale)</h3>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="ext-author" placeholder="Autore (Cognome, N.)" class="flex-1 px-3 py-2 rounded border border-slate-300 text-sm">
+                        <input type="text" id="ext-year" placeholder="Anno" class="w-24 px-3 py-2 rounded border border-slate-300 text-sm">
+                    </div>
+                    <div class="flex gap-2 mb-2">
+                        <input type="text" id="ext-title" placeholder="Titolo" class="flex-1 px-3 py-2 rounded border border-slate-300 text-sm">
+                        <input type="text" id="ext-link" placeholder="URL (opzionale)" class="flex-1 px-3 py-2 rounded border border-slate-300 text-sm">
+                    </div>
+                    <button onclick="addExternalCitation()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-bold rounded">Aggiungi</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[500px]">
+                    <div class="lg:col-span-1 bg-white border border-slate-200 rounded-xl flex flex-col overflow-hidden">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                            <span class="font-bold text-slate-700 text-sm">Seleziona Fonti</span>
+                            <button onclick="selectAllCitations()" class="text-indigo-600 text-xs hover:underline">Seleziona Tutto</button>
+                        </div>
+                        <div class="flex-1 overflow-y-auto p-2 space-y-1" id="citation-list"></div>
+                    </div>
+                    <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl flex flex-col">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200 flex gap-4 items-center">
+                             <select id="citation-style" onchange="generateBibliography()" class="bg-white border border-slate-300 rounded px-2 py-1 text-sm outline-none">
+                                <option value="apa">APA 7</option>
+                                <option value="chicago">Chicago</option>
+                                <option value="bibtex">BibTeX</option>
+                            </select>
+                            <button onclick="copyCitationOutput()" class="text-xs font-bold text-indigo-600">Copia Tutto</button>
+                        </div>
+                        <textarea id="citation-output" class="flex-1 p-4 font-mono text-xs text-slate-600 outline-none resize-none" readonly placeholder="Seleziona le fonti a sinistra..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- AI CHAT WIDGET -->
+        <div id="chat-widget" class="fixed bottom-6 right-6 w-96 h-[600px] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col z-50 transition-all duration-300 chat-closed origin-bottom-right overflow-hidden ring-1 ring-slate-900/5">
+            <div class="bg-slate-900 p-4 flex justify-between items-center text-white shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-xs shadow-inner">AI</div>
+                    <div><h4 class="font-bold text-sm">Gemini 2.5 Flash</h4><div class="text-[10px] text-slate-300 opacity-80">Research Assistant</div></div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-slate-400 hover:text-white text-xs">↺</button>
+                    <button onclick="toggleChat()" class="text-slate-400 hover:text-white">✕</button>
+                </div>
+            </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 scroll-smooth"></div>
+            <div class="p-3 bg-white border-t border-slate-100 shrink-0">
+                <div class="flex gap-2 relative">
+                    <input type="text" id="chat-input" placeholder="Chiedi all'AI..." class="flex-1 pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-shadow" onkeypress="if(event.key==='Enter') sendChat()">
+                    <button onclick="sendChat()" class="absolute right-2 top-2 bottom-2 w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-md transition-all">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS MODAL -->
+        <div id="settings-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] hidden flex items-center justify-center fade-in">
+            <div class="bg-white rounded-xl shadow-2xl p-6 w-96 max-w-full">
+                <h3 class="text-lg font-bold text-slate-900 mb-4">Configurazione API</h3>
+                <input type="password" id="api-key-input" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-indigo-500 mb-4" placeholder="Inserisci Gemini API Key">
+                <div class="flex justify-end gap-2">
+                    <button onclick="toggleSettings()" class="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm">Chiudi</button>
+                    <button onclick="saveSettings()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium">Salva</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- CONFIG ---
+        const DEFAULT_API_KEY = "AIzaSyBrUwYGQGVzsopcgPjKFjb8kVKDqv5z6wM"; 
+        let userApiKey = localStorage.getItem('gemini_api_key') || DEFAULT_API_KEY;
+
+        // --- MASSIVE BIBLIOGRAPHY (100 Sources) ---
+        const biblioData = [
+            // SIMONDON PRIMARY
+            { id: "S01", author: "Simondon, G.", year: "2005", title: "L'individuation à la lumière des notions de forme et d'information", pub: "Jérôme Millon", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Il testo base sull'individuatione.", status: "todo" },
+            { id: "S02", author: "Simondon, G.", year: "1958", title: "Du mode d'existence des objets techniques", pub: "Aubier", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Genesi tecnica e alienazione.", status: "todo" },
+            { id: "S03", author: "Simondon, G.", year: "1989", title: "L'individuation psychique et collective", pub: "Aubier", cat: "Primary Sources", prio: "HIGH", desc: "Transindividuale e affettività.", status: "todo" },
+            { id: "S04", author: "Simondon, G.", year: "2008", title: "Imagination et invention", pub: "La Transparence", cat: "Primary Sources", prio: "HIGH", desc: "Ciclo delle immagini.", status: "todo" },
+            { id: "S05", author: "Simondon, G.", year: "2010", title: "Communication et information", pub: "La Transparence", cat: "Primary Sources", prio: "MEDIUM", desc: "Cibernetica.", status: "todo" },
+            { id: "S06", author: "Simondon, G.", year: "2006", title: "L'invention dans les techniques", pub: "Seuil", cat: "Primary Sources", prio: "MEDIUM", desc: "L'atto inventivo.", status: "todo" },
+            { id: "S07", author: "Simondon, G.", year: "2014", title: "Sur la technique", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Saggi vari sulla tecnica.", status: "todo" },
+            { id: "S08", author: "Simondon, G.", year: "2015", title: "Sur la psychologie", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Scritti psicologici.", status: "todo" },
+            { id: "S09", author: "Simondon, G.", year: "2016", title: "Sur la philosophie", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Storia della filosofia.", status: "todo" },
+            { id: "S10", author: "Simondon, G.", year: "2004", title: "Deux leçons sur l'animal et l'homme", pub: "Ellipses", cat: "Primary Sources", prio: "MEDIUM", desc: "Antropologia filosofica.", status: "todo" },
+            { id: "S11", author: "Simondon, G.", year: "1960", title: "Forme, information, potentiels", pub: "Bulletin SFP", cat: "Primary Sources", prio: "HIGH", desc: "Articolo di sintesi chiave.", status: "todo" },
+            { id: "S12", author: "Simondon, G.", year: "1965", title: "Culture et technique", pub: "Bulletin I.P.S.O.", cat: "Primary Sources", prio: "MEDIUM", desc: "Rapporto cultura/tecnica.", status: "todo" },
+            { id: "S13", author: "Simondon, G.", year: "1953", title: "La mentalité technique", pub: "PUF", cat: "Primary Sources", prio: "HIGH", desc: "Schemi cognitivi tecnici.", status: "todo" },
+            { id: "S14", author: "Simondon, G.", year: "1983", title: "L'histoire de la notion d'individu", pub: "Vrin", cat: "Primary Sources", prio: "MEDIUM", desc: "Corso storico.", status: "todo" },
+            { id: "S15", author: "Simondon, G.", year: "1992", title: "Perception et modulation", pub: "Vrin", cat: "Primary Sources", prio: "MEDIUM", desc: "Teoria della percezione.", status: "todo" },
+
+            // DELEUZE PRIMARY
+            { id: "D01", author: "Deleuze, G.", year: "1968", title: "Différence et répétition", pub: "PUF", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Ontologia della differenza.", status: "todo" },
+            { id: "D02", author: "Deleuze, G.", year: "1969", title: "Logique du sens", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Evento e singolarità.", status: "todo" },
+            { id: "D03", author: "Deleuze, G. & Guattari, F.", year: "1972", title: "L'Anti-Œdipe", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Macchine desideranti.", status: "todo" },
+            { id: "D04", author: "Deleuze, G. & Guattari, F.", year: "1980", title: "Mille Plateaux", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Rizoma e agencement.", status: "todo" },
+            { id: "D05", author: "Deleuze, G.", year: "1988", title: "Le Pli: Leibniz et le baroque", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Modulazione.", status: "todo" },
+            { id: "D06", author: "Deleuze, G.", year: "2002", title: "L'île déserte", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Recensione a Simondon.", status: "todo" },
+            { id: "D07", author: "Deleuze, G.", year: "1966", title: "Le Bergsonisme", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Virtuale/Attuale.", status: "todo" },
+            { id: "D08", author: "Deleuze, G.", year: "1981", title: "Spinoza: Philosophie pratique", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Etologia degli affetti.", status: "todo" },
+            { id: "D09", author: "Deleuze, G.", year: "1990", title: "Pourparlers", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Società del controllo.", status: "todo" },
+            { id: "D10", author: "Deleuze, G. & Guattari, F.", year: "1991", title: "Qu'est-ce que la philosophie?", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Concetti e piano di immanenza.", status: "todo" },
+            { id: "D11", author: "Deleuze, G.", year: "1962", title: "Nietzsche et la philosophie", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Forza e volontà.", status: "todo" },
+            { id: "D12", author: "Deleuze, G.", year: "1983", title: "Cinéma 1: L'Image-Mouvement", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Immagine e tempo.", status: "todo" },
+            { id: "D13", author: "Deleuze, G.", year: "1985", title: "Cinéma 2: L'Image-Temps", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Cristallo di tempo.", status: "todo" },
+            { id: "D14", author: "Deleuze, G.", year: "1964", title: "Proust et les signes", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Segni e apprendimento.", status: "todo" },
+            { id: "D15", author: "Deleuze, G.", year: "2003", title: "Deux régimes de fous", pub: "Minuit", cat: "Primary Sources", prio: "LOW", desc: "Testi postumi.", status: "todo" },
+
+            // COMPARATIVE STUDIES
+            { id: "C01", author: "Combes, M.", year: "1999", title: "Simondon. Individu et collectivité", pub: "PUF", cat: "Comparative Studies", prio: "ESSENTIAL", desc: "Politica del transindividuale.", status: "todo" },
+            { id: "C02", author: "Barthélémy, J.H.", year: "2005", title: "Penser l'individuation", pub: "L'Harmattan", cat: "Comparative Studies", prio: "HIGH", desc: "Rigore filologico.", status: "todo" },
+            { id: "C03", author: "Barthélémy, J.H.", year: "2008", title: "Simondon ou l'encyclopédisme génétique", pub: "PUF", cat: "Comparative Studies", prio: "HIGH", desc: "Sistematica simondoniana.", status: "todo" },
+            { id: "C04", author: "Garelli, G.", year: "2004", title: "Il problema dell'individuazione", pub: "Aut Aut", cat: "Comparative Studies", prio: "HIGH", desc: "Confronto diretto.", status: "todo" },
+            { id: "C05", author: "Toscano, A.", year: "2006", title: "The Theatre of Production", pub: "Palgrave", cat: "Comparative Studies", prio: "HIGH", desc: "Ontologia produttiva.", status: "todo" },
+            { id: "C06", author: "Sauvagnargues, A.", year: "2009", title: "Deleuze, l'empirisme transcendantal", pub: "PUF", cat: "Comparative Studies", prio: "MEDIUM", desc: "Estetica e genesi.", status: "todo" },
+            { id: "C07", author: "Chabot, P.", year: "2003", title: "La philosophie de Simondon", pub: "Vrin", cat: "Comparative Studies", prio: "MEDIUM", desc: "Introduzione generale.", status: "todo" },
+            { id: "C08", author: "De Boever, A.", year: "2013", title: "Gilbert Simondon: Being and Technology", pub: "Edinburgh UP", cat: "Comparative Studies", prio: "MEDIUM", desc: "Analisi anglofona.", status: "todo" },
+            { id: "C09", author: "Bardin, A.", year: "2015", title: "Epistemology and Political Philosophy in Simondon", pub: "Springer", cat: "Comparative Studies", prio: "HIGH", desc: "Politica e cibernetica.", status: "todo" },
+            { id: "C10", author: "Vignola, P.", year: "2011", title: "La lingua animale", pub: "Quodlibet", cat: "Comparative Studies", prio: "MEDIUM", desc: "Animalità e politica.", status: "todo" },
+            { id: "C11", author: "Montebello, P.", year: "2002", title: "L'autre métaphysique", pub: "Desclée", cat: "Comparative Studies", prio: "HIGH", desc: "Natura e spirito.", status: "todo" },
+            { id: "C12", author: "Roffe, J.", year: "2012", title: "Badiou's Deleuze", pub: "Acumen", cat: "Comparative Studies", prio: "LOW", desc: "Critica.", status: "todo" },
+            { id: "C13", author: "Stiegler, B.", year: "2018", title: "The Age of Disruption", pub: "Polity", cat: "Comparative Studies", prio: "MEDIUM", desc: "Disagio tecnologico.", status: "todo" },
+            { id: "C14", author: "Massumi, B.", year: "2002", title: "Parables for the Virtual", pub: "Duke UP", cat: "Comparative Studies", prio: "MEDIUM", desc: "Affetto e virtuale.", status: "todo" },
+            { id: "C15", author: "Guchet, X.", year: "2010", title: "Pour un humanisme technologique", pub: "PUF", cat: "Comparative Studies", prio: "HIGH", desc: "Umanesimo tecnico.", status: "todo" },
+
+            // TECH & ECOLOGY
+            { id: "T01", author: "Stiegler, B.", year: "1994", title: "La technique et le temps 1", pub: "Galilée", cat: "Philosophy of Technology", prio: "ESSENTIAL", desc: "Epifilogenesi.", status: "todo" },
+            { id: "T02", author: "Stiegler, B.", year: "1996", title: "La technique et le temps 2", pub: "Galilée", cat: "Philosophy of Technology", prio: "HIGH", desc: "Disorientamento.", status: "todo" },
+            { id: "T03", author: "Hui, Y.", year: "2016", title: "On the Existence of Digital Objects", pub: "Minnesota UP", cat: "Philosophy of Technology", prio: "HIGH", desc: "Simondon digitale.", status: "todo" },
+            { id: "T04", author: "Hui, Y.", year: "2017", title: "The Question Concerning Technology in China", pub: "Urbanomic", cat: "Philosophy of Technology", prio: "HIGH", desc: "Cosmotecnica.", status: "todo" },
+            { id: "T05", author: "Hui, Y.", year: "2019", title: "Recursivity and Contingency", pub: "Rowman", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Ricorsività.", status: "todo" },
+            { id: "T06", author: "Heidegger, M.", year: "1954", title: "Die Frage nach der Technik", pub: "Neske", cat: "Philosophy of Technology", prio: "HIGH", desc: "Gestell.", status: "todo" },
+            { id: "T07", author: "Ellul, J.", year: "1954", title: "La Technique ou l'Enjeu du siècle", pub: "Colin", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Sistema tecnico.", status: "todo" },
+            { id: "T08", author: "Wiener, N.", year: "1948", title: "Cybernetics", pub: "MIT", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Cibernetica classica.", status: "todo" },
+            { id: "T09", author: "Leroi-Gourhan, A.", year: "1964", title: "Le Geste et la Parole", pub: "Albin Michel", cat: "Philosophy of Technology", prio: "HIGH", desc: "Evoluzione tecnica.", status: "todo" },
+            { id: "T10", author: "Simondon, G.", year: "1959", title: "L'Amplification dans les processus d'information", pub: "-", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Amplificazione.", status: "todo" },
+            { id: "T11", author: "Feenberg, A.", year: "1999", title: "Questioning Technology", pub: "Routledge", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Teoria critica.", status: "todo" },
+            { id: "T12", author: "Ihde, D.", year: "1990", title: "Technology and the Lifeworld", pub: "Indiana UP", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Post-fenomenologia.", status: "todo" },
+            { id: "T13", author: "Verbeek, P.P.", year: "2005", title: "What Things Do", pub: "Penn State", cat: "Philosophy of Technology", prio: "LOW", desc: "Mediazione materiale.", status: "todo" },
+            { id: "T14", author: "Hayles, N.K.", year: "1999", title: "How We Became Posthuman", pub: "Chicago UP", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Corpo e info.", status: "todo" },
+            { id: "T15", author: "Kittler, F.", year: "1986", title: "Grammophon, Film, Typewriter", pub: "Brinkmann", cat: "Philosophy of Technology", prio: "LOW", desc: "Media studies.", status: "todo" },
+
+            // ECOLOGICAL PHILOSOPHY (15)
+            { id: "E01", author: "Guattari, F.", year: "1989", title: "Les trois écologies", pub: "Galilée", cat: "Ecological Philosophy", prio: "ESSENTIAL", desc: "Ecosofia.", status: "todo" },
+            { id: "E02", author: "Guattari, F.", year: "1992", title: "Chaosmose", pub: "Galilée", cat: "Ecological Philosophy", prio: "HIGH", desc: "Soggettività ecologica.", status: "todo" },
+            { id: "E03", author: "Haraway, D.", year: "2016", title: "Staying with the Trouble", pub: "Duke UP", cat: "Ecological Philosophy", prio: "HIGH", desc: "Chthulucene.", status: "todo" },
+            { id: "E04", author: "Bennett, J.", year: "2010", title: "Vibrant Matter", pub: "Duke UP", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Materialismo vitale.", status: "todo" },
+            { id: "E05", author: "Morton, T.", year: "2010", title: "The Ecological Thought", pub: "Harvard UP", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Dark ecology.", status: "todo" },
+            { id: "E06", author: "Latour, B.", year: "1991", title: "Nous n'avons jamais été modernes", pub: "La Découverte", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Ibridi.", status: "todo" },
+            { id: "E07", author: "Latour, B.", year: "1999", title: "Politiques de la nature", pub: "La Découverte", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Parlamento delle cose.", status: "todo" },
+            { id: "E08", author: "Descola, P.", year: "2005", title: "Par-delà nature et culture", pub: "Gallimard", cat: "Ecological Philosophy", prio: "HIGH", desc: "Ontologie multiple.", status: "todo" },
+            { id: "E09", author: "Serres, M.", year: "1990", title: "Le Contrat naturel", pub: "Bourin", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Diritto della terra.", status: "todo" },
+            { id: "E10", author: "Stengers, I.", year: "2009", title: "Au temps des catastrophes", pub: "La Découverte", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Intrusione di Gaia.", status: "todo" },
+            { id: "E11", author: "Braidotti, R.", year: "2013", title: "The Posthuman", pub: "Polity", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Soggettività nomade.", status: "todo" },
+            { id: "E12", author: "Citton, Y.", year: "2014", title: "Pour une écologie de l'attention", pub: "Seuil", cat: "Ecological Philosophy", prio: "LOW", desc: "Ecologia mentale.", status: "todo" },
+            { id: "E13", author: "Hui, Y.", year: "2021", title: "Art and Cosmotechnics", pub: "Minnesota UP", cat: "Ecological Philosophy", prio: "HIGH", desc: "Estetica e cosmo.", status: "todo" },
+            { id: "E14", author: "Tsing, A.", year: "2015", title: "The Mushroom at the End of the World", pub: "Princeton UP", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Rovine capitaliste.", status: "todo" },
+            { id: "E15", author: "Viveiros de Castro, E.", year: "2009", title: "Métaphysiques cannibales", pub: "PUF", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Prospettivismo.", status: "todo" },
+
+            // BACKGROUND/SECONDARY (10)
+            { id: "B01", author: "Bergson, H.", year: "1907", title: "L'évolution créatrice", pub: "Alcan", cat: "Background", prio: "HIGH", desc: "Slancio vitale.", status: "todo" },
+            { id: "B02", author: "Spinoza, B.", year: "1677", title: "Ethica", pub: "-", cat: "Background", prio: "HIGH", desc: "Sostanza e modi.", status: "todo" },
+            { id: "B03", author: "Canguilhem, G.", year: "1952", title: "La connaissance de la vie", pub: "Vrin", cat: "Background", prio: "HIGH", desc: "Normatività biologica.", status: "todo" },
+            { id: "B04", author: "Merleau-Ponty, M.", year: "1945", title: "Phénoménologie de la perception", pub: "Gallimard", cat: "Background", prio: "MEDIUM", desc: "Corpo proprio.", status: "todo" },
+            { id: "B05", author: "Ruyer, R.", year: "1952", title: "Néo-finalisme", pub: "PUF", cat: "Background", prio: "MEDIUM", desc: "Embriogenesi.", status: "todo" },
+            { id: "B06", author: "Whitehead, A.N.", year: "1929", title: "Process and Reality", pub: "Macmillan", cat: "Background", prio: "MEDIUM", desc: "Processo.", status: "todo" },
+            { id: "B07", author: "Bachelard, G.", year: "1934", title: "Le nouvel esprit scientifique", pub: "PUF", cat: "Background", prio: "MEDIUM", desc: "Epistemologia.", status: "todo" },
+            { id: "B08", author: "Nietzsche, F.", year: "1887", title: "Zur Genealogie der Moral", pub: "-", cat: "Background", prio: "MEDIUM", desc: "Genealogia.", status: "todo" },
+            { id: "B09", author: "Leibniz, G.W.", year: "1714", title: "Monadologie", pub: "-", cat: "Background", prio: "MEDIUM", desc: "Monadi.", status: "todo" },
+            { id: "B10", author: "Uexküll, J. von", year: "1934", title: "Streifzüge durch die Umwelten", pub: "-", cat: "Background", prio: "MEDIUM", desc: "Umwelt.", status: "todo" }
+        ];
+
+        const roadmaps = {
+            A: {
+                title: "Strategia A: Classica Comparativa (Ontologica)",
+                desc: "Approccio fondativo metafisico che confronta i sistemi.",
+                chapters: [
+                    { title: "1. La Genesi dell'Individuo", goal: "Confrontare i meccanismi di genesi.", sources: ["S01", "D01", "C02"], structure: ["1.1 La critica all'ilemorfismo.", "1.2 Simondon: Preindividuale e metastabilità.", "1.3 Deleuze: Differenza in sé e virtuale."] },
+                    { title: "2. L'Oggetto Tecnico", goal: "Analizzare la tecnica.", sources: ["S02", "D02", "T01"], structure: ["2.1 Invenzione e Concretizzazione.", "2.2 Macchine desideranti.", "2.3 Alienazione vs Cultura Tecnica."] },
+                    { title: "3. Etica e Transindividuale", goal: "Proporre un'etica relazionale.", sources: ["S03", "C01", "E01"], structure: ["3.1 L'individuazione psichica e collettiva.", "3.2 Il Transindividuale.", "3.3 Divenire-altro."] }
+                ]
+            },
+            B: {
+                title: "Strategia B: Genesi Tecno-Ecologica",
+                desc: "Taglio contemporaneo (Philosophy of Technology).",
+                chapters: [
+                    { title: "1. Ecologia delle Macchine", goal: "Ambiente come sistema.", sources: ["S02", "D04", "E01"], structure: ["1.1 Natura e Tecnica.", "1.2 Il concetto di 'Milieu'.", "1.3 Rizoma e macchinico."] },
+                    { title: "2. Organologia e Cosmotecnica", goal: "Integrazione Stiegler/Hui.", sources: ["T01", "T04", "E13"], structure: ["2.1 Ritenzione terziaria.", "2.2 Cosmotecniche.", "2.3 Oggetto digitale."] },
+                    { title: "3. Politiche della Coesistenza", goal: "Conclusioni per l'Antropocene.", sources: ["E01", "E03", "E08"], structure: ["3.1 Ecosofia.", "3.2 Transindividualità planetaria.", "3.3 Ontologie multiple."] }
+                ]
+            },
+            C: {
+                title: "Strategia C: Politica del Transindividuale",
+                desc: "Focus sulla dimensione psico-sociale e politica.",
+                chapters: [
+                    { title: "1. Oltre l'Individuo Liberale", goal: "Critica del soggetto.", sources: ["S03", "C01", "C09"], structure: ["1.1 Il soggetto come effetto.", "1.2 Angoscia e individuazione."] },
+                    { title: "2. Il Collettivo", goal: "Genesi del gruppo.", sources: ["S03", "D04", "C18"], structure: ["2.1 In-formazione.", "2.2 Moltitudini."] },
+                    { title: "3. Potere e Tecnica", goal: "Controllo vs Liberazione.", sources: ["D09", "T11", "T01"], structure: ["3.1 Società del controllo.", "3.2 Potenziare il transindividuale."] }
+                ]
+            }
+        };
+
+        let externalCitations = [];
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            document.getElementById('api-key-input').value = userApiKey;
+        });
+
+        function initApp() {
+            router('dashboard');
+            renderDatabase();
+            renderStats();
+            renderRoadmap();
+            renderCitationsList();
+        }
+
+        // --- ROUTING ---
+        function router(viewName) {
+            ['dashboard', 'database', 'roadmap', 'citations'].forEach(v => {
+                const el = document.getElementById('view-' + v);
+                const btn = document.getElementById('nav-' + v);
+                if (el) el.classList.add('hidden');
+                if (btn) { btn.classList.remove('nav-active', 'text-slate-900'); btn.classList.add('text-slate-600'); }
+            });
+            document.getElementById('view-' + viewName).classList.remove('hidden');
+            const btn = document.getElementById('nav-' + viewName);
+            if (btn) { btn.classList.add('nav-active'); btn.classList.remove('text-slate-600'); }
+            if(window.innerWidth < 768) document.querySelector('aside').classList.add('hidden');
+        }
+
+        // --- DATABASE ---
+        function renderDatabase() { runSearch(); }
+
+        function runSearch() {
+            const txt = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = biblioData.filter(i => i.title.toLowerCase().includes(txt) || i.author.toLowerCase().includes(txt));
+            renderList(filtered);
+        }
+
+        function renderList(data) {
+            const list = document.getElementById('results-container');
+            list.innerHTML = '';
+            data.forEach(item => {
+                const statusClass = item.status === 'done' ? 'status-done' : (item.status === 'reading' ? 'status-reading' : 'status-todo');
+                const statusLabel = item.status === 'done' ? 'Letto' : (item.status === 'reading' ? 'In Corso' : 'Da Leggere');
+                
+                list.innerHTML += `
+                <div class="bg-white p-5 rounded-lg border border-slate-200 shadow-sm card-hover flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-2">
+                            <button onclick="cycleStatus('${item.id}')" class="text-[10px] px-2 py-0.5 rounded uppercase font-bold cursor-pointer status-btn ${statusClass}">${statusLabel}</button>
+                            <span class="text-[10px] bg-slate-50 text-slate-500 px-2 py-0.5 rounded border border-slate-200 uppercase">${item.cat}</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 serif leading-tight">${item.title}</h3>
+                        <div class="text-sm text-slate-700 font-medium mt-1">${item.author} (${item.year})</div>
+                        <p class="text-sm text-slate-600 mt-2 border-l-2 border-slate-100 pl-3">${item.desc}</p>
+                    </div>
+                    <div class="flex md:flex-col justify-end gap-2 md:w-32 md:border-l md:border-slate-50 md:pl-4">
+                        <button onclick="copySingleCitation('${item.id}')" class="px-3 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded text-center btn-action hover:bg-slate-200">Copia Cit.</button>
+                        <button onclick="askAI('Analizza ${item.title}')" class="px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-bold rounded text-center btn-action">✨ Analizza</button>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function cycleStatus(id) {
+            const idx = biblioData.findIndex(i => i.id === id);
+            const map = { 'todo': 'reading', 'reading': 'done', 'done': 'todo' };
+            biblioData[idx].status = map[biblioData[idx].status || 'todo'];
+            renderList(biblioData);
+            renderStats();
+        }
+
+        function renderStats() {
+            const done = biblioData.filter(i => i.status === 'done').length;
+            const total = biblioData.length;
+            const pct = Math.round((done / total) * 100);
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('count-done').innerText = done;
+            document.getElementById('reading-progress-text').innerText = pct + "%";
+            document.getElementById('reading-progress-bar').style.width = pct + "%";
+        }
+
+        // --- CITATIONS ---
+        function renderCitationsList() {
+            const list = document.getElementById('citation-list');
+            list.innerHTML = '';
+            biblioData.forEach(item => {
+                list.innerHTML += `<label class="flex items-center gap-2 p-2 hover:bg-slate-50 rounded cursor-pointer"><input type="checkbox" class="accent-indigo-600 cite-cb" value="${item.id}" onchange="generateBibliography()"><span class="text-xs text-slate-700 truncate">${item.author} - ${item.title}</span></label>`;
+            });
+        }
+
+        function copySingleCitation(id) {
+            const i = biblioData.find(x => x.id === id);
+            const txt = `${i.author} (${i.year}). ${i.title}. ${i.pub}.`;
+            navigator.clipboard.writeText(txt);
+            alert("Citazione copiata!");
+        }
+
+        function generateBibliography() {
+            const checked = Array.from(document.querySelectorAll('.cite-cb:checked')).map(c => c.value);
+            const items = biblioData.filter(i => checked.includes(i.id));
+            let out = "";
+            items.forEach(i => { out += `${i.author} (${i.year}). ${i.title}. ${i.pub}.\n\n`; });
+            document.getElementById('citation-output').value = out;
+        }
+
+        // --- ROADMAP RESTORED ---
+        function renderRoadmap() {
+            const sel = document.getElementById('roadmapSelect').value;
+            const p = roadmaps[sel];
+            document.getElementById('roadmap-title').innerText = p.title;
+            document.getElementById('roadmap-desc').innerText = p.desc;
+            const c = document.getElementById('chapters-container');
+            c.innerHTML = '';
+            p.chapters.forEach((chap, i) => {
+                c.innerHTML += `
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h4 class="font-bold text-slate-800">${chap.title}</h4>
+                        <button onclick="askAI('Aiutami con il capitolo: ${chap.title}')" class="text-xs bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">Chiedi all'AI</button>
+                    </div>
+                    <div class="p-5">
+                        <p class="text-sm text-slate-600 italic mb-3 bg-indigo-50 p-2 rounded">${chap.goal}</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><h5 class="text-xs font-bold text-slate-500 uppercase mb-2">Struttura</h5><ul class="text-sm list-disc pl-4 text-slate-700">${chap.structure.map(s=>`<li>${s}</li>`).join('')}</ul></div>
+                            <div><h5 class="text-xs font-bold text-slate-500 uppercase mb-2">Fonti</h5><ul class="text-sm text-slate-600">${chap.sources.join(', ')}</ul></div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        // --- HYBRID AI ENGINE (Gemini 2.5 + Local Fallback) ---
+        function toggleChat() { document.getElementById('chat-widget').classList.toggle('chat-closed'); document.getElementById('chat-widget').classList.toggle('chat-open'); }
+        
+        async function sendChat() {
+            const inp = document.getElementById('chat-input');
+            const txt = inp.value.trim();
+            if(!txt) return;
+            addMessage(txt, 'user');
+            inp.value = '';
+            
+            const loadId = 'load-' + Date.now();
+            document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="text-xs text-slate-400 mt-2 ml-4">Thinking...</div>`;
+
+            // Try API
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`;
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ role: "user", parts: [{ text: "Sei un esperto di Simondon/Deleuze. " + txt }] }] })
+                });
+                
+                if(!res.ok) throw new Error("API Fail");
+                
+                const data = await res.json();
+                document.getElementById(loadId).remove();
+                addMessage(data.candidates[0].content.parts[0].text, 'bot');
+            } catch(e) {
+                // FALLBACK: Local Logic
+                document.getElementById(loadId).remove();
+                const localRes = localBrain(txt);
+                addMessage(`(Offline Mode) ${localRes}`, 'bot');
+            }
+        }
+
+        function localBrain(query) {
+            const q = query.toLowerCase();
+            const found = biblioData.filter(i => q.includes(i.title.toLowerCase()) || q.includes(i.author.toLowerCase().split(',')[0].toLowerCase()));
+            if(found.length > 0) {
+                return `Ho trovato queste fonti nel tuo database locale: <br>${found.map(f => `- <b>${f.title}</b> (${f.desc})`).join('<br>')}`;
+            }
+            if(q.includes("individuazione")) return "L'individuazione per Simondon non è l'individuo, ma il processo di presa di forma da uno stato metastabile.";
+            return "Non ho accesso all'API e non ho trovato riscontri locali precisi. Prova a cercare il titolo di un libro.";
+        }
+
+        function addMessage(txt, role) {
+            const box = document.getElementById('chat-messages');
+            const isUser = role === 'user';
+            const html = marked.parse(txt);
+            box.innerHTML += `<div class="flex gap-3 ${isUser ? 'flex-row-reverse' : ''} fade-in mt-2"><div class="bg-white border border-slate-200 p-3 rounded-2xl ${isUser ? 'bg-indigo-50 border-indigo-100' : ''} text-sm max-w-[90%] prose prose-sm">${html}</div></div>`;
+            box.scrollTop = box.scrollHeight;
+        }
+        
+        function askAI(q) { toggleChat(); document.getElementById('chat-input').value = q; sendChat(); }
+
+        // --- SETTINGS ---
+        function toggleSettings() { document.getElementById('settings-modal').classList.toggle('hidden'); }
+        function saveSettings() { userApiKey = document.getElementById('api-key-input').value; localStorage.setItem('gemini_api_key', userApiKey); toggleSettings(); alert("Salvato"); }
+
+        // --- POMODORO ---
+        let timer, time = 1500, running = false;
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            if(running) { clearInterval(timer); running = false; btn.innerText = "Start"; }
+            else {
+                running = true; btn.innerText = "Pausa";
+                timer = setInterval(() => {
+                    time--;
+                    const m = Math.floor(time/60).toString().padStart(2,'0'), s = (time%60).toString().padStart(2,'0');
+                    document.getElementById('timer-display').innerText = `${m}:${s}`;
+                    if(time<=0) { clearInterval(timer); alert("Tempo!"); resetTimer(); }
+                }, 1000);
+            }
+        }
+        function resetTimer() { clearInterval(timer); running = false; time = 1500; document.getElementById('timer-display').innerText="25:00"; document.getElementById('timer-btn').innerText="Start"; }
+    </script>
+</body>
+</html>
