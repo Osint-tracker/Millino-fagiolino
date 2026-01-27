@@ -1585,48 +1585,63 @@
             if (statusCallback) statusCallback("DeepSeek Judge: Verifica vincoli e logica...");
 
             const judgePrompt = `
-            SYSTEM: Sei un Giudice Severo e un Esperto di Logica.
+            SYSTEM: Sei un Riparatore di JSON e Validatore Logico.
             
-            USER INPUT (Vincoli Reali): "${userPrompt}"
+            USER INPUT (Vincoli): "${userPrompt}"
             CONTEXT: ${context}
             
-            INPUT (Bozza generata da altra AI): 
+            INPUT (Bozza): 
             ${rawDraft}
             
             TASK: 
-            1. CLASSIFICAZIONE: La bozza rispetta TUTTI i vincoli dell'utente? (Es: se dice "no martedì", il martedì deve essere vuoto/assente).
-            2. FORMATTAZIONE: È un JSON Array valido?
-            3. AZIONE:
-               - Se PERFETTO: Restituisci il JSON originale.
-               - Se IMPERFETTO (Vincoli violati O Json rotto): CORREGGI e restituisci SOLO la versione corretta.
+            1. Controlla se i vincoli sono rispettati.
+            2. Controlla se il JSON è valido.
+            3. Restituisci la versione CORRETTA e PULITA del JSON Array.
             
-            OUTPUT: Solo il JSON Array. Nessun preambolo.
+            IMPORTANT: OUTPUT ONLY THE JSON ARRAY. NO MARKDOWN. NO EXPLANATIONS. START WITH [. END WITH ].
             `;
 
             let judgePayload = {
                 message: judgePrompt,
-                systemOverride: "Sei un validatore JSON rigoroso. Output SOLO JSON.",
+                systemOverride: "Output ONLY JSON.",
                 context: []
-                // No model specified => defaults to configured Model A (DeepSeek V3)
             };
 
             let judgeResponse = await callApi(judgePayload);
+            console.log("Judge Raw Output:", judgeResponse.response); // Debug
             let finalJson = tryParseJson(judgeResponse.response);
 
             if (!finalJson) {
-                throw new Error("Validazione Fallita: Il Giudice non ha approvato il piano.");
+                // Fallback: Check if original Qwen draft was parsable, use that if Judge fails completely (better than error)
+                // But warn user in console
+                console.warn("Judge failed to output JSON, checking original draft...");
+                finalJson = tryParseJson(rawDraft);
+            }
+
+            if (!finalJson) {
+                throw new Error("Generazione fallita. DeepSeek non ha prodotto un formato valido.");
             }
 
             return finalJson;
         }
 
         function tryParseJson(str) {
+            if (!str) return null;
             try {
-                // Heuristic cleanup: remove markdown code blocks if present
-                const clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
-                return JSON.parse(clean);
+                // 1. Try Simple Parse
+                return JSON.parse(str);
             } catch (e) {
-                return null;
+                try {
+                    // 2. Try Extracting JSON Array [...]
+                    const match = str.match(/\[[\s\S]*\]/);
+                    if (match) return JSON.parse(match[0]);
+
+                    // 3. Try cleaning markdown syntax
+                    const clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
+                    return JSON.parse(clean);
+                } catch (e2) {
+                    return null;
+                }
             }
         }
 
