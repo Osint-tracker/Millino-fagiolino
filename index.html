@@ -10,8 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <script src="js/database.js"></script> 
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -21,9 +19,7 @@
             theme: {
                 extend: {
                     colors: {
-                        // Palette professionale "Warm Stone"
                         stone: { 50: '#FBFBFB', 100: '#F5F5F4', 200: '#E7E5E4', 300: '#D6D3D1', 800: '#292524', 900: '#1C1917' },
-                        // Accent "Rose Clay" - meno saturo, più elegante
                         rose: { 50: '#FFF1F2', 100: '#FFE4E6', 400: '#FB7185', 500: '#F43F5E', 600: '#E11D48', 900: '#881337' }
                     },
                     fontFamily: {
@@ -58,11 +54,7 @@
         }
         
         /* Card Styles */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(231, 229, 228, 0.8);
-        }
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(231, 229, 228, 0.8); }
         .pro-card {
             background: white;
             border: 1px solid #E7E5E4;
@@ -70,27 +62,28 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.02);
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
-        .pro-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-            border-color: #D6D3D1;
-            transform: translateY(-1px);
-        }
+        .pro-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.04); border-color: #D6D3D1; transform: translateY(-1px); }
 
-        /* Status Badges */
+        /* Accordion Styles for Roadmap */
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] summary ~ * { animation: sweep .3s ease-in-out; }
+        @keyframes sweep { 0% {opacity: 0; transform: translateY(-10px)} 100% {opacity: 1; transform: translateY(0)} }
+        
+        /* Badges */
         .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.02em; border: 1px solid transparent; }
         .badge-todo { background: #F5F5F4; color: #78716C; border-color: #E7E5E4; }
         .badge-reading { background: #FFF1F2; color: #E11D48; border-color: #FECDD3; }
         .badge-done { background: #F0FDF4; color: #15803D; border-color: #BBF7D0; }
 
-        /* Typography & Animation */
+        /* Animations */
         .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        
         .chat-widget { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
         .chat-open { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
         .chat-closed { transform: translateY(20px) scale(0.96); opacity: 0; pointer-events: none; }
         
-        /* Markdown Overrides */
+        /* Markdown & Text */
         .prose p { margin-bottom: 0.75em; line-height: 1.6; color: #44403C; font-size: 0.95rem; }
         .prose ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 0.75em; }
     </style>
@@ -102,7 +95,7 @@
             <h1 class="text-2xl font-semibold text-stone-900 tracking-tight serif flex items-baseline gap-1">
                 Millino<span class="text-rose-500 italic font-serif">.F</span>
             </h1>
-            <p class="text-[11px] text-stone-400 font-medium mt-1 tracking-wide">RESEARCH OS v2.1</p>
+            <p class="text-[11px] text-stone-400 font-medium mt-1 tracking-wide">RESEARCH OS v2.2</p>
         </div>
         
         <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-8">
@@ -142,13 +135,11 @@
                 <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Deep Work</span>
                 <span id="timer-display" class="font-mono text-sm font-semibold text-rose-600">25:00</span>
             </div>
-            
             <div class="flex justify-between items-center mb-4 px-2">
                 <button onclick="toggleSound('rain')" id="btn-rain" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Pioggia">🌧️</button>
                 <button onclick="toggleSound('cafe')" id="btn-cafe" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Caffè">☕</button>
                 <button onclick="toggleSound('fire')" id="btn-fire" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Camino">🔥</button>
             </div>
-
             <div class="flex gap-2">
                 <button onclick="toggleTimer()" id="timer-btn" class="flex-1 bg-stone-900 hover:bg-black text-white text-xs py-2 rounded-md font-medium transition-all shadow-sm">Focus</button>
                 <button onclick="resetTimer()" class="px-3 bg-stone-100 hover:bg-stone-200 text-stone-500 text-xs py-2 rounded-md transition-colors">↺</button>
@@ -181,38 +172,20 @@
                 </div>
 
                 <div class="pro-card p-8 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-rose-500"></div> <div class="flex justify-between items-end mb-6">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
+                    <div class="flex justify-between items-end mb-6">
                         <div>
                             <h3 class="font-bold text-stone-400 text-[10px] uppercase tracking-widest mb-1">Avanzamento Globale</h3>
                             <div class="text-3xl font-serif font-medium text-stone-900"><span id="reading-progress-text">0%</span> <span class="text-lg text-stone-400 italic">completato</span></div>
                         </div>
                     </div>
-                    
                     <div class="w-full bg-stone-100 rounded-full h-2 overflow-hidden mb-8">
                         <div id="reading-progress-bar" class="bg-stone-800 h-2 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
                     </div>
-                    
                     <div class="grid grid-cols-3 gap-8 text-center border-t border-stone-100 pt-6">
                         <div><div class="text-2xl font-semibold text-stone-900 serif" id="count-todo">0</div><div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider mt-1">Da Leggere</div></div>
                         <div><div class="text-2xl font-semibold text-rose-500 serif" id="count-reading">0</div><div class="text-[10px] uppercase font-bold text-rose-300 tracking-wider mt-1">In Corso</div></div>
                         <div><div class="text-2xl font-semibold text-stone-900 serif" id="count-done">0</div><div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider mt-1">Archiviati</div></div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="pro-card p-6 flex flex-col justify-between h-32">
-                        <div class="flex justify-between items-start">
-                            <div class="text-xs text-stone-400 uppercase font-bold tracking-wider">Fonti Primarie</div>
-                            <span class="text-lg">📚</span>
-                        </div>
-                        <div class="text-3xl font-serif text-stone-900" id="stat-primary">0</div>
-                    </div>
-                    <div class="pro-card p-6 flex items-center gap-4 h-32">
-                         <div class="w-12 h-12 rounded-full bg-stone-100 flex items-center justify-center text-stone-900 font-bold text-lg">DS</div>
-                         <div>
-                             <div class="font-bold text-stone-900 text-sm">DeepSeek v3.2</div>
-                             <div class="text-xs text-stone-500">Reasoning Engine Active</div>
-                         </div>
                     </div>
                 </div>
             </div>
@@ -234,9 +207,7 @@
                         <option value="Ecological Philosophy">Ecologia</option>
                     </select>
                 </div>
-                
-                <div class="grid grid-cols-1 gap-3" id="results-container">
-                    </div>
+                <div class="grid grid-cols-1 gap-3" id="results-container"></div>
             </div>
 
             <div id="view-journal" class="hidden space-y-8 fade-in pb-20 max-w-3xl mx-auto">
@@ -244,16 +215,13 @@
                     <h2 class="text-3xl font-medium text-stone-900 serif">Diario di Bordo</h2>
                     <p class="text-stone-500 text-sm mt-2">Annota pensieri, blocchi e intuizioni giornaliere.</p>
                 </div>
-                
                 <div class="pro-card p-1">
                     <textarea id="journal-entry" class="w-full h-32 p-4 bg-white rounded-t-xl border-none outline-none resize-none text-sm text-stone-700 placeholder-stone-300" placeholder="A cosa stai pensando oggi?"></textarea>
                     <div class="bg-stone-50 p-2 rounded-b-xl flex justify-end border-t border-stone-100">
                         <button onclick="addJournalEntry()" class="bg-stone-900 text-white px-4 py-1.5 rounded-md text-xs font-medium hover:bg-black transition-colors">Salva Nota</button>
                     </div>
                 </div>
-                
-                <div id="journal-container" class="space-y-6 relative before:absolute before:left-4 before:top-0 before:h-full before:w-px before:bg-stone-200 pl-10">
-                    </div>
+                <div id="journal-container" class="space-y-6 relative before:absolute before:left-4 before:top-0 before:h-full before:w-px before:bg-stone-200 pl-10"></div>
             </div>
 
             <div id="view-tracker" class="hidden space-y-8 fade-in pb-20 max-w-5xl mx-auto">
@@ -264,33 +232,43 @@
                         <input type="number" id="word-input" class="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg mb-4 text-sm outline-none focus:border-rose-300 transition-colors" placeholder="Totale parole oggi...">
                         <button onclick="updateWordCount()" class="w-full bg-stone-900 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-black transition-colors">Registra</button>
                     </div>
-                    <div class="pro-card p-6 rounded-xl col-span-2">
-                        <canvas id="wordChart"></canvas>
-                    </div>
+                    <div class="pro-card p-6 rounded-xl col-span-2"><canvas id="wordChart"></canvas></div>
                 </div>
             </div>
 
             <div id="view-roadmap" class="hidden space-y-8 fade-in pb-20 max-w-5xl mx-auto">
-                <div class="flex justify-between items-center border-b border-stone-100 pb-6">
-                    <h2 class="text-3xl font-medium text-stone-900 serif">Roadmap</h2>
+                <div class="flex justify-between items-end border-b border-stone-100 pb-6">
+                    <div>
+                        <h2 class="text-3xl font-medium text-stone-900 serif">Roadmap Strategica</h2>
+                        <p class="text-stone-500 text-sm mt-1">Seleziona un percorso di ricerca per visualizzare la struttura.</p>
+                    </div>
                     <button onclick="triggerSpark()" class="bg-rose-50 text-rose-600 border border-rose-100 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-rose-100 transition-colors">
                         <span>✨</span> Sblocco Creativo
                     </button>
                 </div>
                 
-                <div class="flex gap-4 mb-6">
-                    <select id="roadmapSelect" onchange="renderRoadmap()" class="bg-white border border-stone-200 text-stone-700 font-medium text-sm px-4 py-2 rounded-lg outline-none cursor-pointer hover:border-stone-300">
-                        <option value="A">Strategia A: Ontologica</option>
-                        <option value="B">Strategia B: Tecno-Ecologica</option>
-                        <option value="C">Strategia C: Politica</option>
-                    </select>
+                <div class="mb-8">
+                     <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Seleziona Strategia</label>
+                     <div class="relative">
+                        <select id="roadmapSelect" onchange="renderRoadmap()" class="w-full md:w-1/3 bg-white border border-stone-200 text-stone-900 font-medium text-sm px-4 py-3 rounded-lg outline-none cursor-pointer hover:border-stone-300 focus:ring-2 focus:ring-stone-100 appearance-none shadow-sm">
+                            <option value="A">Strategia A: Ontologica (Simondon/Deleuze)</option>
+                            <option value="B">Strategia B: Tecno-Ecologica (Stiegler/Hui)</option>
+                            <option value="C">Strategia C: Politica del Transindividuale</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 md:right-2/3 mr-4">▼</div>
+                    </div>
                 </div>
 
-                <div class="bg-stone-50 border border-stone-200 p-8 rounded-xl mb-6">
-                    <h3 class="text-stone-900 font-serif text-xl mb-2" id="roadmap-title"></h3>
-                    <p class="text-stone-500 text-sm leading-relaxed" id="roadmap-desc"></p>
+                <div class="bg-stone-50 border border-stone-200 p-6 rounded-xl mb-8 flex gap-4 items-start">
+                    <span class="text-2xl">💡</span>
+                    <div>
+                        <h3 class="text-stone-900 font-bold text-sm uppercase tracking-wide mb-1" id="roadmap-title"></h3>
+                        <p class="text-stone-600 text-sm leading-relaxed" id="roadmap-desc"></p>
+                    </div>
                 </div>
-                <div class="space-y-4" id="chapters-container"></div>
+
+                <div class="space-y-6" id="chapters-container">
+                    </div>
             </div>
 
             <div id="view-citations" class="hidden space-y-6 fade-in pb-20 max-w-5xl mx-auto">
@@ -324,24 +302,13 @@
         <div id="book-modal" class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
             <div class="bg-white w-full max-w-2xl rounded-2xl shadow-float p-8 transform transition-all scale-100 border border-stone-100">
                 <div class="flex justify-between items-start mb-8">
-                    <div>
-                        <h3 id="modal-title" class="text-2xl font-serif font-medium text-stone-900 mb-1"></h3>
-                        <p id="modal-author" class="text-rose-500 text-sm font-medium"></p>
-                    </div>
+                    <div><h3 id="modal-title" class="text-2xl font-serif font-medium text-stone-900 mb-1"></h3><p id="modal-author" class="text-rose-500 text-sm font-medium"></p></div>
                     <button onclick="closeModal()" class="text-stone-300 hover:text-stone-600 text-2xl leading-none">&times;</button>
                 </div>
-                
                 <div class="space-y-6">
-                    <div>
-                        <label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Tag</label>
-                        <input type="text" id="modal-tags" class="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 transition-colors" placeholder="es. #difficile, #capitolo1...">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Note personali</label>
-                        <textarea id="modal-notes" class="w-full h-40 p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm resize-none outline-none focus:border-stone-400 transition-colors leading-relaxed" placeholder="Scrivi qui i tuoi pensieri. DeepSeek li userà come contesto."></textarea>
-                    </div>
+                    <div><label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Tag</label><input type="text" id="modal-tags" class="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 transition-colors"></div>
+                    <div><label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Note personali</label><textarea id="modal-notes" class="w-full h-40 p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm resize-none outline-none focus:border-stone-400 transition-colors leading-relaxed"></textarea></div>
                 </div>
-                
                 <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-stone-100">
                     <button onclick="askAIAboutBook()" class="px-4 py-2 bg-white border border-stone-200 text-stone-600 font-medium rounded-lg text-xs hover:border-rose-200 hover:text-rose-600 transition-all">Chiedi all'AI</button>
                     <button onclick="saveBookDetails()" class="px-6 py-2 bg-stone-900 text-white font-medium rounded-lg text-xs hover:bg-black transition-colors shadow-soft">Salva Modifiche</button>
@@ -351,29 +318,17 @@
 
         <div id="chat-widget" class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden">
             <div class="bg-white p-4 border-b border-stone-100 flex justify-between items-center shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center font-bold text-white text-[10px]">DS</div>
-                    <div><h4 class="font-semibold text-stone-900 text-sm">Assistant</h4><div class="text-[10px] text-stone-400">DeepSeek v3.2 Enhanced</div></div>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-stone-300 hover:text-stone-600 text-xs px-2">Clear</button>
-                    <button onclick="toggleChat()" class="text-stone-300 hover:text-stone-600">&times;</button>
-                </div>
+                <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center font-bold text-white text-[10px]">DS</div><div><h4 class="font-semibold text-stone-900 text-sm">Assistant</h4><div class="text-[10px] text-stone-400">DeepSeek v3.2</div></div></div>
+                <div class="flex gap-2"><button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-stone-300 hover:text-stone-600 text-xs px-2">Clear</button><button onclick="toggleChat()" class="text-stone-300 hover:text-stone-600">&times;</button></div>
             </div>
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
-                <div class="text-center text-xs text-stone-300 mt-4">Research Context Active</div>
-            </div>
-            <div class="p-3 bg-white border-t border-stone-100 shrink-0">
-                <div class="relative">
-                    <input type="text" id="chat-input" placeholder="Chiedi..." class="w-full pl-4 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 outline-none transition-colors" onkeypress="if(event.key==='Enter') sendChat()">
-                    <button onclick="sendChat()" class="absolute right-2 top-2 bottom-2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors">↑</button>
-                </div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]"></div>
+            <div class="p-3 bg-white border-t border-stone-100 shrink-0 relative">
+                <input type="text" id="chat-input" placeholder="Chiedi..." class="w-full pl-4 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 outline-none transition-colors" onkeypress="if(event.key==='Enter') sendChat()">
+                <button onclick="sendChat()" class="absolute right-2 top-2 bottom-2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors">↑</button>
             </div>
         </div>
         
-        <button onclick="toggleChat()" class="fixed bottom-6 right-6 w-12 h-12 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group">
-            <span class="text-xl">✨</span>
-        </button>
+        <button onclick="toggleChat()" class="fixed bottom-6 right-6 w-12 h-12 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group"><span class="text-xl">✨</span></button>
 
     </main>
 
@@ -382,6 +337,97 @@
     <audio id="audio-fire" loop src="https://assets.mixkit.co/active_storage/sfx/1239/1239-preview.mp3"></audio>
 
     <script>
+        // --- DATABASE EMBEDDED TO FIX 0 SOURCES BUG ---
+        const MASTER_DB = [
+            // SIMONDON
+            { id: "S01", author: "Simondon, G.", year: "2005", title: "L'individuation à la lumière des notions de forme et d'information", pub: "Jérôme Millon", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Il testo base sull'individuatione." },
+            { id: "S02", author: "Simondon, G.", year: "1958", title: "Du mode d'existence des objets techniques", pub: "Aubier", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Genesi tecnica e alienazione." },
+            { id: "S03", author: "Simondon, G.", year: "1989", title: "L'individuation psychique et collective", pub: "Aubier", cat: "Primary Sources", prio: "HIGH", desc: "Transindividuale e affettività." },
+            { id: "S04", author: "Simondon, G.", year: "2008", title: "Imagination et invention", pub: "La Transparence", cat: "Primary Sources", prio: "HIGH", desc: "Ciclo delle immagini." },
+            { id: "S05", author: "Simondon, G.", year: "2010", title: "Communication et information", pub: "La Transparence", cat: "Primary Sources", prio: "MEDIUM", desc: "Cibernetica." },
+            { id: "S11", author: "Simondon, G.", year: "1960", title: "Forme, information, potentiels", pub: "Bulletin SFP", cat: "Primary Sources", prio: "HIGH", desc: "Articolo chiave." },
+            { id: "S13", author: "Simondon, G.", year: "1953", title: "La mentalité technique", pub: "PUF", cat: "Primary Sources", prio: "HIGH", desc: "Schemi cognitivi." },
+            
+            // DELEUZE
+            { id: "D01", author: "Deleuze, G.", year: "1968", title: "Différence et répétition", pub: "PUF", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Ontologia della differenza." },
+            { id: "D02", author: "Deleuze, G.", year: "1969", title: "Logique du sens", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Evento e singolarità." },
+            { id: "D04", author: "Deleuze, G. & Guattari, F.", year: "1980", title: "Mille Plateaux", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Rizoma e agencement." },
+            { id: "D05", author: "Deleuze, G.", year: "1988", title: "Le Pli", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Modulazione." },
+            
+            // COMPARATIVE
+            { id: "C01", author: "Combes, M.", year: "1999", title: "Simondon. Individu et collectivité", pub: "PUF", cat: "Comparative Studies", prio: "ESSENTIAL", desc: "Politica transindividuale." },
+            { id: "C02", author: "Barthélémy, J.H.", year: "2005", title: "Penser l'individuation", pub: "L'Harmattan", cat: "Comparative Studies", prio: "HIGH", desc: "Studio rigoroso." },
+            
+            // TECH
+            { id: "T01", author: "Stiegler, B.", year: "1994", title: "La technique et le temps 1", pub: "Galilée", cat: "Philosophy of Technology", prio: "ESSENTIAL", desc: "Epifilogenesi." },
+            { id: "T03", author: "Hui, Y.", year: "2016", title: "On the Existence of Digital Objects", pub: "Minnesota UP", cat: "Philosophy of Technology", prio: "HIGH", desc: "Oggetti digitali." },
+            { id: "E01", author: "Guattari, F.", year: "1989", title: "Les trois écologies", pub: "Galilée", cat: "Ecological Philosophy", prio: "ESSENTIAL", desc: "Ecosofia." }
+        ];
+
+        // --- NEW ROADMAP DATA ---
+        const detailedRoadmaps = {
+            A: {
+                title: "Strategia A: Ontologica (Simondon/Deleuze)",
+                desc: "Un confronto rigoroso sulle fondamenta metafisiche: dall'individuazione alla differenza.",
+                chapters: [
+                    { 
+                        title: "1. La Genesi dell'Individuo", 
+                        goal: "Dimostrare l'insufficienza dell'ilemorfismo e introdurre la genesi dinamica.",
+                        topics: ["Critica all'ilemorfismo aristotelico", "Concetto di Preindividuale (Simondon)", "Il Virtuale e l'Attuale (Deleuze)", "Metastabilità e Disparazione"],
+                        texts: ["S01", "D01", "C02"],
+                        concepts: "Preindividuale, Metastabilità, Differenza in sé"
+                    },
+                    {
+                        title: "2. Individuazione e Tempo",
+                        goal: "Analizzare come il tempo emerge dal processo di individuazione.",
+                        topics: ["Il Cristallo di Tempo", "Cronogenesi", "Transduzione temporale"],
+                        texts: ["S01", "D13", "B01"],
+                        concepts: "Transduzione, Aion/Chronos, Ritmo"
+                    }
+                ]
+            },
+            B: {
+                title: "Strategia B: Tecno-Ecologica",
+                desc: "Un percorso contemporaneo che lega l'oggetto tecnico alla crisi ecologica.",
+                chapters: [
+                    { 
+                        title: "1. Ecologia delle Macchine", 
+                        goal: "Definire l'oggetto tecnico non come strumento ma come mediatore.",
+                        topics: ["Oggetto Tecnico e Concretizzazione", "Il concetto di 'Milieu' associato", "Meccanologia"],
+                        texts: ["S02", "E01", "T03"],
+                        concepts: "Concretizzazione, Milieu, Tecno-diversità"
+                    },
+                    {
+                        title: "2. Cosmotecniche e Antropocene",
+                        goal: "Superare l'universalismo tecnologico occidentale.",
+                        topics: ["Cosmotecnica (Hui)", "Negentropia", "Ecosofia mentale/sociale/ambientale"],
+                        texts: ["T04", "T01", "E03"],
+                        concepts: "Cosmotecnica, Entropia, Chthulucene"
+                    }
+                ]
+            },
+            C: {
+                title: "Strategia C: Politica",
+                desc: "Dal controllo deleuziano alla liberazione del transindividuale.",
+                chapters: [
+                    { 
+                        title: "1. Le Società del Controllo", 
+                        goal: "Mappare le nuove forme di potere cibernetico.",
+                        topics: ["Dal disciplinare al controllo", "Il dividual", "Modulazione del comportamento"],
+                        texts: ["D09", "S05", "T11"],
+                        concepts: "Dividuale, Modulazione, Cibernetica"
+                    },
+                    {
+                        title: "2. Il Transindividuale come Resistenza",
+                        goal: "Proporre una nuova politica relazionale.",
+                        topics: ["Individuazione Psichica e Collettiva", "Affetto e politica", "Composizione di mondi"],
+                        texts: ["S03", "C01", "C09"],
+                        concepts: "Transindividuale, Angoscia, Collettivo"
+                    }
+                ]
+            }
+        };
+
         // GLOBALS
         let biblioData = []; 
         let currentBookId = null;
@@ -395,17 +441,10 @@
         });
 
         function mergeData() {
-            // Assicurati che MASTER_DB sia definito in js/database.js
-            if(typeof MASTER_DB === 'undefined') { console.error("Database missing"); return; }
             const saved = JSON.parse(localStorage.getItem('millino_progress')) || [];
             biblioData = MASTER_DB.map(book => {
                 const userState = saved.find(s => s.id === book.id) || {};
-                return { 
-                    ...book, 
-                    status: userState.status || 'todo',
-                    notes: userState.notes || '',
-                    tags: userState.tags || []
-                };
+                return { ...book, status: userState.status || 'todo', notes: userState.notes || '', tags: userState.tags || [] };
             });
         }
 
@@ -416,7 +455,7 @@
             renderStats();
             renderJournal();
             renderTracker();
-            renderRoadmap(); 
+            renderRoadmap(); // Uses new detailedRoadmaps
             renderCitationsList();
         }
 
@@ -425,7 +464,6 @@
             localStorage.setItem('millino_progress', JSON.stringify(progress));
         }
 
-        // --- ROUTING ---
         function router(viewName) {
             ['dashboard', 'database', 'journal', 'tracker', 'roadmap', 'citations'].forEach(v => {
                 document.getElementById('view-' + v)?.classList.add('hidden');
@@ -436,7 +474,7 @@
             if(window.innerWidth < 768) document.querySelector('aside').classList.add('hidden');
         }
 
-        // --- DATABASE & MODAL ---
+        // --- DATABASE LOGIC ---
         function runSearch() {
             const txt = document.getElementById('searchInput').value.toLowerCase();
             const cat = document.getElementById('catFilter').value;
@@ -450,7 +488,6 @@
             data.forEach(item => {
                 const statusClass = item.status === 'done' ? 'badge-done' : (item.status === 'reading' ? 'badge-reading' : 'badge-todo');
                 const tagBadges = (item.tags || []).map(t => `<span class="text-[9px] text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded mr-1">#${t}</span>`).join('');
-                
                 list.innerHTML += `
                 <div class="pro-card p-4 flex flex-col md:flex-row gap-4 items-start cursor-pointer hover:border-stone-300" onclick="openBookModal('${item.id}')">
                     <div class="flex-1">
@@ -477,21 +514,14 @@
             document.getElementById('book-modal').classList.remove('hidden');
             setTimeout(() => document.getElementById('book-modal').querySelector('div').classList.remove('scale-95', 'opacity-0'), 10);
         }
-
+        function closeModal() { document.getElementById('book-modal').classList.add('hidden'); }
         function saveBookDetails() {
             const book = biblioData.find(b => b.id === currentBookId);
             book.notes = document.getElementById('modal-notes').value;
             const rawTags = document.getElementById('modal-tags').value;
             book.tags = rawTags.split(',').map(t => t.trim()).filter(t => t);
-            saveData();
-            closeModal();
-            runSearch();
+            saveData(); closeModal(); runSearch();
         }
-
-        function closeModal() { 
-            document.getElementById('book-modal').classList.add('hidden');
-        }
-        
         function cycleStatus(id) {
             const idx = biblioData.findIndex(i => i.id === id);
             const map = { 'todo': 'reading', 'reading': 'done', 'done': 'todo' };
@@ -499,7 +529,6 @@
             if(biblioData[idx].status === 'done') confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 }, colors: ['#E7E5E4', '#F43F5E'] });
             saveData(); renderStats(); runSearch();
         }
-        
         function renderStats() {
              const done = biblioData.filter(i => i.status === 'done').length;
              const total = biblioData.length;
@@ -512,208 +541,124 @@
              document.getElementById('stat-primary').innerText = biblioData.filter(i => i.cat === 'Primary Sources').length;
         }
 
-        // --- JOURNAL ---
-        function renderJournal() {
-            const cont = document.getElementById('journal-container');
-            if(journalEntries.length === 0) { cont.innerHTML = `<div class="text-center text-xs text-stone-300 italic py-8">Il diario è vuoto.</div>`; return; }
-            cont.innerHTML = journalEntries.map(e => `
-                <div class="relative pl-6">
-                    <div class="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-stone-200 border-2 border-white"></div>
-                    <div class="text-[10px] text-stone-400 font-bold uppercase tracking-wider mb-1">${e.date}</div>
-                    <div class="bg-white p-4 rounded-lg border border-stone-100 shadow-sm">
-                        <p class="text-stone-700 text-sm whitespace-pre-wrap leading-relaxed">${e.text}</p>
-                    </div>
-                </div>
-            `).join('');
-        }
-        function addJournalEntry() {
-            const txt = document.getElementById('journal-entry').value;
-            if(!txt) return;
-            journalEntries.unshift({ date: new Date().toLocaleDateString('it-IT', { weekday:'short', day:'numeric', month:'short' }), text: txt });
-            localStorage.setItem('journal_entries', JSON.stringify(journalEntries));
-            document.getElementById('journal-entry').value = '';
-            renderJournal();
-        }
+        // --- NEW PROFESSIONAL ROADMAP RENDERER ---
+        function renderRoadmap() {
+            const sel = document.getElementById('roadmapSelect').value;
+            const strategy = detailedRoadmaps[sel];
+            
+            document.getElementById('roadmap-title').innerText = strategy.title;
+            document.getElementById('roadmap-desc').innerText = strategy.desc;
+            
+            const container = document.getElementById('chapters-container');
+            container.innerHTML = '';
+            
+            strategy.chapters.forEach((chap, idx) => {
+                const textLinks = chap.texts.map(tid => {
+                    const b = biblioData.find(x => x.id === tid);
+                    return b ? `<span class="inline-block bg-white border border-stone-200 text-stone-600 px-2 py-0.5 rounded text-[10px] mr-1 mb-1">${b.author} - ${b.title.substring(0,20)}...</span>` : '';
+                }).join('');
 
-        // --- WORD TRACKER ---
-        let chartInstance = null;
-        function renderTracker() {
-            const ctx = document.getElementById('wordChart').getContext('2d');
-            if(chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: wordHistory.map(h => h.date),
-                    datasets: [{ 
-                        label: 'Parole Totali', 
-                        data: wordHistory.map(h => h.count), 
-                        borderColor: '#1C1917', 
-                        tension: 0.3, 
-                        borderWidth: 2,
-                        pointBackgroundColor: '#FFF',
-                        pointBorderColor: '#1C1917',
-                        pointRadius: 3,
-                        fill: { target: 'origin', above: 'rgba(28, 25, 23, 0.02)' }
-                    }]
-                },
-                options: { 
-                    responsive: true, 
-                    plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1C1917', padding: 10, cornerRadius: 8 } },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { grid: { color: '#F5F5F4' }, border: { display: false } }
-                    }
-                }
+                container.innerHTML += `
+                <details class="group bg-white border border-stone-200 rounded-xl overflow-hidden hover:border-stone-300 transition-colors">
+                    <summary class="flex justify-between items-center p-5 cursor-pointer bg-stone-50/50 hover:bg-stone-50">
+                        <h4 class="font-bold text-stone-800 text-lg serif">${chap.title}</h4>
+                        <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <div class="p-6 border-t border-stone-100 bg-white space-y-6">
+                        <div>
+                            <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Obiettivo</span>
+                            <p class="text-sm text-stone-700 italic border-l-2 border-rose-300 pl-3">${chap.goal}</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Argomenti Chiave</span>
+                                <ul class="text-sm text-stone-600 space-y-1 list-disc pl-4 marker:text-rose-400">
+                                    ${chap.topics.map(t => `<li>${t}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Concetti Fondamentali</span>
+                                <div class="text-sm text-rose-600 font-medium">${chap.concepts}</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Testi Suggeriti</span>
+                            <div>${textLinks}</div>
+                        </div>
+
+                        <div class="pt-4 mt-2 border-t border-stone-100 flex justify-end">
+                            <button onclick="askAI('Analizza questo capitolo della tesi: ${chap.title}. L\\'obiettivo è: ${chap.goal}. Argomenti: ${chap.topics.join(', ')}. Suggerisci una scaletta dettagliata.')" 
+                                class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-soft">
+                                <span>⚡</span> Brainstorming con AI
+                            </button>
+                        </div>
+                    </div>
+                </details>`;
             });
         }
+
+        // --- JOURNAL & TRACKER & AI (Standard logic) ---
+        function renderJournal() {
+            const cont = document.getElementById('journal-container');
+            if(journalEntries.length===0){cont.innerHTML='<div class="text-center text-xs text-stone-300 py-4">Vuoto</div>'; return;}
+            cont.innerHTML = journalEntries.map(e => `<div class="relative pl-6"><div class="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-stone-200 border-2 border-white"></div><div class="text-[10px] text-stone-400 font-bold uppercase mb-1">${e.date}</div><div class="bg-white p-4 rounded-lg border border-stone-100 shadow-sm"><p class="text-stone-700 text-sm whitespace-pre-wrap">${e.text}</p></div></div>`).join('');
+        }
+        function addJournalEntry() {
+            const txt = document.getElementById('journal-entry').value; if(!txt)return;
+            journalEntries.unshift({date:new Date().toLocaleDateString('it-IT',{weekday:'short',day:'numeric'}), text:txt});
+            localStorage.setItem('journal_entries', JSON.stringify(journalEntries)); document.getElementById('journal-entry').value=''; renderJournal();
+        }
+        let chartInstance=null;
+        function renderTracker() {
+            const ctx = document.getElementById('wordChart').getContext('2d'); if(chartInstance)chartInstance.destroy();
+            chartInstance = new Chart(ctx, {type:'line', data:{labels:wordHistory.map(h=>h.date), datasets:[{label:'Parole',data:wordHistory.map(h=>h.count), borderColor:'#1C1917', tension:0.3, pointBackgroundColor:'#FFF'}]}, options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#F5F5F4'},border:{display:false}}}}});
+        }
         function updateWordCount() {
-            const val = parseInt(document.getElementById('word-input').value);
-            if(!val) return;
-            const today = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
-            const idx = wordHistory.findIndex(h => h.date === today);
-            if(idx >= 0) wordHistory[idx].count = val;
-            else wordHistory.push({ date: today, count: val });
-            localStorage.setItem('word_history', JSON.stringify(wordHistory));
-            renderTracker();
+            const val=parseInt(document.getElementById('word-input').value); if(!val)return;
+            const today=new Date().toLocaleDateString('it-IT',{day:'numeric',month:'short'});
+            const idx=wordHistory.findIndex(h=>h.date===today); if(idx>=0)wordHistory[idx].count=val; else wordHistory.push({date:today,count:val});
+            localStorage.setItem('word_history', JSON.stringify(wordHistory)); renderTracker();
         }
 
-        // --- DEADLINE ---
-        function saveDeadline() {
-            const d = document.getElementById('deadline-input').value;
-            localStorage.setItem('thesis_deadline', d);
-            renderDeadline();
-        }
-        function renderDeadline() {
-            const d = localStorage.getItem('thesis_deadline');
-            if(d) {
-                document.getElementById('deadline-input').value = d;
-                const days = Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24));
-                const span = document.getElementById('days-remaining');
-                span.classList.remove('hidden');
-                span.innerText = `${days} GIORNI`;
-            }
-        }
-
-        // --- EXPORT BIBLIO ---
-        function downloadBibliography() {
-            const txt = biblioData.filter(b => b.status === 'done' || b.status === 'reading').map(b => `${b.author} (${b.year}). ${b.title}. ${b.pub}.`).join('\n\n');
-            const blob = new Blob([txt], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = "bibliografia_millino.txt";
-            a.click();
-        }
-
-        // --- SPARK & AI ---
-        function askAIAboutBook() {
-            const book = biblioData.find(b => b.id === currentBookId);
-            const prompt = `Ho preso queste note sul libro "${book.title}": "${book.notes}". Aiutami a espanderle o collegarle a Simondon.`;
-            closeModal();
-            toggleChat();
-            askAI(prompt);
-        }
-
-        function triggerSpark() {
-            toggleChat();
-            addMessage("Analizzo lo stato della tesi per sbloccarti...", 'user');
-            sendChat('spark');
-        }
-
-        function toggleChat() { 
-            const w = document.getElementById('chat-widget');
-            w.classList.toggle('chat-closed'); w.classList.toggle('chat-open');
-        }
-
+        // --- AI ENGINE ---
+        function toggleChat() { const w=document.getElementById('chat-widget'); w.classList.toggle('chat-closed'); w.classList.toggle('chat-open'); }
         function addMessage(txt, role) {
-            const box = document.getElementById('chat-messages');
-            const html = marked.parse(txt);
-            const align = role === 'user' ? 'justify-end' : 'justify-start';
-            const style = role === 'user' ? 'bg-stone-900 text-white rounded-br-none' : 'bg-white border border-stone-200 text-stone-800 rounded-bl-none shadow-sm';
-            
-            box.innerHTML += `
-            <div class="flex ${align} fade-in">
-                <div class="py-2.5 px-4 rounded-2xl text-sm max-w-[85%] prose prose-sm prose-p:my-1 ${style}">
-                    ${html}
-                </div>
-            </div>`;
-            box.scrollTop = box.scrollHeight;
+            const box=document.getElementById('chat-messages'); const html=marked.parse(txt);
+            const style = role==='user'?'bg-stone-900 text-white rounded-br-none':'bg-white border border-stone-200 text-stone-800 rounded-bl-none shadow-sm';
+            box.innerHTML+=`<div class="flex ${role==='user'?'justify-end':'justify-start'} fade-in"><div class="py-2.5 px-4 rounded-2xl text-sm max-w-[85%] prose prose-sm ${style}">${html}</div></div>`;
+            box.scrollTop=box.scrollHeight;
         }
-
-        async function sendChat(mode = 'chat') {
-            const inp = document.getElementById('chat-input');
-            const txt = mode === 'spark' ? "Sblocco Creativo" : inp.value.trim();
-            if(!txt && mode !== 'spark') return;
-            
-            if(mode !== 'spark') { addMessage(txt, 'user'); inp.value = ''; }
-            
-            const loadId = 'load-' + Date.now();
-            document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="text-[10px] text-stone-400 mt-2 ml-2 animate-pulse">DeepSeek sta pensando...</div>`;
-
+        async function sendChat(mode='chat') {
+            const inp=document.getElementById('chat-input'); const txt=mode==='spark'?"Sblocco Creativo":inp.value.trim(); if(!txt && mode!=='spark')return;
+            if(mode!=='spark'){addMessage(txt,'user'); inp.value='';}
+            const loadId='load-'+Date.now(); document.getElementById('chat-messages').innerHTML+=`<div id="${loadId}" class="text-[10px] text-stone-400 mt-2 ml-2 animate-pulse">DeepSeek sta pensando...</div>`;
             try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ message: txt, context: biblioData, mode: mode })
-                });
-                const data = await res.json();
-                document.getElementById(loadId).remove();
-                addMessage(data.choices[0].message.content, 'bot');
-            } catch(e) {
-                document.getElementById(loadId).remove();
-                addMessage("Errore di connessione al server Vercel.", 'bot');
-            }
+                const res = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:txt, context:biblioData, mode:mode}) });
+                const data = await res.json(); document.getElementById(loadId).remove(); addMessage(data.choices[0].message.content, 'bot');
+            } catch(e) { document.getElementById(loadId).remove(); addMessage("Errore connessione server.", 'bot'); }
         }
-        function askAI(q) { document.getElementById('chat-input').value = q; sendChat(); }
+        function askAI(q) { document.getElementById('chat-input').value=q; if(document.getElementById('chat-widget').classList.contains('chat-closed')) toggleChat(); sendChat(); }
+        function triggerSpark() { toggleChat(); addMessage("Analizzo lo stato della tesi...", 'user'); sendChat('spark'); }
+        function askAIAboutBook() {
+            const book=biblioData.find(b=>b.id===currentBookId); closeModal(); toggleChat();
+            askAI(`Ho preso queste note su "${book.title}": "${book.notes}". Aiutami a espanderle.`);
+        }
 
-        // --- SOUNDS & TIMER ---
-        function toggleSound(id) {
-            const el = document.getElementById('audio-'+id);
-            const btn = document.getElementById('btn-'+id);
-            if(el.paused) { el.play(); btn.classList.remove('text-stone-300'); btn.classList.add('text-stone-900'); }
-            else { el.pause(); btn.classList.add('text-stone-300'); btn.classList.remove('text-stone-900'); }
-        }
-        function initAudio() { 
-            // Audio init logic
-        }
-        
-        // --- TIMER ---
-        let timer, time=1500, running=false;
-        function toggleTimer() {
-            if(running) { clearInterval(timer); running=false; document.getElementById('timer-btn').innerText="Focus"; }
-            else { running=true; document.getElementById('timer-btn').innerText="Pausa"; timer=setInterval(()=>{ time--; let m=Math.floor(time/60), s=time%60; document.getElementById('timer-display').innerText=`${m}:${s.toString().padStart(2,'0')}`; if(time<=0) resetTimer(); },1000); }
-        }
-        function resetTimer() { clearInterval(timer); running=false; time=1500; document.getElementById('timer-display').innerText="25:00"; document.getElementById('timer-btn').innerText="Focus"; }
-
-        // --- UTILS ---
-        function renderRoadmap() {
-             const sel = document.getElementById('roadmapSelect').value;
-             const p = { A: {title: "Strategia Ontologica", desc: "Confronto tra Genesi in Simondon e Virtuale in Deleuze."}, B: {title: "Strategia Ecologica", desc: "Technics and Time."}, C: {title: "Strategia Politica", desc: "Il Transindividuale."} }[sel];
-             document.getElementById('roadmap-title').innerText = p.title;
-             document.getElementById('roadmap-desc').innerText = p.desc;
-             document.getElementById('chapters-container').innerHTML = `
-             <div class="pro-card p-4 text-center cursor-pointer hover:border-stone-400 transition-colors group" onclick="askAI('Genera struttura capitoli per: ${p.title}')">
-                <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">✨</span>
-                <span class="text-sm font-medium text-stone-600">Genera struttura con AI</span>
-             </div>`;
-        }
-        function selectAllCitations() { document.querySelectorAll('.cite-cb').forEach(cb => cb.checked = true); generateBibliography(); }
-        function renderCitationsList() { 
-             const list = document.getElementById('citation-list');
-             list.innerHTML = '';
-             biblioData.forEach(item => {
-                 list.innerHTML += `<label class="flex items-center gap-3 p-2 hover:bg-stone-50 rounded-lg cursor-pointer"><input type="checkbox" class="accent-stone-900 cite-cb" value="${item.id}" onchange="generateBibliography()"><span class="text-xs text-stone-600 truncate">${item.title}</span></label>`;
-             });
-        }
-        function copyCitationOutput() { const txt = document.getElementById('citation-output'); txt.select(); navigator.clipboard.writeText(txt.value); alert("Copiato."); }
-        function generateBibliography() {
-             const checked = Array.from(document.querySelectorAll('.cite-cb:checked')).map(c => c.value);
-             const items = biblioData.filter(i => checked.includes(i.id));
-             let out = "";
-             const style = document.getElementById('citation-style').value;
-             items.forEach(i => { out += style==='bibtex' ? `@book{${i.id}, title={${i.title}}...}\n` : `${i.author} (${i.year}). ${i.title}.\n\n`; });
-             document.getElementById('citation-output').value = out;
-        }
+        // UTILS (Audio/Timer/Deadline)
+        function toggleSound(id) { const el=document.getElementById('audio-'+id); const btn=document.getElementById('btn-'+id); if(el.paused){el.play(); btn.classList.remove('text-stone-300'); btn.classList.add('text-stone-900');}else{el.pause(); btn.classList.add('text-stone-300'); btn.classList.remove('text-stone-900');} }
+        function initAudio(){}
+        let timer,time=1500,running=false;
+        function toggleTimer(){ if(running){clearInterval(timer);running=false;document.getElementById('timer-btn').innerText="Focus";}else{running=true;document.getElementById('timer-btn').innerText="Pausa";timer=setInterval(()=>{time--;let m=Math.floor(time/60),s=time%60;document.getElementById('timer-display').innerText=`${m}:${s.toString().padStart(2,'0')}`;if(time<=0)resetTimer();},1000);} }
+        function resetTimer(){clearInterval(timer);running=false;time=1500;document.getElementById('timer-display').innerText="25:00";document.getElementById('timer-btn').innerText="Focus";}
+        function saveDeadline(){ localStorage.setItem('thesis_deadline', document.getElementById('deadline-input').value); renderDeadline(); }
+        function renderDeadline(){ const d=localStorage.getItem('thesis_deadline'); if(d){document.getElementById('deadline-input').value=d; const days=Math.ceil((new Date(d)-new Date())/(1000*60*60*24)); const s=document.getElementById('days-remaining'); s.classList.remove('hidden'); s.innerText=`${days} GIORNI`;} }
+        function selectAllCitations(){document.querySelectorAll('.cite-cb').forEach(cb=>cb.checked=true);generateBibliography();}
+        function renderCitationsList(){ const l=document.getElementById('citation-list'); l.innerHTML=''; biblioData.forEach(i=>{l.innerHTML+=`<label class="flex items-center gap-3 p-2 hover:bg-stone-50 rounded-lg cursor-pointer"><input type="checkbox" class="accent-stone-900 cite-cb" value="${i.id}" onchange="generateBibliography()"><span class="text-xs text-stone-600 truncate">${i.title}</span></label>`}); }
+        function copyCitationOutput(){const t=document.getElementById('citation-output'); t.select(); navigator.clipboard.writeText(t.value); alert("Copiato.");}
+        function generateBibliography(){ const c=Array.from(document.querySelectorAll('.cite-cb:checked')).map(x=>x.value); const i=biblioData.filter(x=>c.includes(x.id)); let o=""; const s=document.getElementById('citation-style').value; i.forEach(x=>{o+=s==='bibtex'?`@book{${x.id}, title={${x.title}}...}\n`:`${x.author} (${x.year}). ${x.title}.\n\n`}); document.getElementById('citation-output').value=o; }
+        function downloadBibliography(){ const t=biblioData.filter(b=>b.status==='done'||b.status==='reading').map(b=>`${b.author} (${b.year}). ${b.title}.`).join('\n\n'); const b=new Blob([t],{type:'text/plain'}); const u=window.URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download="bibliografia.txt"; a.click(); }
     </script>
 </body>
 </html>
