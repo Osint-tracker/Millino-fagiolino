@@ -82,8 +82,7 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="h-screen flex overflow-hidden selection:bg-rose-100 selection:text-rose-900">
-
+<body class="h-screen w-full flex overflow-hidden selection:bg-rose-100 selection:text-rose-900 bg-white">
     <div id="zen-mode" class="fixed inset-0 bg-white z-[100] hidden flex flex-col items-center justify-center p-8 overflow-hidden">
         <div class="absolute top-6 right-6">
             <button onclick="toggleZenMode()" class="text-stone-400 hover:text-stone-900 transition-colors text-xs font-bold tracking-widest uppercase">ESCI ZEN</button>
@@ -153,7 +152,7 @@
             <button onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute'); document.querySelector('aside').classList.toggle('h-full');" class="text-stone-600">☰</button>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-6 md:p-12 relative scroll-smooth" id="content-area">
+        <div class="flex-1 overflow-y-auto p-6 md:p-12 relative scroll-smooth pb-40 overscroll-contain" id="content-area">
             
             <div id="view-dashboard" class="space-y-10 fade-in max-w-5xl mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-stone-100 pb-8">
@@ -260,7 +259,7 @@
                 </div>
             </div>
 
-            <div id="view-roadmap" class="hidden space-y-8 fade-in pb-20 max-w-5xl mx-auto">
+            <div id="view-roadmap" class="hidden space-y-8 fade-in pb-40 min-h-full max-w-5xl mx-auto">
                 <div class="flex justify-between items-end border-b border-stone-100 pb-6">
                     <div><h2 class="text-3xl font-medium text-stone-900 serif">Roadmap Strategica</h2><p class="text-stone-500 text-sm mt-1">Percorsi di ricerca per la Tesi.</p></div>
                 </div>
