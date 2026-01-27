@@ -374,6 +374,7 @@
     <audio id="audio-fire" loop src="https://assets.mixkit.co/active_storage/sfx/1239/1239-preview.mp3"></audio>
 
     <script>
+        
         // --- CONFIGURAZIONE IMMAGINE JESSE ---
         // IMPORTANTE: Metti il file "psicologo.jpeg" nella stessa cartella.
         // Se non funziona, usa questo placeholder: "https://i.imgur.com/8Q5X2Xk.jpeg" (Cane con occhiali generico)
@@ -384,6 +385,94 @@
             document.getElementById('jesse-avatar').src = JESSE_IMG;
             document.querySelectorAll('.jesse-mini-avatar').forEach(img => img.src = JESSE_IMG);
         });
+
+        // --- CONFIGURAZIONE JESSE ---
+    // Foto profilo principale
+    const JESSE_IMG = "psicologo.jpeg"; 
+    
+    // Album Completo (Tutte le foto che hai caricato nella cartella /jesse/)
+    const JESSE_GALLERY = [
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.41.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.45.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.51 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.51.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.52.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (3).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.53.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.54 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.54.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.55.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.56.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.57 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.57.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.58.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.31.59.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.00 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.00.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.01.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.04 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.04.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (3).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.05.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.06.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.07 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.07.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.09.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.10 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.10.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.13.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (3).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.14.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.15.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.16 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.16.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (3).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.17.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.18.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.19.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (2).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.20.jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.21 (1).jpeg",
+        "jesse/WhatsApp Image 2026-01-27 at 15.32.21.jpeg"
+    ];
+
+    // Inizializza l'app E le immagini
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Setup Immagini Jesse
+        const mainAvatar = document.getElementById('jesse-avatar');
+        if(mainAvatar) mainAvatar.src = JESSE_IMG;
+        document.querySelectorAll('.jesse-mini-avatar').forEach(img => img.src = JESSE_IMG);
+
+        // 2. Avvio dell'Applicazione (FONDAMENTALE)
+        mergeData();  // Carica i dati salvati
+        initApp();    // Renderizza la dashboard e tutto il resto
+        initAudio();  // Prepara i suoni
+    });
 
         // --- MASTER DB ---
         const MASTER_DB = [
