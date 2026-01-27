@@ -2,10 +2,20 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { message, context, mode } = req.body; // 'mode' può essere 'chat' o 'spark'
-  const apiKey = process.env.OPENROUTER_KEY;
+  const { message, context, mode, model: requestedModel, systemOverride } = req.body;
+  const openRouterKey = process.env.OPENROUTER_KEY;
+  const openAIKey = process.env.OPENAI_API_KEY;
 
-  if (!apiKey) return res.status(500).json({ error: 'Server Error: API Key missing' });
+  if (!openRouterKey && !openAIKey) return res.status(500).json({ error: 'Server Error: API Keys missing' });
+
+  // Determine which API to use
+  const isOpenAI = requestedModel && (requestedModel.startsWith('gpt-') || requestedModel.startsWith('o1-'));
+  const apiUrl = isOpenAI
+    ? "https://api.openai.com/v1/chat/completions"
+    : "https://openrouter.ai/api/v1/chat/completions";
+  const authKey = isOpenAI ? openAIKey : openRouterKey;
+
+  if (!authKey) return res.status(400).json({ error: `Chiave non configurata per il modello ${requestedModel}` });
 
   let systemPrompt = "";
 
@@ -24,7 +34,7 @@ export default async function handler(req, res) {
     `;
   } else {
     // Mode Standard (Chat)
-    systemPrompt = `
+    systemPrompt = systemOverride || `
       Sei un assistente di ricerca esperto in filosofia francese (Simondon/Deleuze).
       
       ACCESSO DATABASE BIBLIOGRAFICO:
@@ -39,33 +49,33 @@ export default async function handler(req, res) {
     `;
   }
 
-  // Se il contesto è troppo grande, potremmo doverlo tagliare, ma per 85 libri va bene
-  // Includiamo il context solo se c'è
-  const fullSystemPrompt = context 
+  const fullSystemPrompt = context
     ? `${systemPrompt}\n\nDATABASE UTENTE:\n${JSON.stringify(context)}`
     : systemPrompt;
 
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
+        "Authorization": `Bearer ${authKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://millino-fagiolino.vercel.app",
-        "X-Title": "Millino Research"
+        ...(isOpenAI ? {} : {
+          "HTTP-Referer": "https://millino-fagiolino.vercel.app",
+          "X-Title": "Millino Research"
+        })
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-v3.2",
+        model: requestedModel || "deepseek/deepseek-v3.2",
         messages: [
           { role: "system", content: fullSystemPrompt },
           { role: "user", content: message }
         ],
-        temperature: 0.3
+        temperature: requestedModel?.includes('gpt') ? 0.3 : 0.4
       })
     });
 
     const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || 'Errore OpenRouter');
+    if (!response.ok) throw new Error(data.error?.message || 'Errore API');
     return res.status(200).json(data);
 
   } catch (error) {

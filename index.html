@@ -553,7 +553,37 @@
                 <div id="course-syllabus-container" class="space-y-6"></div>
             </div>
 
+            <!-- NEW VIEW: SETTINGS MODAL -->
+            <div id="settings-modal"
+                class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 fade-in">
+                <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-stone-100">
+                    <h3 class="text-2xl font-bold text-stone-900 serif mb-2">Impostazioni AI</h3>
+                    <p class="text-sm text-stone-500 mb-6">Configura le chiavi per l'Auto-Repair avanzato.</p>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">OpenAI
+                                API Key (Personale)</label>
+                            <input type="password" id="openai-key-input"
+                                class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm outline-none focus:border-rose-300"
+                                placeholder="sk-..." onchange="saveOpenerKey()">
+                            <p class="text-[10px] text-stone-400 mt-2">
+                                🔒 Salvata solo nel tuo browser (LocalStorage). Non viene mai inviata al server di
+                                Millino.
+                                Serve per usare <strong>GPT-4o-mini</strong> come riparatore di JSON.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-end">
+                        <button onclick="closeSettingsModal()"
+                            class="bg-stone-900 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-black transition-colors">Chiudi</button>
+                    </div>
+                </div>
+            </div>
+
             <div id="view-citations" class="hidden space-y-6 fade-in pb-20 max-w-5xl mx-auto">
+                <!-- ... unchanged ... -->
                 <div class="flex justify-between items-center border-b border-stone-100 pb-6">
                     <h2 class="text-3xl font-medium text-stone-900 serif">Citation Manager</h2>
                     <button onclick="downloadBibliography()"
@@ -684,6 +714,33 @@
                             class="px-4 py-2 text-stone-500 text-xs font-bold hover:bg-stone-50 rounded-lg">Annulla</button>
                         <button onclick="runCustomAiGeneration()"
                             class="px-4 py-2 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600">Genera</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW VIEW: SETTINGS MODAL -->
+            <div id="settings-modal"
+                class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 fade-in">
+                <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-stone-100">
+                    <h3 class="text-2xl font-bold text-stone-900 serif mb-2">Impostazioni AI</h3>
+                    <p class="text-sm text-stone-500 mb-6">Configura le chiavi per l'Auto-Repair avanzato.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label
+                                class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">OpenAI
+                                API Key (Personale)</label>
+                            <input type="password" id="openai-key-input"
+                                class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm outline-none focus:border-rose-300"
+                                placeholder="sk-..." onchange="saveOpenerKey()">
+                            <p class="text-[10px] text-stone-400 mt-2">
+                                🔒 Salvata solo nel tuo browser (LocalStorage).
+                                <br>Se non la inserisci, il sistema proverà a usare la chiave di sistema (Vercel).
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-end">
+                        <button onclick="closeSettingsModal()"
+                            class="bg-stone-900 text-white px-6 py-2 rounded-lg text-xs font-bold hover:bg-black transition-colors">Chiudi</button>
                     </div>
                 </div>
             </div>
@@ -1559,69 +1616,67 @@
             }
         }
 
+        // --- SETTINGS LOGIC ---
+        function openSettingsModal() {
+            document.getElementById('openai-key-input').value = localStorage.getItem('millino_openai_key') || '';
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+        function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
+        function saveOpenerKey() {
+            const key = document.getElementById('openai-key-input').value.trim();
+            if (key) localStorage.setItem('millino_openai_key', key);
+            else localStorage.removeItem('millino_openai_key');
+        }
+
         async function fetchScheduleWithRetry(userPrompt, context, systemInst, retries = 1, genModel = null, statusCallback = null) {
-            // Helper to call API
             const callApi = async (body) => {
-                const r = await fetch('/api/chat', {
+                const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                const resData = await r.json();
+                if (!r.ok) throw new Error(resData.error || "Errore API");
+                return resData;
+            };
+
+            const callOpenAIDirect = async (messages) => {
+                const key = localStorage.getItem('millino_openai_key');
+                if (!key) throw new Error("Manca la chiave locale");
+                const r = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(body)
+                    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: "gpt-4o-mini", messages: messages, temperature: 0.1 })
                 });
-                return r.json();
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.error?.message || "Errore OpenAI");
+                return { response: data.choices[0].message.content };
             };
 
             // PHASE 1: GENERATION (Qwen)
-            let payload = {
-                message: `Genera programma settimanale. ${context}`,
-                systemOverride: systemInst,
-                context: [],
-                model: genModel
-            };
-
+            if (statusCallback) statusCallback("Generazione bozza (Qwen 72b)...");
+            let payload = { message: `Genera programma settimanale. ${context}`, systemOverride: systemInst, context: [], model: genModel };
             let response = await callApi(payload);
-            let rawDraft = response.response;
+            let rawDraft = response.choices[0].message.content;
+            let finalJson = tryParseJson(rawDraft);
 
-            // PHASE 2: MANDATORY JUDGE (DeepSeek V3.2)
-            if (statusCallback) statusCallback("DeepSeek Judge: Verifica vincoli e logica...");
+            // PHASE 2: REPAIR (GPT-4o-mini Hybrid)
+            const localKey = localStorage.getItem('millino_openai_key');
+            if (statusCallback) statusCallback(localKey ? "GPT-4o-mini (Locale): Riparazione..." : "GPT-4o-mini (Server): Riparazione...");
 
-            const judgePrompt = `
-            SYSTEM: Sei un Riparatore di JSON e Validatore Logico.
-            
-            USER INPUT (Vincoli): "${userPrompt}"
-            CONTEXT: ${context}
-            
-            INPUT (Bozza): 
-            ${rawDraft}
-            
-            TASK: 
-            1. Controlla se i vincoli sono rispettati.
-            2. Controlla se il JSON è valido.
-            3. Restituisci la versione CORRETTA e PULITA del JSON Array.
-            
-            IMPORTANT: OUTPUT ONLY THE JSON ARRAY. NO MARKDOWN. NO EXPLANATIONS. START WITH [. END WITH ].
-            `;
+            const judgePrompt = `SYSTEM: Sei un Riparatore di JSON. USER CONSTRAINTS: "${userPrompt}" CONTEXT: ${context} INPUT DRAFT: ${rawDraft} TASK: 1. Rispetta vincoli. 2. Fix JSON. OUTPUT: SOLO JSON ARRAY.`;
 
-            let judgePayload = {
-                message: judgePrompt,
-                systemOverride: "Output ONLY JSON.",
-                context: []
-            };
-
-            let judgeResponse = await callApi(judgePayload);
-            console.log("Judge Raw Output:", judgeResponse.response); // Debug
-            let finalJson = tryParseJson(judgeResponse.response);
-
-            if (!finalJson) {
-                // Fallback: Check if original Qwen draft was parsable, use that if Judge fails completely (better than error)
-                // But warn user in console
-                console.warn("Judge failed to output JSON, checking original draft...");
-                finalJson = tryParseJson(rawDraft);
+            try {
+                let repairResponse;
+                if (localKey) {
+                    repairResponse = await callOpenAIDirect([{ role: "user", content: judgePrompt }]);
+                } else {
+                    repairResponse = await callApi({ message: judgePrompt, model: "gpt-4o-mini", systemOverride: "Output ONLY JSON." });
+                    repairResponse = { response: repairResponse.choices[0].message.content };
+                }
+                finalJson = tryParseJson(repairResponse.response);
+            } catch (e) {
+                console.warn("Repair failed:", e);
+                if (!finalJson) throw new Error("Salvataggio fallito: " + e.message);
             }
 
-            if (!finalJson) {
-                throw new Error("Generazione fallita. DeepSeek non ha prodotto un formato valido.");
-            }
-
+            if (!finalJson) throw new Error("Generazione fallita.");
             return finalJson;
         }
 
