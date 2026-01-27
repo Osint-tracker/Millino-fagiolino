@@ -10,6 +10,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,6 +21,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
     <script src="js/database.js"></script>
+    <script src="js/squad_engine.js"></script>
 
     <script>
         tailwind.config = {
@@ -300,7 +305,7 @@
             </div>
             <div class="flex gap-2">
                 <button onclick="toggleTimer()" id="timer-btn"
-                    class="flex-1 bg-stone-900 hover:bg-black text-white text-xs py-2 rounded-md font-medium transition-all shadow-sm">Focus</button>
+                    class="flex-1 bg-stone-900 hover:bg-black text-white text-xs py-2 rounded-full font-medium transition-all shadow-lg hover:shadow-rose-200">Focus</button>
                 <button onclick="toggleZenMode()"
                     class="px-3 bg-stone-100 hover:bg-stone-200 text-stone-500 text-lg py-1 rounded-md transition-colors"
                     title="Zen Mode">👁️</button>
@@ -351,14 +356,8 @@
                             class="text-xs bg-rose-50 text-rose-600 px-2 py-1 rounded font-bold uppercase tracking-wider">AI
                             Powered</span>
                     </div>
-                    <div class="flex flex-col md:flex-row gap-4 mb-4">
-                        <input type="text" id="schedule-input"
-                            class="flex-1 bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm outline-none focus:border-rose-300"
-                            placeholder="Es: Studio Lun-Mer-Ven, lavoro Martedì...">
-                        <button onclick="calculateStudySchedule()"
-                            class="bg-stone-900 text-white px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors">Genera
-                            Programma</button>
-                    </div>
+                    <!-- ELEGANT ADD BOOK BUTTON -->
+                    <!-- REMOVED UPLOAD BUTTON FROM HERE -->
                     <div id="schedule-output" class="hidden animate-pulse">
                         <div class="space-y-3">
                             <div class="bg-stone-100 h-10 rounded w-3/4"></div>
@@ -421,6 +420,7 @@
                     <select id="catFilter" onchange="runSearch()"
                         class="bg-transparent border-none text-xs font-medium text-stone-600 outline-none cursor-pointer hover:text-stone-900 pr-2">
                         <option value="all">Tutte</option>
+                        <option value="course_context">⚡ Corso Attivo</option>
                         <option value="User Added">Le Mie Fonti</option>
                         <option value="Primary Sources">Primarie</option>
                         <option value="Comparative Studies">Studi Comparativi</option>
@@ -428,9 +428,13 @@
                         <option value="Ecological Philosophy">Ecologia</option>
                         <option value="Background">Background</option>
                     </select>
-                    <button onclick="addNewSourcePrompt()"
-                        class="ml-2 bg-stone-900 text-white w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black transition-colors text-lg font-bold"
-                        title="Aggiungi Libro">+</button>
+                    <input type="file" id="pdf-upload" class="hidden" accept=".pdf"
+                        onchange="SquadEngine.init(this.files[0])">
+                    <button onclick="document.getElementById('pdf-upload').click()"
+                        class="ml-2 bg-stone-900 text-white px-3 h-8 rounded-lg flex items-center justify-center hover:bg-black transition-colors text-xs font-bold gap-2 whitespace-nowrap shadow-sm"
+                        title="Upload PDF">
+                        <span>📄</span> Upload PDF
+                    </button>
                 </div>
                 <div class="grid grid-cols-1 gap-3" id="results-container"></div>
             </div>
@@ -592,10 +596,16 @@
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
                     <div class="lg:col-span-1 pro-card flex flex-col overflow-hidden">
-                        <div class="p-3 bg-stone-50 border-b border-stone-100 flex justify-between items-center"><span
-                                class="font-semibold text-stone-500 text-[10px] uppercase tracking-wider">Fonti</span><button
-                                onclick="selectAllCitations()"
-                                class="text-rose-500 text-[10px] font-bold hover:underline">Seleziona Tutti</button>
+                        <div class="p-3 bg-stone-50 border-b border-stone-100 flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <span
+                                    class="font-semibold text-stone-500 text-[10px] uppercase tracking-wider">Fonti</span>
+                                <button onclick="selectAllCitations()"
+                                    class="text-rose-500 text-[10px] font-bold hover:underline">Seleziona Tutti</button>
+                            </div>
+                            <input type="text" id="citation-search" onkeyup="renderCitationsList()"
+                                placeholder="Cerca autore o titolo..."
+                                class="w-full text-xs p-1.5 rounded border border-stone-200 outline-none focus:border-rose-300">
                         </div>
                         <div class="flex-1 overflow-y-auto p-2 space-y-1" id="citation-list"></div>
                     </div>
@@ -622,6 +632,65 @@
                     </div>
                 </div>
             </div>
+
+            <!-- NEW: ADD BOOK MODAL -->
+            <div id="add-book-modal"
+                class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 fade-in">
+                <div
+                    class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-stone-100 transform transition-all">
+                    <div class="p-6 border-b border-stone-100 bg-stone-50 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-serif text-2xl font-bold text-stone-900">Nuova Fonte</h3>
+                            <p class="text-xs text-stone-500 uppercase tracking-widest mt-1">Aggiungi materiale
+                                bibliografico</p>
+                        </div>
+                        <button onclick="document.getElementById('add-book-modal').classList.add('hidden')"
+                            class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-400 font-bold transition-colors">✕</button>
+                    </div>
+                    <div class="p-6 space-y-5">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5">Titolo
+                                    Opera</label>
+                                <input type="text" id="add-book-title"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm font-medium text-stone-800 focus:border-rose-300 outline-none transition-colors"
+                                    placeholder="Es. L'individuazione...">
+                            </div>
+                            <div class="col-span-1">
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5">Autore</label>
+                                <input type="text" id="add-book-author"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-400 outline-none"
+                                    placeholder="Es. Simondon">
+                            </div>
+                            <div class="col-span-1">
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5">Anno</label>
+                                <input type="text" id="add-book-year"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-400 outline-none"
+                                    placeholder="YYYY">
+                            </div>
+                            <div class="col-span-2">
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1.5">Corso
+                                    / Materia (Opzionale)</label>
+                                <input type="text" id="add-book-subject"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-400 outline-none"
+                                    placeholder="Es. Filosofia Teoretica (Lascia vuoto per 'Generale')">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-stone-50 border-t border-stone-100 flex justify-end gap-3">
+                        <button onclick="document.getElementById('add-book-modal').classList.add('hidden')"
+                            class="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase hover:bg-stone-200 rounded-lg transition-colors">Annulla</button>
+                        <button onclick="confirmAddBook()"
+                            class="px-6 py-2.5 bg-stone-900 text-white text-xs font-bold uppercase rounded-lg shadow-lg hover:bg-black hover:scale-105 transition-all">Salva
+                            Fonte</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- MODALS -->
             <!-- NEW: Course Editor Modal -->
             <div id="course-modal"
@@ -1062,6 +1131,39 @@
             router('dashboard');
         }
 
+        // IMPLEMENTATION: Global Callback for Squad Engine
+        window.receiveBookData = function (data) {
+            const newId = "AUTO_" + Date.now();
+
+            // Sanitize & Construct Book Object
+            const newBook = {
+                id: newId,
+                author: data.author || "Unknown Author",
+                title: data.title || "Untitled Document",
+                year: data.year || new Date().getFullYear().toString(),
+                pub: data.pub || "Squad Engine Ingest",
+                cat: "User Added", // Default as requested
+                status: "todo",
+                notes: `[SQUAD REPORT]\n\nDESCRIZIONE:\n${data.desc || 'N/A'}\n\nDEFINIZIONI:\n${(data.definitions || []).map(d => d.term).join(', ')}\n\nQUOTE:\n${(data.quotes || []).join('\n')}\n\nCONNESSIONI:\n${(data.connections?.related_authors || []).join(', ')}`,
+                tags: ["AI_PROCESSED"],
+                subject: currentCourseId ? courses.find(c => c.id === currentCourseId).name : null
+            };
+
+            // Add to TOP of list (unshift)
+            biblioData.unshift(newBook);
+
+            // Persist & Update UI
+            saveData();
+
+            // Switch to Database View to show result
+            router('database');
+            runSearch(); // Update list immediately
+
+            // Success Trigger
+            // confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); // already in squad_engine
+            alert(`✅ Squad Engine Success!\n"${newBook.title}" è stato aggiunto al database.`);
+        };
+
         function initApp() {
             renderDashboard();
             router('dashboard');
@@ -1095,22 +1197,30 @@
             const cat = document.getElementById('catFilter').value;
 
             // Filter Logic: Search Text + Category + NOT Deleted + (Optional) Current Course Context
+            // Filter Logic
             let filtered = biblioData.filter(i => {
-                // 1. Exclude Deleted
-                if (deletedSources.includes(i.id)) return false;
+                const isDeleted = deletedSources.includes(i.id);
+                if (isDeleted) return false;
 
-                // 2. Filter by Course (if active and not "All")
-                // Note: If we are in "Database" view, maybe we want to see everything unless filtered?
-                // Let's stick to the plan: Context filters Database View.
-                if (currentCourseId) {
-                    const course = COURSES.find(c => c.id === currentCourseId);
-                    // If course exists, show only matching Subject OR items added by user (often no subject)
-                    // Or keep it simpler: Matches Subject.
-                    if (course && i.subject !== course.name && i.cat !== 'User Added') return false;
+                // Course Context Filter specific check
+                const matchCourse = currentCourseId ? (courses.find(c => c.id === currentCourseId)?.name === i.subject) : false;
+
+                // If filter is explicitly "course_context", show ONLY active course items
+                if (cat === 'course_context') {
+                    if (!currentCourseId) return false; // returns nothing if no course active
+                    return matchCourse;
                 }
 
-                // 3. Text & Category
-                return (i.title.toLowerCase().includes(txt) || i.author.toLowerCase().includes(txt)) && (cat === 'all' || i.cat === cat);
+                // If currently in a course view (and not searching "all" specifically overrides?), we might default to filtering?
+                // The prompt says "Subject Switching". Assuming standard filter behavior + manual switch.
+
+                // Text Match
+                const txtMatch = (i.title.toLowerCase().includes(txt) || i.author.toLowerCase().includes(txt));
+
+                // Cat Match
+                const catMatch = cat === 'all' || i.cat === cat;
+
+                return txtMatch && catMatch;
             });
 
             // Sort: Pinned First
@@ -1186,22 +1296,48 @@
             }
         }
 
-        function addNewSourcePrompt() {
-            const author = prompt("Autore (es. Rossi, M.):");
-            if (!author) return;
-            const title = prompt("Titolo del libro:");
-            if (!title) return;
-            const year = prompt("Anno:");
-
-            const newId = "U" + Date.now();
-            const newBook = { id: newId, author: author, title: title, year: year || "????", pub: "User Added", cat: "User Added", status: "todo", notes: "", tags: [] };
-
-            biblioData.unshift(newBook);
-            saveData();
-            runSearch();
-            alert("Libro aggiunto!");
+        // --- BOOK MODAL LOGIC ---
+        function openAddBookModal() {
+            document.getElementById('add-book-title').value = '';
+            document.getElementById('add-book-author').value = '';
+            document.getElementById('add-book-year').value = '';
+            document.getElementById('add-book-subject').value = currentCourseId ? courses.find(c => c.id === currentCourseId).name : '';
+            document.getElementById('add-book-modal').classList.remove('hidden');
         }
 
+        function confirmAddBook() {
+            const title = document.getElementById('add-book-title').value.trim();
+            const author = document.getElementById('add-book-author').value.trim();
+            const year = document.getElementById('add-book-year').value.trim();
+            const subject = document.getElementById('add-book-subject').value.trim();
+
+            if (!title || !author) return alert("Inserisci almeno Titolo e Autore!");
+
+            const newId = "U" + Date.now().toString().slice(-4);
+            const newBook = {
+                id: newId,
+                author: author,
+                title: title,
+                year: year || "????",
+                pub: "User Selected",
+                cat: "User Added",
+                status: "todo",
+                notes: "",
+                tags: [],
+                subject: subject || null
+            };
+
+            biblioData.unshift(newBook);
+
+            // Save to Custom Books in LocalStorage
+            const customBooks = biblioData.filter(b => b.cat === 'User Added');
+            localStorage.setItem('millino_custom_books', JSON.stringify(customBooks));
+
+            document.getElementById('add-book-modal').classList.add('hidden');
+            runSearch();
+            renderCitationsList();
+            renderConcepts(); // Refresh stats/concepts
+        }
         function openBookModal(id) { currentBookId = id; const b = biblioData.find(x => x.id === id); document.getElementById('modal-title').innerText = b.title; document.getElementById('modal-author').innerText = b.author; document.getElementById('modal-notes').value = b.notes || ''; document.getElementById('modal-tags').value = (b.tags || []).join(', '); document.getElementById('book-modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('book-modal').classList.add('hidden'); }
         function saveBookDetails() { const b = biblioData.find(x => x.id === currentBookId); b.notes = document.getElementById('modal-notes').value; b.tags = document.getElementById('modal-tags').value.split(',').map(t => t.trim()).filter(t => t); saveData(); closeModal(); runSearch(); renderConcepts(); }
@@ -1412,8 +1548,8 @@
                              <div class="flex gap-2 text-xs text-stone-400 font-mono">
                                 ${ch.concepts ? `<span>🔑 ${ch.concepts}</span>` : ''}
                              </div>
-                             <button onclick="askAI('Aiutami con il capitolo: ${safe(ch.title)}. Obiettivo: ${safe(ch.goal)}. Analisi: ${safe(ch.analysis)}')" class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-colors shadow-sm flex items-center gap-2">
-                                <span>🐶</span> Chiedi a Jesse
+                             <button onclick="askAI('Aiutami a scrivere una bozza per il capitolo: ${safe(ch.title)}. Obiettivo: ${safe(ch.goal)}. Analisi: ${safe(ch.analysis)}', 'academic_draft')" class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-colors shadow-sm flex items-center gap-2">
+                                <span>✍️</span> Scrivi Bozza
                              </button>
                         </div>
                     </div>
@@ -1582,7 +1718,7 @@
                             mainDisplay.classList.remove('text-rose-600');
                             mainDisplay.classList.add('text-teal-600'); // Greenish for break
                             btn.innerText = "Avvia Pausa";
-                            btn.classList.remove('bg-stone-900');
+                            btn.classList.remove('bg-stone-900', 'shadow-rose-200');
                             btn.classList.add('bg-teal-600', 'hover:bg-teal-700');
                         } else {
                             timerMode = 'focus';
@@ -1592,7 +1728,7 @@
                             mainDisplay.classList.remove('text-teal-600');
                             btn.innerText = "Avvia Focus";
                             btn.classList.remove('bg-teal-600', 'hover:bg-teal-700');
-                            btn.classList.add('bg-stone-900');
+                            btn.classList.add('bg-stone-900', 'shadow-rose-200');
                         }
                         btn.classList.remove('animate-pulse');
                         // Update displays to new time immediately
