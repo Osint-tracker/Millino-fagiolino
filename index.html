@@ -324,40 +324,48 @@
         </div>
 
         <div id="chat-widget" class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden">
-            <div class="bg-[#1C1917] p-4 flex justify-between items-center shrink-0 text-white">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-rose-500 relative">
-                        <img id="jesse-avatar" src="" alt="Jesse" class="w-full h-full object-cover">
-                    </div>
-                    <div><h4 class="font-bold text-sm">Jesse the Assistant</h4><div class="text-[10px] text-stone-400">Research Doggo 🐶</div></div>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-stone-400 hover:text-white text-xs px-2">Clear</button>
-                    <button onclick="toggleChat()" class="text-stone-400 hover:text-white">&times;</button>
-                </div>
+    <div class="bg-[#1C1917] p-4 flex justify-between items-center shrink-0 text-white">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-rose-500 relative">
+                <img id="jesse-avatar" src="" alt="Jesse" class="w-full h-full object-cover">
             </div>
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
-                <div class="flex gap-3 fade-in mt-4">
-                    <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0"><img src="" class="w-full h-full object-cover jesse-mini-avatar"></div>
-                    <div class="p-3 rounded-2xl text-sm max-w-[85%] msg-jesse">Bau! Ciao padrona, io sono Jesse. Sto analizzando la tua richiesta... Se ti è stato utile padrona, dammi del cibo, ho fame!!</div>
-                </div>
-            </div>
-            
-            <div class="px-4 py-2 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
-                <button onclick="setMode('socrate')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1 rounded-full shadow-sm">Socrate</button>
-                <button onclick="setMode('critic')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1 rounded-full shadow-sm">Relatore</button>
-                <button onclick="setMode('discuss')" class="whitespace-nowrap bg-stone-900 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">Discussione Tesi</button>
-            </div>
-
-            <div class="p-3 bg-white border-t border-stone-100 shrink-0 relative">
-                <input type="text" id="chat-input" placeholder="Chiedi a Jesse..." class="w-full pl-4 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 outline-none transition-colors" onkeypress="if(event.key==='Enter') sendChat()">
-                <button onclick="sendChat()" class="absolute right-2 top-2 bottom-2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors">↑</button>
+            <div>
+                <h4 class="font-bold text-sm">Jesse the Assistant</h4>
+                <div class="text-[10px] text-stone-400">Research Doggo 🐶</div>
             </div>
         </div>
-        
-        <button onclick="toggleChat()" class="fixed bottom-6 right-6 w-14 h-14 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group overflow-hidden border-2 border-white">
-            <img src="" class="w-full h-full object-cover jesse-mini-avatar" alt="Chat">
-        </button>
+        <div class="flex gap-2">
+            <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-stone-400 hover:text-white text-xs px-2" title="Pulisci chat">🗑️</button>
+            <button onclick="toggleChat()" class="text-stone-400 hover:text-white text-lg font-bold px-2" title="Chiudi">×</button>
+        </div>
+    </div>
+
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
+        <div class="flex gap-3 fade-in mt-4">
+            <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0">
+                <img src="" class="w-full h-full object-cover jesse-mini-avatar">
+            </div>
+            <div class="p-3 rounded-2xl text-sm max-w-[85%] msg-jesse">
+                Bau! Ciao padrona, io sono Jesse 🐶. <br>Se ti aiuto con la tesi mi dai un biscottino?
+            </div>
+        </div>
+    </div>
+    
+    <div class="px-4 py-2 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
+        <button onclick="setMode('socrate')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1 rounded-full shadow-sm">Socrate</button>
+        <button onclick="setMode('critic')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1 rounded-full shadow-sm">Relatore</button>
+        <button onclick="setMode('discuss')" class="whitespace-nowrap bg-stone-900 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">🎓 Discussione Tesi</button>
+    </div>
+
+    <div class="p-3 bg-white border-t border-stone-100 shrink-0 relative">
+        <input type="text" id="chat-input" placeholder="Chiedi a Jesse..." class="w-full pl-4 pr-10 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 outline-none transition-colors" onkeypress="if(event.key==='Enter') sendChat()">
+        <button onclick="sendChat()" class="absolute right-2 top-2 bottom-2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors">↑</button>
+    </div>
+</div>
+
+<button onclick="toggleChat()" class="fixed bottom-6 right-6 w-14 h-14 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group overflow-hidden border-2 border-white">
+    <img src="" class="w-full h-full object-cover jesse-mini-avatar" alt="Chat">
+</button>
 
     </main>
 
