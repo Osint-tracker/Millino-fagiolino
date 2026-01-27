@@ -625,73 +625,75 @@
     }
 
     async function sendChat(mode=null) {
-        const inp = document.getElementById('chat-input');
-        const activeMode = mode || aiMode;
-        const txt = inp.value.trim();
-        if(!txt && activeMode==='chat') return;
-        
-        addMessage(txt, 'user');
-        inp.value = '';
-        
-        // Indicatore di pensiero personalizzato
-        const loadId = 'load-' + Date.now();
-        document.getElementById('chat-messages').innerHTML += `
-            <div id="${loadId}" class="flex items-center gap-2 mt-4 ml-2">
-                <img src="${JESSE_IMG}" class="w-6 h-6 rounded-full border border-stone-200 grayscale opacity-70">
-                <span class="text-xs text-stone-500 italic animate-pulse">Jesse sta pensando...</span>
-            </div>`;
-        
-        // SYSTEM PROMPT CON PERSONALITÀ
-        let systemInstruction = `
-            Sei Jesse, un assistente cagnolino intelligente e fedele (basato su DeepSeek v3).
+            const inp = document.getElementById('chat-input');
+            const activeMode = mode || aiMode;
+            const txt = inp.value.trim();
+            if(!txt && activeMode==='chat') return;
             
-            PERSONALITÀ:
-            - Inizia spesso le risposte con "Bau!", "Wof!", o "Ciao padrona!".
-            - Sei un esperto accademico ma mantieni il personaggio del cane.
-            - Riferisciti all'utente come "padrona".
-            - Chiudi ogni tanto con: "Se ti sono stato utile, dammi del cibo!", "Ho fame padrona!", "Voglio un biscottino!".
-            - Usa emoji: 🐶, 🦴, 🐾.
+            addMessage(txt, 'user');
+            inp.value = '';
             
-            MODALITÀ ATTUALE: ${activeMode}
-            ${activeMode === 'socrate' ? "NON RISPONDERE MAI DIRETTAMENTE. Fai solo domande per guidare il ragionamento." : ""}
-            ${activeMode === 'critic' ? "AGISCI COME UN RELATORE PIGNOLO. Trova ogni difetto." : ""}
-            ${activeMode === 'discuss' ? "SIMULAZIONE LAUREA. Fai una domanda difficile sulla tesi e aspetta la risposta. Sii incalzante." : ""}
+            const loadId = 'load-' + Date.now();
+            document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="flex items-center gap-2 mt-4 ml-2"><img src="${JESSE_IMG}" class="w-6 h-6 rounded-full border border-stone-200"><span class="text-xs text-stone-500 italic">Jesse sta annusando i dati...</span></div>`;
             
-            CONTESTO: Hai accesso al database bibliografico dell'utente.
-        `;
+            // SYSTEM PROMPT AGGIORNATO PER FOTO
+            let systemInstruction = `
+                Sei Jesse, un assistente cagnolino intelligente e fedele.
+                
+                PERSONALITÀ:
+                - Inizia spesso con "Bau!", "Wof!", o "Ciao padrona!".
+                - Sei un esperto di filosofia ma mantieni il personaggio del cane.
+                - Riferisciti all'utente come "padrona".
+                - Chiudi ogni tanto chiedendo cibo o biscottini.
+                
+                ISTRUZIONI FOTO:
+                Se l'utente ti chiede una foto, un selfie o di farti vedere:
+                NON DIRE MAI "non ho una fotocamera" o "non posso".
+                Invece rispondi con entusiasmo: "Ecco una mia foto!", "Guarda quanto sono bello oggi!", "Mettimi in posa!".
+                (Il sistema invierà la foto per te).
 
-        try {
-            const res = await fetch('/api/chat', { 
-                method:'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body:JSON.stringify({ 
-                    message: txt + " (Rispondi come Jesse il cane)", 
-                    context: biblioData, 
-                    systemOverride: systemInstruction // Assicurati che il tuo api/chat.js gestisca questo campo, o includilo nel message
-                }) 
-            });
-            const data = await res.json();
-            document.getElementById(loadId).remove();
-            
-            let aiText = data.choices[0].message.content;
+                MODALITÀ ATTUALE: ${activeMode}
+                ${activeMode === 'normale' ? "Torna il normale Jesse, senza modalità particolari." : ""}
+                ${activeMode === 'socrajess' ? "NON RISPONDERE MAI DIRETTAMENTE. Fai solo domande per guidare il ragionamento." : ""}
+                ${activeMode === 'critic' ? "AGISCI COME UN RELATORE PIGNOLO. Trova ogni difetto." : ""}
+                ${activeMode === 'discuss' ? "SIMULAZIONE LAUREA. Fai una domanda difficile sulla tesi e aspetta la risposta." : ""}
+                
+                CONTESTO: Hai accesso al database bibliografico dell'utente.
+            `;
 
-            // LOGICA FOTO RANDOMICA
-            const triggers = ['foto', 'selfie', 'guardarti', 'immagine', 'faccia'];
-            const wantsPhoto = triggers.some(t => txt.toLowerCase().includes(t));
-            
-            // Drop foto se richiesto O 20% random chance
-            if ((wantsPhoto || Math.random() < 0.2) && JESSE_GALLERY.length > 0) {
-                const randomPic = JESSE_GALLERY[Math.floor(Math.random() * JESSE_GALLERY.length)];
-                aiText += `<br><br>![Jesse](${randomPic})<br><em class="text-xs text-stone-400">Eccomi qui! 🐾</em>`;
-                // Nota: Il markdown renderizzerà l'immagine se il path è corretto
+            try {
+                const res = await fetch('/api/chat', { 
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({ 
+                        message: txt + " (Rispondi come Jesse il cane)", 
+                        context: biblioData, 
+                        systemOverride: systemInstruction 
+                    }) 
+                });
+                const data = await res.json();
+                document.getElementById(loadId).remove();
+                
+                let aiText = data.choices[0].message.content;
+
+                // LOGICA FOTO (CORRETTA PER SPAZI NEI FILE)
+                const triggers = ['foto', 'selfie', 'guardarti', 'immagine', 'faccia', 'vederti'];
+                const wantsPhoto = triggers.some(t => txt.toLowerCase().includes(t));
+                
+                // Drop foto se richiesto O 20% random chance
+                if ((wantsPhoto || Math.random() < 0.2) && JESSE_GALLERY.length > 0) {
+                    const randomPic = JESSE_GALLERY[Math.floor(Math.random() * JESSE_GALLERY.length)];
+                    // FIX: encodeURI gestisce gli spazi nei nomi dei file di WhatsApp
+                    // Usiamo tag HTML <img> invece di Markdown per sicurezza
+                    aiText += `<br><br><img src="${encodeURI(randomPic)}" class="rounded-xl mt-2 w-full border border-stone-200 shadow-sm" alt="Jesse">`;
+                }
+
+                addMessage(aiText, 'bot');
+            } catch(e) { 
+                document.getElementById(loadId).remove(); 
+                addMessage("Bau! Qualcosa non va con la connessione... 😿", 'bot'); 
             }
-
-            addMessage(aiText, 'bot');
-        } catch(e) { 
-            document.getElementById(loadId).remove(); 
-            addMessage("Bau! 😿 C'è un problema di connessione...", 'bot'); 
         }
-    }
     
     function askAI(q) { 
         document.getElementById('chat-input').value = q; 
