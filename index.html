@@ -1421,16 +1421,41 @@
             document.getElementById('course-prof').innerText = "Prof. " + course.prof;
             document.getElementById('course-date').innerText = course.date;
 
-            // Add Edit/Delete Buttons to Detail Header (dynamically injected to avoid clutter)
-            const headerActions = document.getElementById('course-detail-actions'); // Need to add this to HTML or reuse exists
-            if (!headerActions) {
-                // Creating a dynamic action bar if not exists in HTML (User didn't add it in my view)
-                // Or I can inject it into 'course-date' parent?
-                // Let's create a dedicated controls area in HTML later. 
-                // For now, let's append distinct buttons to the description area.
+            // --- EXAM INFO CARD (NEW) ---
+            const examBox = document.getElementById('course-exam-info');
+            if (!examBox) {
+                const header = document.querySelector('.course-header-bg'); // Helper selector
+                // Inject after header? Or in a grid.
+                // The current layout has 'course-syllabus-container' inside a grid.
+                // Let's use the syllabus container parent.
+                const parent = document.getElementById('course-syllabus-container').parentElement;
+
+                // Create Info Bar if not exists
+                const infoDiv = document.createElement('div');
+                infoDiv.id = 'course-exam-info';
+                infoDiv.className = "mb-8 bg-rose-50 border border-rose-100 rounded-xl p-6 relative overflow-hidden";
+                parent.insertBefore(infoDiv, document.getElementById('course-syllabus-container'));
             }
 
-            // Re-render actions
+            // Render Exam Content
+            const examInfo = course.exam_info || { mode: 'Oral', description: 'Nessuna info esame.' };
+            const modeLabels = { 'Oral': 'Orale', 'Written': 'Scritto', 'Project': 'Progetto', 'Mixed': 'Misto' };
+            const tips = examInfo.tips ? `<div class="mt-3 pt-3 border-t border-rose-100 text-xs text-rose-500 italic">💡 <strong>Consiglio AI:</strong> ${examInfo.tips}</div>` : '';
+
+            document.getElementById('course-exam-info').innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Modalità Esame</span>
+                        <h3 class="text-2xl font-serif text-rose-900 font-bold mb-2">${modeLabels[examInfo.mode] || examInfo.mode}</h3>
+                        <p class="text-sm text-stone-600 leading-relaxed max-w-2xl">${examInfo.description || 'Aggiungi dettagli sull\'esame modificando il corso.'}</p>
+                        ${tips}
+                    </div>
+                    <div class="text-4xl opacity-20">🎓</div>
+                </div>
+            `;
+
+
+            // Add Edit/Delete Buttons logic (preserved)
             const dateBox = document.getElementById('course-date').parentNode;
             if (!document.getElementById('course-actions-wrap')) {
                 const d = document.createElement('div');
@@ -1442,7 +1467,6 @@
                  `;
                 dateBox.appendChild(d);
             } else {
-                // Update IDs for click handlers
                 const w = document.getElementById('course-actions-wrap');
                 w.innerHTML = `
                  <button onclick="openCourseModal('${course.id}')" class="text-xs border border-stone-200 px-3 py-1 rounded hover:bg-stone-50">Modifica</button>
@@ -1454,14 +1478,21 @@
             const box = document.getElementById('course-syllabus-container');
             box.innerHTML = '';
 
-            if (course.topics.length === 0) {
-                box.innerHTML = `<div class="text-center text-stone-400 py-10 italic">Nessun modulo nel sillabo. (L'editor dei moduli arriverà presto!)</div>`;
+            if ((!course.topics || course.topics.length === 0)) {
+                box.innerHTML = `<div class="text-center text-stone-400 py-10 italic">Nessun modulo nel sillabo. (Usa 'Modifica' > 'Sillabo' per aggiungere)</div>`;
+                return;
             }
 
             // Helper for safe strings
             const safe = (str) => str ? str.replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
 
             course.topics.forEach((topic, idx) => {
+                // Resolve Texts (IDs to Title)
+                const textNames = (topic.texts || []).map(tid => {
+                    const b = biblioData.find(x => x.id === tid);
+                    return b ? `<span title="${b.title}">${b.author}</span>` : tid;
+                }).join(', ');
+
                 box.innerHTML += `
                 <details class="group bg-white border border-stone-200 rounded-xl overflow-hidden hover:border-stone-300 transition-colors" ${idx === 0 ? 'open' : ''}>
                     <summary class="flex justify-between items-center p-5 cursor-pointer bg-stone-50/50 hover:bg-stone-50">
@@ -1470,8 +1501,8 @@
                     </summary>
                     <div class="p-6 border-t border-stone-100 bg-white space-y-5">
                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Obiettivo</span><p class="text-sm text-stone-800 font-medium leading-relaxed">${topic.goal}</p></div>
-                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Materiali</span><p class="text-sm text-stone-600 leading-relaxed">${(topic.texts || []).join(', ')}</p></div>
+                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Obiettivo</span><p class="text-sm text-stone-800 font-medium leading-relaxed">${topic.goal || 'Nessun obiettivo.'}</p></div>
+                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Materiali</span><p class="text-sm text-stone-600 leading-relaxed">${textNames || 'Nessun testo assegnato.'}</p></div>
                         </div>
                          <div class="pt-4 mt-2 border-t border-stone-100 flex justify-end gap-2">
                              <button onclick="askAI('Spiegami ${safe(topic.title)} del corso ${safe(course.name)}')" class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition-colors">Chiedi a Jesse</button>
