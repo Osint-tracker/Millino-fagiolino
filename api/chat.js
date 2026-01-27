@@ -55,12 +55,12 @@ export default async function handler(req, res) {
         "X-Title": "Millino Research"
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat",
+        model: "deepseek/deepseek-v3.2",
         messages: [
           { role: "system", content: fullSystemPrompt },
           { role: "user", content: message }
         ],
-        temperature: 0.7
+        temperature: 0.4
       })
     });
 
