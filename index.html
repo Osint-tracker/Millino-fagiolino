@@ -2,8 +2,8 @@
 <html lang="it" class="antialiased">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Millino Fagiolino | Research OS v4.0 (Jesse Edition)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Millino Fagiolino | Research OS v4.4 (Stable)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -36,28 +36,25 @@
         }
     </script>
     <style>
-        body { background-color: #FBFBFB; color: #1C1917; }
+        html, body { height: 100%; width: 100%; overflow: hidden; background-color: #FBFBFB; color: #1C1917; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: #E7E5E4; border-radius: 99px; }
         ::-webkit-scrollbar-track { background: transparent; }
         
         .nav-item { transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
         .nav-active { background-color: white; color: #1C1917; font-weight: 500; box-shadow: 0 1px 2px rgba(0,0,0,0.04); border: 1px solid #E7E5E4; }
-        
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(231, 229, 228, 0.8); }
         .pro-card { background: white; border: 1px solid #E7E5E4; border-radius: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
         .pro-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.04); border-color: #D6D3D1; transform: translateY(-1px); }
         
-        /* Zen Mode */
         #zen-mode { transition: opacity 0.5s ease; }
         .hidden-zen { display: none !important; }
         
-        /* Accordion */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
         details[open] summary ~ * { animation: sweep .3s ease-in-out; }
         @keyframes sweep { 0% {opacity: 0; transform: translateY(-10px)} 100% {opacity: 1; transform: translateY(0)} }
         
-        /* Badges */
         .badge { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.02em; border: 1px solid transparent; }
         .badge-todo { background: #F5F5F4; color: #78716C; border-color: #E7E5E4; }
         .badge-reading { background: #FFF1F2; color: #E11D48; border-color: #FECDD3; }
@@ -66,23 +63,20 @@
         .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         
+        /* Chat Widget & Messages */
         .chat-widget { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease; }
         .chat-open { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
         .chat-closed { transform: translateY(20px) scale(0.96); opacity: 0; pointer-events: none; }
-        
-        /* Chat Messages */
-        .msg-jesse { background-color: #F5F5F4; color: #1C1917; border-radius: 12px; border-bottom-left-radius: 2px; }
-        .msg-user { background-color: #1C1917; color: white; border-radius: 12px; border-bottom-right-radius: 2px; }
-        
-        .prose p { margin-bottom: 0.75em; line-height: 1.6; font-size: 0.95rem; }
-        /* STILI CHAT JESSE */
         .msg-jesse { background-color: #F5F5F4; color: #1C1917; border-radius: 12px; border-bottom-left-radius: 2px; }
         .msg-user { background-color: #1C1917; color: white; border-radius: 12px; border-bottom-right-radius: 2px; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .prose p { margin-bottom: 0.75em; line-height: 1.6; font-size: 0.95rem; }
     </style>
 </head>
-<body class="h-screen w-full flex overflow-hidden selection:bg-rose-100 selection:text-rose-900 bg-white">
+<body class="flex h-full w-full overflow-hidden">
+
     <div id="zen-mode" class="fixed inset-0 bg-white z-[100] hidden flex flex-col items-center justify-center p-8 overflow-hidden">
         <div class="absolute top-6 right-6">
             <button onclick="toggleZenMode()" class="text-stone-400 hover:text-stone-900 transition-colors text-xs font-bold tracking-widest uppercase">ESCI ZEN</button>
@@ -96,12 +90,12 @@
         </div>
     </div>
 
-    <aside id="app-sidebar" class="w-[280px] bg-[#FBFBFB] border-r border-stone-200 flex-shrink-0 flex flex-col z-30 hidden md:flex">
+    <aside id="app-sidebar" class="w-[280px] bg-[#FBFBFB] border-r border-stone-200 flex-shrink-0 flex flex-col z-30 hidden md:flex h-full">
         <div class="p-6 pt-8 pb-2">
             <h1 class="text-2xl font-semibold text-stone-900 tracking-tight serif flex items-baseline gap-1">
                 Millino<span class="text-rose-500 italic font-serif">.F</span>
             </h1>
-            <p class="text-[11px] text-stone-400 font-medium mt-1 tracking-wide">RESEARCH OS v4.0</p>
+            <p class="text-[11px] text-stone-400 font-medium mt-1 tracking-wide">RESEARCH OS v4.4</p>
         </div>
         
         <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-8">
@@ -152,7 +146,7 @@
             <button onclick="document.querySelector('aside').classList.toggle('hidden'); document.querySelector('aside').classList.toggle('absolute'); document.querySelector('aside').classList.toggle('h-full');" class="text-stone-600">☰</button>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-6 md:p-12 relative scroll-smooth pb-40 overscroll-contain" id="content-area">
+        <div class="flex-1 overflow-y-auto p-6 md:p-12 relative scroll-smooth pb-40" id="content-area">
             
             <div id="view-dashboard" class="space-y-10 fade-in max-w-5xl mx-auto">
                 <div class="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-stone-100 pb-8">
@@ -165,9 +159,9 @@
                         </div>
                     </div>
                     <button onclick="askAI('Fammi un briefing su cosa mi manca da leggere e suggerisci una priorità')" class="group bg-white border border-stone-200 hover:border-rose-200 hover:shadow-soft text-stone-600 px-5 py-2.5 rounded-full transition-all text-sm font-medium flex items-center gap-2">
-                    <img src="jesse/psicologo.jpeg" class="w-6 h-6 rounded-full object-cover border border-stone-200 group-hover:scale-110 transition-transform shadow-sm" alt="Jesse">
-                    Chiedi a Jesse
-                </button>
+                        <img src="jesse/psicologo.jpeg" class="w-6 h-6 rounded-full object-cover border border-stone-200 group-hover:scale-110 transition-transform shadow-sm" alt="Jesse">
+                        Chiedi a Jesse
+                    </button>
                 </div>
 
                 <div id="timeline-container" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
@@ -196,27 +190,24 @@
             </div>
 
             <div id="view-database" class="hidden space-y-6 fade-in pb-20 max-w-5xl mx-auto">
-            <div class="glass-card sticky top-2 z-20 p-2 rounded-xl flex gap-2 items-center shadow-soft mb-8">
-                     <div class="flex-1 relative">
-                    <span class="absolute left-3 top-2.5 text-stone-400 text-sm">🔍</span>
-                    <input type="text" id="searchInput" placeholder="Cerca o aggiungi..." class="w-full pl-9 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm text-stone-800 placeholder-stone-400 h-9" oninput="runSearch()">
-               </div>
+                <div class="glass-card sticky top-2 z-20 p-2 rounded-xl flex gap-2 items-center shadow-soft mb-8">
+                    <div class="flex-1 relative">
+                        <span class="absolute left-3 top-2.5 text-stone-400 text-sm">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Cerca o aggiungi..." 
+                            class="w-full pl-9 pr-4 py-2 bg-transparent border-none focus:ring-0 text-sm text-stone-800 placeholder-stone-400 h-9"
+                            oninput="runSearch()">
+                    </div>
                     <div class="w-px h-6 bg-stone-200"></div>
                     <select id="catFilter" onchange="runSearch()" class="bg-transparent border-none text-xs font-medium text-stone-600 outline-none cursor-pointer hover:text-stone-900 pr-2">
-                    <option value="all">Tutte</option>
-                    <option value="User Added">Le Mie Fonti</option> <option value="Primary Sources">Primarie</option>
-                    </select>
-                    <button onclick="addNewSourcePrompt()" class="ml-2 bg-stone-900 text-white w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black transition-colors text-lg font-bold" title="Aggiungi Libro">+</button>
-                </div>
-                    <div class="w-px h-6 bg-stone-200"></div>
-                    <select id="catFilter" onchange="runSearch()" class="bg-transparent border-none text-xs font-medium text-stone-600 outline-none cursor-pointer hover:text-stone-900 pr-8">
-                        <option value="all">Tutte le Categorie</option>
-                        <option value="Primary Sources">Fonti Primarie</option>
+                        <option value="all">Tutte</option>
+                        <option value="User Added">Le Mie Fonti</option>
+                        <option value="Primary Sources">Primarie</option>
                         <option value="Comparative Studies">Studi Comparativi</option>
                         <option value="Philosophy of Technology">Tecnica</option>
                         <option value="Ecological Philosophy">Ecologia</option>
                         <option value="Background">Background</option>
                     </select>
+                    <button onclick="addNewSourcePrompt()" class="ml-2 bg-stone-900 text-white w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black transition-colors text-lg font-bold" title="Aggiungi Libro">+</button>
                 </div>
                 <div class="grid grid-cols-1 gap-3" id="results-container"></div>
             </div>
@@ -266,10 +257,12 @@
                 <div class="mb-8"><div class="relative"><select id="roadmapSelect" onchange="renderRoadmap()" class="w-full md:w-1/2 bg-white border border-stone-200 text-stone-900 font-medium text-sm px-4 py-3 rounded-lg outline-none cursor-pointer hover:border-stone-300 focus:ring-2 focus:ring-stone-100 appearance-none shadow-sm"><option value="A">Strategia A: Ontologica</option><option value="B">Strategia B: Tecno-Ecologica</option><option value="C">Strategia C: Politica</option><option value="custom">Strategia D: Personalizzata (Jesse AI)</option></select><div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 md:right-1/2 mr-4">▼</div></div></div>
                 <div class="bg-stone-50 border border-stone-200 p-6 rounded-xl mb-8 flex flex-col gap-4">
                     <div class="flex gap-4 items-start"><span class="text-2xl">💡</span><div class="flex-1"><h3 class="text-stone-900 font-bold text-sm uppercase tracking-wide mb-1" id="roadmap-title"></h3><p class="text-stone-600 text-sm leading-relaxed" id="roadmap-desc"></p></div></div>
+                    
                     <div id="roadmap-biblio" class="mt-4 pt-4 border-t border-stone-200 hidden">
-                    <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-2 block">Biblio Essenziale per questo percorso:</span>
-                    <div id="roadmap-biblio-list" class="flex flex-wrap gap-2"></div>
-                </div>
+                        <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-2 block">Biblio Essenziale per questo percorso:</span>
+                        <div id="roadmap-biblio-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+
                     <div id="custom-controls" class="hidden border-t border-stone-200 pt-4 flex gap-2 justify-end">
                         <button onclick="generateCustomStrategy()" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-rose-600 transition-colors shadow-soft flex items-center gap-2">✨ Chiedi a Jesse</button>
                         <button onclick="toggleEditMode()" class="bg-white border border-stone-300 text-stone-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-stone-50 transition-colors">✏️ Modifica</button>
@@ -332,49 +325,41 @@
         </div>
 
         <div id="chat-widget" class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden origin-bottom-right transition-all duration-300">
-    
-    <div class="bg-stone-900 p-4 flex justify-between items-center shrink-0 w-full text-white">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-rose-500 relative shrink-0">
-                <img id="jesse-avatar" src="" alt="Jesse" class="w-full h-full object-cover">
+            <div class="bg-stone-900 p-4 flex justify-between items-center shrink-0 w-full text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-rose-500 relative shrink-0">
+                        <img id="jesse-avatar" src="" alt="Jesse" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex flex-col">
+                        <h4 class="font-bold text-sm leading-tight">Jesse the Assistant</h4>
+                        <div class="text-[10px] text-stone-400">Research Doggo 🐶</div>
+                    </div>
+                </div>
+                <div class="flex gap-1">
+                    <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors" title="Pulisci Chat">🗑️</button>
+                    <button onclick="toggleChat()" class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors text-lg font-bold leading-none" title="Chiudi">×</button>
+                </div>
             </div>
-            <div class="flex flex-col">
-                <h4 class="font-bold text-sm leading-tight">Jesse the Assistant</h4>
-                <div class="text-[10px] text-stone-400">Research Doggo 🐶</div>
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
+                <div class="flex gap-3 fade-in mt-2">
+                    <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0"><img src="jesse/psicologo.jpeg" class="w-full h-full object-cover jesse-mini-avatar"></div>
+                    <div class="p-3 rounded-2xl text-sm max-w-[85%] msg-jesse">Bau! Ciao padrona, io sono Jesse. Sto analizzando la tua richiesta... Se ti è stato utile padrona, dammi del cibo, ho fame!!</div>
+                </div>
+            </div>
+            <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
+                <button onclick="setMode('socrate')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrate</button>
+                <button onclick="setMode('critic')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Relatore</button>
+                <button onclick="setMode('discuss')" class="whitespace-nowrap bg-stone-800 text-white hover:bg-stone-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors">🎓 Discussione</button>
+            </div>
+            <div class="p-3 bg-white border-t border-stone-100 shrink-0 relative">
+                <input type="text" id="chat-input" placeholder="Chiedi a Jesse..." class="w-full pl-4 pr-12 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 focus:bg-white outline-none transition-all placeholder-stone-400 text-stone-800" onkeypress="if(event.key==='Enter') sendChat()">
+                <button onclick="sendChat()" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors shadow-sm text-sm">➤</button>
             </div>
         </div>
-        <div class="flex gap-1">
-            <button onclick="document.getElementById('chat-messages').innerHTML=''" class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors" title="Pulisci Chat">🗑️</button>
-            <button onclick="toggleChat()" class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors text-lg font-bold leading-none" title="Chiudi">×</button>
-        </div>
-    </div>
-
-    <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
-        <div class="flex gap-3 fade-in mt-2">
-            <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0">
-                <img src="jesse/psicologo.jpeg" class="w-full h-full object-cover jesse-mini-avatar">
-            </div>
-            <div class="p-3 rounded-2xl text-sm max-w-[85%] msg-jesse">
-                Bau! Ciao padrona, io sono Jesse 🐶. <br>Se ti aiuto con la tesi mi dai un biscottino?
-            </div>
-        </div>
-    </div>
-    
-    <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
-        <button onclick="setMode('Socrajesse')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrajesse</button>
-        <button onclick="setMode('critic')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Relatore</button>
-        <button onclick="setMode('discuss')" class="whitespace-nowrap bg-stone-800 text-white hover:bg-stone-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors">🎓 Discussione</button>
-    </div>
-
-    <div class="p-3 bg-white border-t border-stone-100 shrink-0 relative">
-        <input type="text" id="chat-input" placeholder="Chiedi a Jesse..." class="w-full pl-4 pr-12 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 focus:bg-white outline-none transition-all placeholder-stone-400 text-stone-800" onkeypress="if(event.key==='Enter') sendChat()">
-        <button onclick="sendChat()" class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors shadow-sm text-sm">➤</button>
-    </div>
-</div>
-
-<button onclick="toggleChat()" class="fixed bottom-6 right-6 w-14 h-14 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group overflow-hidden border-2 border-white">
-    <img src="" class="w-full h-full object-cover jesse-mini-avatar" alt="Chat">
-</button>
+        
+        <button onclick="toggleChat()" class="fixed bottom-6 right-6 w-14 h-14 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group overflow-hidden border-2 border-white">
+            <img src="" class="w-full h-full object-cover jesse-mini-avatar" alt="Chat">
+        </button>
 
     </main>
 
@@ -383,126 +368,45 @@
     <audio id="audio-fire" loop src="https://assets.mixkit.co/active_storage/sfx/1239/1239-preview.mp3"></audio>
 
     <script>
+        // --- CONFIGURAZIONE JESSE ---
+        const JESSE_IMG = "jesse/psicologo.jpeg"; 
         
-         // --- CONFIGURAZIONE JESSE ---
-        // Foto profilo principale
-    const JESSE_IMG = "jesse/psicologo.jpeg";  
-        
-        // Applica l'immagine a tutti gli elementi
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('jesse-avatar').src = JESSE_IMG;
-            document.querySelectorAll('.jesse-mini-avatar').forEach(img => img.src = JESSE_IMG);
-        });
-    
-    // Album Completo (Tutte le foto che hai caricato nella cartella /jesse/)
-    const JESSE_GALLERY = [
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.41.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.45.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.51 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.51.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.52.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (3).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.53.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.54 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.54.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.55.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.56.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.57 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.57.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.58.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.31.59.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.00 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.00.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.01.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.04 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.04.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (3).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.05.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.06.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.07 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.07.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.09.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.10 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.10.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.13.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (3).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.14.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.15.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.16 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.16.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (3).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.17.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.18.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.19.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (2).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.20.jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.21 (1).jpeg",
-        "jesse/WhatsApp Image 2026-01-27 at 15.32.21.jpeg"
-    ];
+        // --- ALBUM FOTO JESSE (67 FOTO) ---
+        const JESSE_GALLERY = [
+            "jesse/WhatsApp Image 2026-01-27 at 15.31.41.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.45.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.51 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.51.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.52.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.54 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.54.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.55.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.56.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.57 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.57.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.58.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.59.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.00 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.00.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.01.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.04 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.04.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.06.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.07 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.07.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.09.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.10 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.10.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.13.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.15.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.16 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.16.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.18.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.19.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.20.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.21 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.21.jpeg"
+        ];
 
-    // Inizializza l'app E le immagini
-    document.addEventListener('DOMContentLoaded', () => {
-        // 1. Setup Immagini Jesse
-        const mainAvatar = document.getElementById('jesse-avatar');
-        if(mainAvatar) mainAvatar.src = JESSE_IMG;
-        document.querySelectorAll('.jesse-mini-avatar').forEach(img => img.src = JESSE_IMG);
+        // --- VARIABILI GLOBALI (UNICA DICHIARAZIONE) ---
+        let biblioData = []; 
+        let currentBookId = null;
+        let wordHistory = JSON.parse(localStorage.getItem('word_history')) || [];
+        let journalEntries = JSON.parse(localStorage.getItem('journal_entries')) || [];
+        let aiMode = 'chat'; 
+        let customStrategy = { title: "Strategia D: Personalizzata", desc: "Creata da Jesse su misura.", chapters: [] };
+        let chartInstance = null;
 
-        // 2. Avvio dell'Applicazione (FONDAMENTALE)
-        mergeData();  // Carica i dati salvati
-        initApp();    // Renderizza la dashboard e tutto il resto
-        initAudio();  // Prepara i suoni
-    });
-
-        // --- MASTER DB ---
+        // --- MASTER DB (85 Fonti) ---
         const MASTER_DB = [
-            // --- SIMONDON (15) ---
             { id: "S01", author: "Simondon, G.", year: "2005", title: "L'individuation à la lumière des notions de forme et d'information", pub: "Jérôme Millon", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Il testo base sull'individuatione." },
             { id: "S02", author: "Simondon, G.", year: "1958", title: "Du mode d'existence des objets techniques", pub: "Aubier", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Genesi tecnica e alienazione." },
             { id: "S03", author: "Simondon, G.", year: "1989", title: "L'individuation psychique et collective", pub: "Aubier", cat: "Primary Sources", prio: "HIGH", desc: "Transindividuale e affettività." },
             { id: "S04", author: "Simondon, G.", year: "2008", title: "Imagination et invention", pub: "La Transparence", cat: "Primary Sources", prio: "HIGH", desc: "Ciclo delle immagini." },
             { id: "S05", author: "Simondon, G.", year: "2010", title: "Communication et information", pub: "La Transparence", cat: "Primary Sources", prio: "MEDIUM", desc: "Cibernetica." },
+            { id: "S11", author: "Simondon, G.", year: "1960", title: "Forme, information, potentiels", pub: "Bulletin SFP", cat: "Primary Sources", prio: "HIGH", desc: "Articolo chiave." },
+            { id: "S13", author: "Simondon, G.", year: "1953", title: "La mentalité technique", pub: "PUF", cat: "Primary Sources", prio: "HIGH", desc: "Schemi cognitivi." },
             { id: "S06", author: "Simondon, G.", year: "2006", title: "L'invention dans les techniques", pub: "Seuil", cat: "Primary Sources", prio: "MEDIUM", desc: "L'atto inventivo." },
             { id: "S07", author: "Simondon, G.", year: "2014", title: "Sur la technique", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Saggi vari." },
             { id: "S08", author: "Simondon, G.", year: "2015", title: "Sur la psychologie", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Scritti psicologici." },
             { id: "S09", author: "Simondon, G.", year: "2016", title: "Sur la philosophie", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Storia della filosofia." },
             { id: "S10", author: "Simondon, G.", year: "2004", title: "Deux leçons sur l'animal et l'homme", pub: "Ellipses", cat: "Primary Sources", prio: "MEDIUM", desc: "Antropologia." },
-            { id: "S11", author: "Simondon, G.", year: "1960", title: "Forme, information, potentiels", pub: "Bulletin SFP", cat: "Primary Sources", prio: "HIGH", desc: "Articolo chiave." },
             { id: "S12", author: "Simondon, G.", year: "1965", title: "Culture et technique", pub: "Bulletin I.P.S.O.", cat: "Primary Sources", prio: "MEDIUM", desc: "Rapporto cultura/tecnica." },
-            { id: "S13", author: "Simondon, G.", year: "1953", title: "La mentalité technique", pub: "PUF", cat: "Primary Sources", prio: "HIGH", desc: "Schemi cognitivi." },
             { id: "S14", author: "Simondon, G.", year: "1983", title: "L'histoire de la notion d'individu", pub: "Vrin", cat: "Primary Sources", prio: "MEDIUM", desc: "Corso storico." },
             { id: "S15", author: "Simondon, G.", year: "1992", title: "Perception et modulation", pub: "Vrin", cat: "Primary Sources", prio: "MEDIUM", desc: "Percezione." },
-
-            // --- DELEUZE (15) ---
             { id: "D01", author: "Deleuze, G.", year: "1968", title: "Différence et répétition", pub: "PUF", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Ontologia della differenza." },
             { id: "D02", author: "Deleuze, G.", year: "1969", title: "Logique du sens", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Evento e singolarità." },
-            { id: "D03", author: "Deleuze, G. & Guattari, F.", year: "1972", title: "L'Anti-Œdipe", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Macchine desideranti." },
             { id: "D04", author: "Deleuze, G. & Guattari, F.", year: "1980", title: "Mille Plateaux", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Rizoma e agencement." },
             { id: "D05", author: "Deleuze, G.", year: "1988", title: "Le Pli", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Modulazione." },
+            { id: "D03", author: "Deleuze, G. & Guattari, F.", year: "1972", title: "L'Anti-Œdipe", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Macchine desideranti." },
             { id: "D06", author: "Deleuze, G.", year: "2002", title: "L'île déserte", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Testi vari." },
             { id: "D07", author: "Deleuze, G.", year: "1966", title: "Le Bergsonisme", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Virtuale." },
             { id: "D08", author: "Deleuze, G.", year: "1981", title: "Spinoza: Philosophie pratique", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Affetti." },
@@ -513,8 +417,6 @@
             { id: "D13", author: "Deleuze, G.", year: "1985", title: "Cinéma 2: L'Image-Temps", pub: "Minuit", cat: "Primary Sources", prio: "MEDIUM", desc: "Tempo." },
             { id: "D14", author: "Deleuze, G.", year: "1964", title: "Proust et les signes", pub: "PUF", cat: "Primary Sources", prio: "MEDIUM", desc: "Segni." },
             { id: "D15", author: "Deleuze, G.", year: "2003", title: "Deux régimes de fous", pub: "Minuit", cat: "Primary Sources", prio: "LOW", desc: "Postumi." },
-
-            // --- COMPARATIVE STUDIES (15) ---
             { id: "C01", author: "Combes, M.", year: "1999", title: "Simondon. Individu et collectivité", pub: "PUF", cat: "Comparative Studies", prio: "ESSENTIAL", desc: "Politica transindividuale." },
             { id: "C02", author: "Barthélémy, J.H.", year: "2005", title: "Penser l'individuation", pub: "L'Harmattan", cat: "Comparative Studies", prio: "HIGH", desc: "Studio rigoroso." },
             { id: "C03", author: "Barthélémy, J.H.", year: "2008", title: "Simondon ou l'encyclopédisme génétique", pub: "PUF", cat: "Comparative Studies", prio: "HIGH", desc: "Sistematica." },
@@ -530,11 +432,9 @@
             { id: "C13", author: "Stiegler, B.", year: "2018", title: "The Age of Disruption", pub: "Polity", cat: "Comparative Studies", prio: "MEDIUM", desc: "Disagio." },
             { id: "C14", author: "Massumi, B.", year: "2002", title: "Parables for the Virtual", pub: "Duke UP", cat: "Comparative Studies", prio: "MEDIUM", desc: "Virtuale." },
             { id: "C15", author: "Guchet, X.", year: "2010", title: "Pour un humanisme technologique", pub: "PUF", cat: "Comparative Studies", prio: "HIGH", desc: "Umanesimo." },
-
-            // --- PHILOSOPHY OF TECHNOLOGY (15) ---
             { id: "T01", author: "Stiegler, B.", year: "1994", title: "La technique et le temps 1", pub: "Galilée", cat: "Philosophy of Technology", prio: "ESSENTIAL", desc: "Epifilogenesi." },
-            { id: "T02", author: "Stiegler, B.", year: "1996", title: "La technique et le temps 2", pub: "Galilée", cat: "Philosophy of Technology", prio: "HIGH", desc: "Disorientamento." },
             { id: "T03", author: "Hui, Y.", year: "2016", title: "On the Existence of Digital Objects", pub: "Minnesota UP", cat: "Philosophy of Technology", prio: "HIGH", desc: "Oggetti digitali." },
+            { id: "T02", author: "Stiegler, B.", year: "1996", title: "La technique et le temps 2", pub: "Galilée", cat: "Philosophy of Technology", prio: "HIGH", desc: "Disorientamento." },
             { id: "T04", author: "Hui, Y.", year: "2017", title: "The Question Concerning Technology in China", pub: "Urbanomic", cat: "Philosophy of Technology", prio: "HIGH", desc: "Cosmotecnica." },
             { id: "T05", author: "Hui, Y.", year: "2019", title: "Recursivity and Contingency", pub: "Rowman", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Ricorsività." },
             { id: "T06", author: "Heidegger, M.", year: "1954", title: "Die Frage nach der Technik", pub: "Neske", cat: "Philosophy of Technology", prio: "HIGH", desc: "Gestell." },
@@ -547,8 +447,6 @@
             { id: "T13", author: "Verbeek, P.P.", year: "2005", title: "What Things Do", pub: "Penn State", cat: "Philosophy of Technology", prio: "LOW", desc: "Mediazione." },
             { id: "T14", author: "Hayles, N.K.", year: "1999", title: "How We Became Posthuman", pub: "Chicago UP", cat: "Philosophy of Technology", prio: "MEDIUM", desc: "Posthuman." },
             { id: "T15", author: "Kittler, F.", year: "1986", title: "Grammophon, Film, Typewriter", pub: "Brinkmann", cat: "Philosophy of Technology", prio: "LOW", desc: "Media." },
-
-            // --- ECOLOGICAL PHILOSOPHY (15) ---
             { id: "E01", author: "Guattari, F.", year: "1989", title: "Les trois écologies", pub: "Galilée", cat: "Ecological Philosophy", prio: "ESSENTIAL", desc: "Ecosofia." },
             { id: "E02", author: "Guattari, F.", year: "1992", title: "Chaosmose", pub: "Galilée", cat: "Ecological Philosophy", prio: "HIGH", desc: "Caosmosi." },
             { id: "E03", author: "Haraway, D.", year: "2016", title: "Staying with the Trouble", pub: "Duke UP", cat: "Ecological Philosophy", prio: "HIGH", desc: "Chthulucene." },
@@ -564,8 +462,6 @@
             { id: "E13", author: "Hui, Y.", year: "2021", title: "Art and Cosmotechnics", pub: "Minnesota UP", cat: "Ecological Philosophy", prio: "HIGH", desc: "Arte." },
             { id: "E14", author: "Tsing, A.", year: "2015", title: "The Mushroom at the End of the World", pub: "Princeton UP", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Fungo." },
             { id: "E15", author: "Viveiros de Castro, E.", year: "2009", title: "Métaphysiques cannibales", pub: "PUF", cat: "Ecological Philosophy", prio: "MEDIUM", desc: "Prospettivismo." },
-
-            // --- BACKGROUND (10) ---
             { id: "B01", author: "Bergson, H.", year: "1907", title: "L'évolution créatrice", pub: "Alcan", cat: "Background", prio: "HIGH", desc: "Slancio vitale." },
             { id: "B02", author: "Spinoza, B.", year: "1677", title: "Ethica", pub: "-", cat: "Background", prio: "HIGH", desc: "Sostanza." },
             { id: "B03", author: "Canguilhem, G.", year: "1952", title: "La connaissance de la vie", pub: "Vrin", cat: "Background", prio: "HIGH", desc: "Normatività." },
@@ -577,12 +473,13 @@
             { id: "B09", author: "Leibniz, G.W.", year: "1714", title: "Monadologie", pub: "-", cat: "Background", prio: "MEDIUM", desc: "Monade." },
             { id: "B10", author: "Uexküll, J. von", year: "1934", title: "Streifzüge durch die Umwelten", pub: "-", cat: "Background", prio: "MEDIUM", desc: "Umwelt." }
         ];
-        
+
+        // --- ROADMAP DENSA (Con Obiettivi e Metodo) ---
         let detailedRoadmaps = {
             A: {
                 title: "Strategia A: Ontologica (Simondon/Deleuze)",
                 desc: "Un'indagine sui fondamenti dell'essere: dal 'principio' al 'processo'. Questa strategia decostruisce l'individuo statico per rivelare il divenire preindividuale.",
-                top_sources: ["S01", "D01", "S02", "D13", "S11"], // Fonti chiave per questo percorso
+                top_sources: ["S01", "D01", "S02", "D13", "S11"], 
                 chapters: [
                     { 
                         title: "1. La Crisi dell'Ilemorfismo", 
@@ -674,185 +571,70 @@
             }
         };
 
-        let customStrategy = { title: "Strategia D: Personalizzata", desc: "Creata da Jesse su misura.", chapters: [] };
-        let biblioData = []; 
-        let currentBookId = null;
-        let wordHistory = JSON.parse(localStorage.getItem('word_history')) || [];
-        let journalEntries = JSON.parse(localStorage.getItem('journal_entries')) || [];
-        let aiMode = 'chat'; 
+        // --- INIZIALIZZAZIONE ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup Immagini
+            const mainAvatar = document.getElementById('jesse-avatar');
+            if(mainAvatar) mainAvatar.src = JESSE_IMG;
+            document.querySelectorAll('.jesse-mini-avatar').forEach(img => img.src = JESSE_IMG);
+            
+            // Avvio App
+            mergeData(); 
+            initApp();
+            initAudio();
+        });
 
-        document.addEventListener('DOMContentLoaded', () => { mergeData(); initApp(); });
-
+        // --- FUNZIONI CORE ---
         function mergeData() {
             const savedProgress = JSON.parse(localStorage.getItem('millino_progress')) || [];
             const savedCustomBooks = JSON.parse(localStorage.getItem('millino_custom_books')) || [];
             
-            // 1. Unisci MASTER_DB con i progressi salvati (stato, note, tag)
             let mergedMaster = MASTER_DB.map(m => {
                 const s = savedProgress.find(x => x.id === m.id);
                 return s ? { ...m, ...s } : { ...m, status: 'todo', notes: '', tags: [] };
             });
 
-            // 2. Unisci i libri custom salvati
-            // Nota: Anche i custom books potrebbero avere progressi salvati in millino_progress,
-            // ma per semplicità qui assumiamo che l'oggetto salvato in custom_books sia quello aggiornato.
-            // Se vuoi mantenere lo stato sincronizzato anche per loro:
-            let mergedCustom = savedCustomBooks.map(cb => {
-                 const s = savedProgress.find(x => x.id === cb.id);
-                 return s ? { ...cb, ...s } : cb;
-            });
-
-            // 3. Combina tutto: Custom in cima, poi Master
-            biblioData = [...mergedCustom, ...mergedMaster];
+            // Combina Custom + Master
+            biblioData = [...savedCustomBooks, ...mergedMaster];
             
             const savedCustomStrategy = localStorage.getItem('custom_roadmap');
             if(savedCustomStrategy) customStrategy = JSON.parse(savedCustomStrategy);
         }
 
         function saveData() {
-            // 1. Salva lo STATO di TUTTI i libri (sia master che custom)
-            const progress = biblioData.map(b => ({ 
-                id: b.id, 
-                status: b.status, 
-                notes: b.notes, 
-                tags: b.tags 
-            }));
+            const progress = biblioData.map(b => ({ id: b.id, status: b.status, notes: b.notes, tags: b.tags }));
             localStorage.setItem('millino_progress', JSON.stringify(progress));
-            
-            // 2. Salva la DEFINIZIONE dei soli libri CUSTOM (quelli che non esistono in MASTER_DB)
-            // Cosi al riavvio sappiamo che esistono e possiamo ricaricarli
             const customBooks = biblioData.filter(b => !MASTER_DB.some(m => m.id === b.id));
             localStorage.setItem('millino_custom_books', JSON.stringify(customBooks));
         }
-        function forceReset() { if(confirm("Vuoi resettare tutto?")) { localStorage.removeItem('millino_progress'); location.reload(); } }
-        function initApp() { renderDeadline(); router('dashboard'); renderDatabase(); renderStats(); renderJournal(); renderTracker(); renderRoadmap(); renderCitationsList(); renderConcepts(); }
-        function renderDatabase() { runSearch(); }
-        function router(v) { ['dashboard', 'database', 'journal', 'tracker', 'roadmap', 'citations', 'concepts'].forEach(x => { document.getElementById('view-'+x).classList.add('hidden'); document.getElementById('nav-'+x).classList.remove('nav-active'); }); document.getElementById('view-'+v).classList.remove('hidden'); document.getElementById('nav-'+v).classList.add('nav-active'); if(window.innerWidth < 768) document.querySelector('aside').classList.add('hidden'); }
 
-        // --- NUOVA LOGICA JESSE ---
-
-    function setMode(m) { 
-        aiMode = m; 
-        let msg = "";
-        if (m === 'discuss') msg = "Grrr... facciamo sul serio! Sono la commissione di laurea. Difendi la tua tesi, padrona!";
-        else if (m === 'Socrajesse') msg = "Modalità Socrajesse on: ti risponderò solo con domande, bau!";
-        else if (m === 'critic') msg = "Modalità Relatore Severo: preparati, sarò pignolissimo!";
-        else msg = "Torno a essere il tuo Jesse normale 🐶";
-        addMessage(msg, 'bot');
-    }
-
-    function addMessage(txt, role) {
-        const box = document.getElementById('chat-messages');
-        const html = marked.parse(txt);
-        const isJesse = role === 'bot';
+        function forceReset() { if(confirm("Vuoi resettare tutto?")) { localStorage.removeItem('millino_progress'); localStorage.removeItem('millino_custom_books'); location.reload(); } }
         
-        box.innerHTML += `
-        <div class="flex gap-3 fade-in mt-4 ${isJesse ? '' : 'flex-row-reverse'}">
-            <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0 bg-white">
-                ${isJesse ? `<img src="${JESSE_IMG}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-stone-900 flex items-center justify-center text-white text-xs">TU</div>`}
-            </div>
-            <div class="p-3 rounded-2xl text-sm max-w-[85%] prose prose-sm ${isJesse ? 'msg-jesse' : 'msg-user'}">
-                ${html}
-            </div>
-        </div>`;
-        box.scrollTop = box.scrollHeight;
-    }
-
-    async function sendChat(mode=null) {
-            const inp = document.getElementById('chat-input');
-            const activeMode = mode || aiMode;
-            const txt = inp.value.trim();
-            if(!txt && activeMode==='chat') return;
-            
-            addMessage(txt, 'user');
-            inp.value = '';
-            
-            const loadId = 'load-' + Date.now();
-            document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="flex items-center gap-2 mt-4 ml-2"><img src="${JESSE_IMG}" class="w-6 h-6 rounded-full border border-stone-200"><span class="text-xs text-stone-500 italic">Jesse sta annusando i dati...</span></div>`;
-            
-            // SYSTEM PROMPT AGGIORNATO PER FOTO
-            let systemInstruction = `
-                Sei Jesse, un assistente cagnolino intelligente e fedele.
-                
-                PERSONALITÀ:
-                - Inizia spesso con "Bau!", "Wof!", o "Ciao padrona!".
-                - Sei un esperto di filosofia ma mantieni il personaggio del cane.
-                - Riferisciti all'utente come "padrona".
-                - Chiudi ogni tanto chiedendo cibo o biscottini.
-                
-                ISTRUZIONI FOTO:
-                Se l'utente ti chiede una foto, un selfie o di farti vedere:
-                NON DIRE MAI "non ho una fotocamera" o "non posso".
-                Invece rispondi con entusiasmo: "Ecco una mia foto!", "Guarda quanto sono bello oggi!", "Mettimi in posa!".
-                (Il sistema invierà la foto per te).
-
-                MODALITÀ ATTUALE: ${activeMode}
-                ${activeMode === 'normale' ? "Torna il normale Jesse, senza modalità particolari." : ""}
-                ${activeMode === 'socrajess' ? "NON RISPONDERE MAI DIRETTAMENTE. Fai solo domande per guidare il ragionamento." : ""}
-                ${activeMode === 'critic' ? "AGISCI COME UN RELATORE PIGNOLO. Trova ogni difetto." : ""}
-                ${activeMode === 'discuss' ? "SIMULAZIONE LAUREA. Fai una domanda difficile sulla tesi e aspetta la risposta." : ""}
-                
-                CONTESTO: Hai accesso al database bibliografico dell'utente.
-            `;
-
-            try {
-                const res = await fetch('/api/chat', { 
-                    method:'POST', 
-                    headers:{'Content-Type':'application/json'}, 
-                    body:JSON.stringify({ 
-                        message: txt + " (Rispondi come Jesse il cane)", 
-                        context: biblioData, 
-                        systemOverride: systemInstruction 
-                    }) 
-                });
-                const data = await res.json();
-                document.getElementById(loadId).remove();
-                
-                let aiText = data.choices[0].message.content;
-
-                // LOGICA FOTO (CORRETTA PER SPAZI NEI FILE)
-                const triggers = ['foto', 'selfie', 'guardarti', 'immagine', 'faccia', 'vederti'];
-                const wantsPhoto = triggers.some(t => txt.toLowerCase().includes(t));
-                
-                // Drop foto se richiesto O 20% random chance
-                if ((wantsPhoto || Math.random() < 0.2) && JESSE_GALLERY.length > 0) {
-                    const randomPic = JESSE_GALLERY[Math.floor(Math.random() * JESSE_GALLERY.length)];
-                    // FIX: encodeURI gestisce gli spazi nei nomi dei file di WhatsApp
-                    // Usiamo tag HTML <img> invece di Markdown per sicurezza
-                    aiText += `<br><br><img src="${encodeURI(randomPic)}" class="rounded-xl mt-2 w-full border border-stone-200 shadow-sm" alt="Jesse">`;
-                }
-
-                addMessage(aiText, 'bot');
-            } catch(e) { 
-                document.getElementById(loadId).remove(); 
-                addMessage("Bau! Qualcosa non va con la connessione... 😿", 'bot'); 
-            }
-        }
-    
-    function askAI(q) { 
-        document.getElementById('chat-input').value = q; 
-        const widget = document.getElementById('chat-widget');
-        if (widget.classList.contains('chat-closed')) toggleChat(); 
-        sendChat('chat'); 
-    }
-
-        function addMessage(txt, role) {
-            const box = document.getElementById('chat-messages');
-            const html = marked.parse(txt);
-            const isJesse = role === 'bot';
-            box.innerHTML += `
-            <div class="flex gap-3 fade-in mt-4 ${isJesse ? '' : 'flex-row-reverse'}">
-                <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0">
-                    ${isJesse ? `<img src="${JESSE_IMG}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-stone-900 flex items-center justify-center text-white text-xs">TU</div>`}
-                </div>
-                <div class="p-3 rounded-2xl text-sm max-w-[85%] prose prose-sm ${isJesse ? 'msg-jesse' : 'msg-user'}">
-                    ${html}
-                </div>
-            </div>`;
-            box.scrollTop = box.scrollHeight;
+        function initApp() { 
+            renderDeadline(); 
+            router('dashboard'); 
+            renderDatabase(); 
+            renderStats(); 
+            renderJournal(); 
+            renderTracker(); 
+            renderRoadmap(); 
+            renderCitationsList(); 
+            renderConcepts(); 
         }
 
-        // --- STANDARD FUNCTIONS (Database, Roadmap, etc.) ---
+        function router(v) { 
+            ['dashboard', 'database', 'journal', 'tracker', 'roadmap', 'citations', 'concepts'].forEach(x => { 
+                document.getElementById('view-'+x).classList.add('hidden'); 
+                document.getElementById('nav-'+x).classList.remove('nav-active'); 
+            }); 
+            document.getElementById('view-'+v).classList.remove('hidden'); 
+            document.getElementById('nav-'+v).classList.add('nav-active'); 
+            
+            // Mobile Sidebar handling
+            if(window.innerWidth < 768) document.querySelector('aside').classList.add('hidden'); 
+        }
+
+        // --- DATABASE LOGIC ---
         function runSearch() {
             const txt = document.getElementById('searchInput').value.toLowerCase();
             const cat = document.getElementById('catFilter').value;
@@ -870,48 +652,42 @@
                 </div>`;
             });
         }
+
+        function addNewSourcePrompt() {
+            const author = prompt("Autore (es. Rossi, M.):");
+            if (!author) return;
+            const title = prompt("Titolo del libro:");
+            if (!title) return;
+            const year = prompt("Anno:");
+            
+            const newId = "U" + Date.now(); 
+            const newBook = { id: newId, author: author, title: title, year: year || "????", pub: "User Added", cat: "User Added", status: "todo", notes: "", tags: [] };
+            
+            biblioData.unshift(newBook);
+            saveData();
+            runSearch();
+            alert("Libro aggiunto!");
+        }
+
         function openBookModal(id) { currentBookId = id; const b = biblioData.find(x => x.id === id); document.getElementById('modal-title').innerText = b.title; document.getElementById('modal-author').innerText = b.author; document.getElementById('modal-notes').value = b.notes || ''; document.getElementById('modal-tags').value = (b.tags || []).join(', '); document.getElementById('book-modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('book-modal').classList.add('hidden'); }
         function saveBookDetails() { const b = biblioData.find(x => x.id === currentBookId); b.notes = document.getElementById('modal-notes').value; b.tags = document.getElementById('modal-tags').value.split(',').map(t=>t.trim()).filter(t=>t); saveData(); closeModal(); runSearch(); renderConcepts(); }
         function cycleStatus(id) { const i = biblioData.findIndex(x => x.id === id); const map = { 'todo': 'reading', 'reading': 'done', 'done': 'todo' }; biblioData[i].status = map[biblioData[i].status]; if(biblioData[i].status==='done') confetti({particleCount:60,spread:60,origin:{y:0.6},colors:['#E7E5E4','#F43F5E']}); saveData(); renderStats(); runSearch(); }
-        function renderStats() {
-             const done = biblioData.filter(i => i.status === 'done').length;
-             const total = biblioData.length;
-             const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-             document.getElementById('reading-progress-text').innerText = pct + "%";
-             document.getElementById('reading-progress-bar').style.width = pct + "%";
-             document.getElementById('count-todo').innerText = biblioData.filter(i => i.status === 'todo').length;
-             document.getElementById('count-reading').innerText = biblioData.filter(i => i.status === 'reading').length;
-             document.getElementById('count-done').innerText = done;
-             document.getElementById('total-sources-count').innerText = total;
-        }
-        function renderConcepts() {
-            const tags = {}; biblioData.forEach(b => (b.tags||[]).forEach(t => { if(!tags[t]) tags[t]=[]; tags[t].push(b.title); }));
-            const cloud = document.getElementById('concept-cloud');
-            cloud.innerHTML = Object.keys(tags).length === 0 ? '<span class="text-stone-400 text-sm italic">Aggiungi tag ai libri per vedere le connessioni.</span>' : '';
-            Object.keys(tags).forEach(tag => cloud.innerHTML += `<button onclick="filterByTag('${tag}')" class="bg-white border border-stone-200 px-3 py-1 rounded-full text-xs text-stone-600 hover:border-rose-300 hover:text-rose-600 transition-colors">#${tag} (${tags[tag].length})</button>`);
-        }
-        function filterByTag(tag) { document.getElementById('concept-results').innerHTML = `<h4 class="text-sm font-bold text-stone-900 mb-2">Libri collegati a #${tag}:</h4>` + biblioData.filter(b => (b.tags||[]).includes(tag)).map(b => `<div class="bg-white p-3 rounded-lg border border-stone-100 text-sm text-stone-600">${b.title}</div>`).join(''); }
-        function renderDeadline() { const d = localStorage.getItem('thesis_deadline'); if(d) { document.getElementById('deadline-input').value = d; const days = Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24)); document.getElementById('days-remaining').innerText = `${days} GIORNI`; document.getElementById('days-remaining').classList.remove('hidden'); document.getElementById('timeline-container').classList.remove('hidden'); document.getElementById('timeline-container').innerHTML = [{ title: "Bozza", days: 60 }, { title: "Revisione", days: 30 }, { title: "Impaginazione", days: 15 }].map(m => { const x = new Date(d); x.setDate(new Date(d).getDate() - m.days); return `<div class="bg-white p-4 rounded-xl border border-stone-100 shadow-sm"><div class="text-[10px] uppercase font-bold text-rose-400 tracking-wider mb-1">Entro il ${x.toLocaleDateString()}</div><h4 class="font-serif text-lg text-stone-800">${m.title}</h4></div>`; }).join(''); } }
-        function saveDeadline(){ localStorage.setItem('thesis_deadline', document.getElementById('deadline-input').value); renderDeadline(); }
+
+        // --- ROADMAP LOGIC ---
         function renderRoadmap() {
             const sel = document.getElementById('roadmapSelect').value;
             const st = sel === 'custom' ? customStrategy : detailedRoadmaps[sel];
             
-            // 1. Aggiorna Titolo e Descrizione
             document.getElementById('roadmap-title').innerText = st.title;
             document.getElementById('roadmap-desc').innerText = st.desc;
-            
-            // 2. Gestione controlli custom
             document.getElementById('custom-controls').className = sel === 'custom' ? 'border-t border-stone-200 pt-4 flex gap-2 justify-end' : 'hidden';
 
-            // 3. Renderizza le TOP FONTI (Il "Best of" per quella strategia)
-            // Se il container non esiste, lo crea al volo
+            // Top Sources
             let bibContainer = document.getElementById('roadmap-biblio');
             let bibList = document.getElementById('roadmap-biblio-list');
             
             if (!bibContainer) {
-                // Creazione dinamica del container se manca nell'HTML
                 const descBox = document.getElementById('roadmap-desc').parentNode.parentNode;
                 bibContainer = document.createElement('div');
                 bibContainer.id = 'roadmap-biblio';
@@ -931,7 +707,7 @@
                 bibContainer.classList.add('hidden');
             }
 
-            // 4. Renderizza i Capitoli
+            // Chapters
             const c = document.getElementById('chapters-container'); 
             c.innerHTML = '';
             
@@ -952,29 +728,19 @@
                         <h4 class="font-bold text-stone-800 text-lg serif">${ch.title}</h4>
                         <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
                     </summary>
-                    
                     <div class="p-6 border-t border-stone-100 bg-white space-y-5">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Obiettivo Filosofico</span>
-                                <p class="text-sm text-stone-800 font-medium leading-relaxed">${ch.goal}</p>
-                            </div>
-                            <div>
-                                <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Metodologia</span>
-                                <p class="text-sm text-stone-600 leading-relaxed">${ch.method || "Analisi comparativa."}</p>
-                            </div>
+                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Obiettivo Filosofico</span><p class="text-sm text-stone-800 font-medium leading-relaxed">${ch.goal}</p></div>
+                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Metodologia</span><p class="text-sm text-stone-600 leading-relaxed">${ch.method || "Analisi comparativa."}</p></div>
                         </div>
-
                         <div class="bg-yellow-50/50 border border-yellow-100 p-4 rounded-lg">
                             <span class="text-[9px] font-bold text-yellow-600 uppercase tracking-wider block mb-1">🔍 Focus di Lettura</span>
                             <p class="text-sm text-stone-700 italic">"${ch.focus || 'Definire focus...'}"</p>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                             <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Concetti Chiave</span><div class="text-sm text-rose-600 font-medium">${ch.concepts || '-'}</div></div>
                             <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Fonti</span><div>${textLinks}</div></div>
                         </div>
-
                         <div class="pt-4 mt-2 border-t border-stone-100 flex justify-end">
                             <button onclick="askAI('Aiutami a scrivere il capitolo: ${ch.title}. Focus: ${ch.focus}. Concetti: ${ch.concepts}.')" class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-sm">
                                 <span>🐕</span> Scrivi bozza con Jesse
@@ -984,97 +750,128 @@
                 </details>`;
             });
         }
-        function generateCustomStrategy() { document.getElementById('custom-modal').classList.remove('hidden'); }
-        async function runCustomAiGeneration() { const p = document.getElementById('custom-prompt-input').value; document.getElementById('custom-modal').classList.add('hidden'); toggleChat(); addMessage(`Jesse, crea una strategia per: ${p}`, 'user'); sendChat('chat'); }
-        function toggleEditMode() { const t = prompt("Nuovo Titolo:", customStrategy.title); if(t) { customStrategy.title = t; localStorage.setItem('custom_roadmap', JSON.stringify(customStrategy)); renderRoadmap(); } }
-        function renderJournal() { const c = document.getElementById('journal-container'); c.innerHTML = journalEntries.length===0 ? '<div class="text-center text-xs text-stone-300 py-4">Vuoto</div>' : journalEntries.map(e => `<div class="relative pl-6"><div class="absolute -left-[5px] top-1 w-2.5 h-2.5 rounded-full bg-stone-200 border-2 border-white"></div><div class="text-[10px] text-stone-400 font-bold uppercase mb-1">${e.date}</div><div class="bg-white p-4 rounded-lg border border-stone-100 shadow-sm"><p class="text-stone-700 text-sm whitespace-pre-wrap">${e.text}</p></div></div>`).join(''); }
-        function addJournalEntry() { const t = document.getElementById('journal-entry').value; if(t) { journalEntries.unshift({date:new Date().toLocaleDateString('it-IT'), text:t}); localStorage.setItem('journal_entries', JSON.stringify(journalEntries)); document.getElementById('journal-entry').value=''; renderJournal(); } }
-        function renderTracker() { new Chart(document.getElementById('wordChart').getContext('2d'), {type:'line', data:{labels:wordHistory.map(h=>h.date), datasets:[{label:'Parole',data:wordHistory.map(h=>h.count), borderColor:'#1C1917', tension:0.3}]}, options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#F5F5F4'},border:{display:false}}}}}); }
-        function updateWordCount() { const v=parseInt(document.getElementById('word-input').value); if(v) { const d=new Date().toLocaleDateString('it-IT'); const i=wordHistory.findIndex(h=>h.date===d); if(i>=0) wordHistory[i].count=v; else wordHistory.push({date:d,count:v}); localStorage.setItem('word_history', JSON.stringify(wordHistory)); renderTracker(); } }
-        function toggleChat() { const w=document.getElementById('chat-widget'); w.classList.toggle('chat-closed'); w.classList.toggle('chat-open'); }
-        function askAI(q) { document.getElementById('chat-input').value=q; if(document.getElementById('chat-widget').classList.contains('chat-closed')) toggleChat(); sendChat(); }
+
+        // --- JESSE & CHAT ---
+        function setMode(m) { 
+            aiMode = m; 
+            const msg = m === 'discuss' ? "Grrr... facciamo sul serio! Sono la commissione di laurea. Difendi la tua tesi, padrona!" : (m === 'socrate' ? "Modalità Socrate on: ti risponderò solo con domande, bau!" : "Modalità Relatore Severo: preparati, sarò pignolissimo!");
+            addMessage(msg, 'bot');
+        }
+
+        function toggleChat() { 
+            const w=document.getElementById('chat-widget'); 
+            w.classList.toggle('chat-closed'); 
+            w.classList.toggle('chat-open'); 
+        }
+
+        function addMessage(txt, role) {
+            const box = document.getElementById('chat-messages');
+            const html = marked.parse(txt);
+            const isJesse = role === 'bot';
+            box.innerHTML += `
+            <div class="flex gap-3 fade-in mt-4 ${isJesse ? '' : 'flex-row-reverse'}">
+                <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0 bg-white">
+                    ${isJesse ? `<img src="${JESSE_IMG}" class="w-full h-full object-cover">` : `<div class="w-full h-full bg-stone-900 flex items-center justify-center text-white text-xs">TU</div>`}
+                </div>
+                <div class="p-3 rounded-2xl text-sm max-w-[85%] prose prose-sm ${isJesse ? 'msg-jesse' : 'msg-user'}">
+                    ${html}
+                </div>
+            </div>`;
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function sendChat(mode=null) {
+            const inp = document.getElementById('chat-input');
+            const activeMode = mode || aiMode;
+            const txt = inp.value.trim();
+            if(!txt && activeMode==='chat') return;
+            
+            addMessage(txt, 'user');
+            inp.value = '';
+            
+            const loadId = 'load-' + Date.now();
+            document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="flex items-center gap-2 mt-4 ml-2"><img src="${JESSE_IMG}" class="w-6 h-6 rounded-full border border-stone-200 grayscale opacity-70"><span class="text-xs text-stone-500 italic animate-pulse">Jesse sta pensando...</span></div>`;
+            
+            let systemInstruction = `Sei Jesse, un assistente cagnolino intelligente e fedele. PERSONALITÀ: - Inizia spesso con "Bau!", "Wof!", o "Ciao padrona!". - Riferisciti all'utente come "padrona". - Chiudi ogni tanto chiedendo cibo. ISTRUZIONI FOTO: Se chiedono foto, rispondi entusiasta (la foto sarà aggiunta automaticamente). MODALITÀ: ${activeMode}`;
+
+            try {
+                const res = await fetch('/api/chat', { 
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({ message: txt + " (Rispondi come Jesse il cane)", context: biblioData, systemOverride: systemInstruction }) 
+                });
+                const data = await res.json();
+                document.getElementById(loadId).remove();
+                let aiText = data.choices[0].message.content;
+
+                const triggers = ['foto', 'selfie', 'guardarti', 'immagine', 'faccia', 'vederti'];
+                if ((triggers.some(t => txt.toLowerCase().includes(t)) || Math.random() < 0.2) && JESSE_GALLERY.length > 0) {
+                    const randomPic = JESSE_GALLERY[Math.floor(Math.random() * JESSE_GALLERY.length)];
+                    aiText += `<br><br><img src="${encodeURI(randomPic)}" class="rounded-xl mt-2 w-full border border-stone-200 shadow-sm" alt="Jesse">`;
+                }
+                addMessage(aiText, 'bot');
+            } catch(e) { 
+                document.getElementById(loadId).remove(); 
+                addMessage("Bau! Qualcosa non va con la connessione... 😿", 'bot'); 
+            }
+        }
+
+        function askAI(q) { 
+            document.getElementById('chat-input').value=q; 
+            if(document.getElementById('chat-widget').classList.contains('chat-closed')) toggleChat(); 
+            sendChat(); 
+        }
         function askAIAboutBook() { const b=biblioData.find(x=>x.id===currentBookId); closeModal(); toggleChat(); askAI(`Ho preso queste note su "${b.title}": "${b.notes}". Aiutami a espanderle.`); }
+
+        // --- UTILS (Audio, Timer, Chart) ---
+        function initAudio() {
+            ['rain', 'cafe', 'fire'].forEach(id => { const el = document.getElementById('audio-'+id); if(el) el.volume = 0.5; });
+        }
         function toggleSound(id) { const el=document.getElementById('audio-'+id); const btn=document.getElementById('btn-'+id); if(el.paused){el.play(); btn.classList.remove('text-stone-300'); btn.classList.add('text-stone-900');}else{el.pause(); btn.classList.add('text-stone-300'); btn.classList.remove('text-stone-900');} }
         function stopAllSounds() { ['rain','cafe','fire'].forEach(id => { document.getElementById('audio-'+id).pause(); document.getElementById('btn-'+id).classList.add('text-stone-300'); document.getElementById('btn-'+id).classList.remove('text-stone-900'); }); }
-        function toggleZenMode() { const z=document.getElementById('zen-mode'); z.classList.toggle('hidden'); }
+        
         let timer,time=1500,running=false;
         function toggleTimer(){ const d=document.getElementById('zen-timer'); if(running){clearInterval(timer);running=false;document.getElementById('timer-btn').innerText="Focus";}else{running=true;document.getElementById('timer-btn').innerText="Pausa";timer=setInterval(()=>{time--;let m=Math.floor(time/60),s=time%60;const t=`${m}:${s.toString().padStart(2,'0')}`;document.getElementById('timer-display').innerText=t;d.innerText=t;if(time<=0)resetTimer();},1000);} }
         function resetTimer(){clearInterval(timer);running=false;time=1500;document.getElementById('timer-display').innerText="25:00";document.getElementById('timer-btn').innerText="Focus";}
+        function toggleZenMode() { const z=document.getElementById('zen-mode'); z.classList.toggle('hidden'); }
+
+        function renderTracker() {
+            const ctx = document.getElementById('wordChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { type: 'line', data: { labels: wordHistory.map(h=>h.date), datasets:[{label:'Parole',data:wordHistory.map(h=>h.count), borderColor:'#1C1917', backgroundColor: 'rgba(28, 25, 23, 0.1)', tension:0.3, fill:true}] }, options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'#F5F5F4'},border:{display:false}}}}}); 
+        }
+        function updateWordCount() { const v=parseInt(document.getElementById('word-input').value); if(v) { const d=new Date().toLocaleDateString('it-IT'); const i=wordHistory.findIndex(h=>h.date===d); if(i>=0) wordHistory[i].count=v; else wordHistory.push({date:d,count:v}); localStorage.setItem('word_history', JSON.stringify(wordHistory)); renderTracker(); } }
+
         function selectAllCitations(){document.querySelectorAll('.cite-cb').forEach(cb=>cb.checked=true);generateBibliography();}
         function renderCitationsList(){ const l=document.getElementById('citation-list'); l.innerHTML=''; biblioData.forEach(i=>{l.innerHTML+=`<label class="flex items-center gap-3 p-2 hover:bg-stone-50 rounded-lg cursor-pointer"><input type="checkbox" class="accent-stone-900 cite-cb" value="${i.id}" onchange="generateBibliography()"><span class="text-xs text-stone-600 truncate">${i.title}</span></label>`}); }
         function copyCitationOutput(){const t=document.getElementById('citation-output'); t.select(); navigator.clipboard.writeText(t.value); alert("Copiato.");}
         function copyFootnoteStyle(){ const c=Array.from(document.querySelectorAll('.cite-cb:checked')).map(x=>x.value); const i=biblioData.filter(x=>c.includes(x.id)); let o = i.map(x => `${x.author.split(',')[1].trim()} ${x.author.split(',')[0]}, *${x.title}*, ${x.pub}, Paris ${x.year}.`).join('\n'); document.getElementById('citation-output').value=o; copyCitationOutput(); }
         function generateBibliography(){ const c=Array.from(document.querySelectorAll('.cite-cb:checked')).map(x=>x.value); const i=biblioData.filter(x=>c.includes(x.id)); let o=""; const s=document.getElementById('citation-style').value; if(s==='classic'){copyFootnoteStyle(); return;} i.forEach(x=>{o+=s==='bibtex'?`@book{${x.id}, title={${x.title}}...}\n`:`${x.author} (${x.year}). ${x.title}.\n\n`}); document.getElementById('citation-output').value=o; }
         function downloadBibliography(){ const t=biblioData.filter(b=>b.status==='done'||b.status==='reading').map(b=>`${b.author} (${b.year}). ${b.title}.`).join('\n\n'); const b=new Blob([t],{type:'text/plain'}); const u=window.URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download="bibliografia.txt"; a.click(); }
-        // --- FUNZIONI MANCANTI ---
-        function addNewSourcePrompt() {
-            const author = prompt("Autore (es. Rossi, M.):");
-            if (!author) return;
-            const title = prompt("Titolo del libro:");
-            if (!title) return;
-            const year = prompt("Anno:");
-            
-            const newId = "U" + Date.now(); 
-            const newBook = {
-                id: newId,
-                author: author,
-                title: title,
-                year: year || "????",
-                pub: "User Added",
-                cat: "User Added",
-                status: "todo",
-                notes: "",
-                tags: []
-            };
-            
-            biblioData.unshift(newBook);
-            saveData(); // Questa ora salva anche i custom
-            runSearch();
-            alert("Libro aggiunto!");
+        
+        function renderStats() {
+             const done = biblioData.filter(i => i.status === 'done').length;
+             const total = biblioData.length;
+             const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+             document.getElementById('reading-progress-text').innerText = pct + "%";
+             document.getElementById('reading-progress-bar').style.width = pct + "%";
+             document.getElementById('count-todo').innerText = biblioData.filter(i => i.status === 'todo').length;
+             document.getElementById('count-reading').innerText = biblioData.filter(i => i.status === 'reading').length;
+             document.getElementById('count-done').innerText = done;
+             document.getElementById('total-sources-count').innerText = total;
         }
-
-        // 1. Risolve l'errore initAudio is not defined
-        function initAudio() {
-            const sounds = ['rain', 'cafe', 'fire'];
-            sounds.forEach(id => {
-                const el = document.getElementById('audio-' + id);
-                if(el) el.volume = 0.5; // Imposta volume di default
-            });
+        function renderConcepts() {
+            const tags = {}; biblioData.forEach(b => (b.tags||[]).forEach(t => { if(!tags[t]) tags[t]=[]; tags[t].push(b.title); }));
+            const cloud = document.getElementById('concept-cloud');
+            cloud.innerHTML = Object.keys(tags).length === 0 ? '<span class="text-stone-400 text-sm italic">Aggiungi tag ai libri per vedere le connessioni.</span>' : '';
+            Object.keys(tags).forEach(tag => cloud.innerHTML += `<button onclick="filterByTag('${tag}')" class="bg-white border border-stone-200 px-3 py-1 rounded-full text-xs text-stone-600 hover:border-rose-300 hover:text-rose-600 transition-colors">#${tag} (${tags[tag].length})</button>`);
         }
-
-        // 2. Risolve l'errore del Grafico (Chart destroyed)
-        let chartInstance = null; // Assicuriamoci che sia globale
-        function renderTracker() {
-            const ctx = document.getElementById('wordChart').getContext('2d');
-            
-            // DISTRUGGI IL GRAFICO VECCHIO PRIMA DI CREARNE UNO NUOVO
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
-
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: wordHistory.map(h => h.date),
-                    datasets: [{
-                        label: 'Parole Scritte',
-                        data: wordHistory.map(h => h.count),
-                        borderColor: '#1C1917',
-                        backgroundColor: 'rgba(28, 25, 23, 0.1)',
-                        tension: 0.3,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { display: false } },
-                        y: { grid: { color: '#F5F5F4' }, border: { display: false } }
-                    }
-                }
-            });
-        }
+        function filterByTag(tag) { document.getElementById('concept-results').innerHTML = `<h4 class="text-sm font-bold text-stone-900 mb-2">Libri collegati a #${tag}:</h4>` + biblioData.filter(b => (b.tags||[]).includes(tag)).map(b => `<div class="bg-white p-3 rounded-lg border border-stone-100 text-sm text-stone-600">${b.title}</div>`).join(''); }
+        function renderDeadline() { const d = localStorage.getItem('thesis_deadline'); if(d) { document.getElementById('deadline-input').value = d; const days = Math.ceil((new Date(d) - new Date()) / (1000 * 60 * 60 * 24)); document.getElementById('days-remaining').innerText = `${days} GIORNI`; document.getElementById('days-remaining').classList.remove('hidden'); document.getElementById('timeline-container').classList.remove('hidden'); document.getElementById('timeline-container').innerHTML = [{ title: "Bozza", days: 60 }, { title: "Revisione", days: 30 }, { title: "Impaginazione", days: 15 }].map(m => { const x = new Date(d); x.setDate(new Date(d).getDate() - m.days); return `<div class="bg-white p-4 rounded-xl border border-stone-100 shadow-sm"><div class="text-[10px] uppercase font-bold text-rose-400 tracking-wider mb-1">Entro il ${x.toLocaleDateString()}</div><h4 class="font-serif text-lg text-stone-800">${m.title}</h4></div>`; }).join(''); } }
+        function saveDeadline(){ localStorage.setItem('thesis_deadline', document.getElementById('deadline-input').value); renderDeadline(); }
+        function generateCustomStrategy() { document.getElementById('custom-modal').classList.remove('hidden'); }
+        async function runCustomAiGeneration() { const p = document.getElementById('custom-prompt-input').value; document.getElementById('custom-modal').classList.add('hidden'); toggleChat(); addMessage(`Jesse, crea una strategia per: ${p}`, 'user'); sendChat('chat'); }
+        function toggleEditMode() { const t = prompt("Nuovo Titolo:", customStrategy.title); if(t) { customStrategy.title = t; localStorage.setItem('custom_roadmap', JSON.stringify(customStrategy)); renderRoadmap(); } }
     </script>
 </body>
 </html>
