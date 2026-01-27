@@ -347,7 +347,7 @@
                 </div>
             </div>
             <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
-                <button onclick="setMode('socrate')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrate</button>
+                <button onclick="setMode('Socrajess')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrajess</button>
                 <button onclick="setMode('critic')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Relatore</button>
                 <button onclick="setMode('discuss')" class="whitespace-nowrap bg-stone-800 text-white hover:bg-stone-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors">🎓 Discussione</button>
             </div>
@@ -754,7 +754,7 @@
         // --- JESSE & CHAT ---
         function setMode(m) { 
             aiMode = m; 
-            const msg = m === 'discuss' ? "Grrr... facciamo sul serio! Sono la commissione di laurea. Difendi la tua tesi, padrona!" : (m === 'socrate' ? "Modalità Socrate on: ti risponderò solo con domande, bau!" : "Modalità Relatore Severo: preparati, sarò pignolissimo!");
+            const msg = m === 'discuss' ? "Grrr... facciamo sul serio! Sono la commissione di laurea. Difendi la tua tesi, padrona!" : (m === 'Socrajess' ? "Modalità Socrajess on: ti risponderò solo con domande, bau!" : "Modalità Relatore Severo: preparati, sarò pignolissimo!");
             addMessage(msg, 'bot');
         }
 
