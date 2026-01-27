@@ -27,7 +27,7 @@ export default async function handler(req, res) {
         "X-Title": "Atlas.phil Research Suite"
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-chat", // DeepSeek V3 (o usa "deepseek/deepseek-r1" per la versione reasoning)
+        model: "deepseek/deepseek-v3.2", // DeepSeek V3 (o usa "deepseek/deepseek-r1" per la versione reasoning)
         messages: [
           {
             role: "system",
