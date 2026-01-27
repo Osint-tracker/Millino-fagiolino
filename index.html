@@ -64,7 +64,7 @@
         }
         .pro-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.04); border-color: #D6D3D1; transform: translateY(-1px); }
 
-        /* Accordion Styles for Roadmap */
+        /* Accordion Styles */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
         details[open] summary ~ * { animation: sweep .3s ease-in-out; }
@@ -83,7 +83,6 @@
         .chat-open { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
         .chat-closed { transform: translateY(20px) scale(0.96); opacity: 0; pointer-events: none; }
         
-        /* Markdown & Text */
         .prose p { margin-bottom: 0.75em; line-height: 1.6; color: #44403C; font-size: 0.95rem; }
         .prose ul { list-style-type: disc; padding-left: 1.2em; margin-bottom: 0.75em; }
     </style>
@@ -95,7 +94,7 @@
             <h1 class="text-2xl font-semibold text-stone-900 tracking-tight serif flex items-baseline gap-1">
                 Millino<span class="text-rose-500 italic font-serif">.F</span>
             </h1>
-            <p class="text-[11px] text-stone-400 font-medium mt-1 tracking-wide">RESEARCH OS v2.2</p>
+            <p class="text-[11px] text-stone-400 font-medium mt-1 tracking-wide">RESEARCH OS v2.3</p>
         </div>
         
         <nav class="flex-1 overflow-y-auto py-4 px-4 space-y-8">
@@ -135,11 +134,14 @@
                 <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Deep Work</span>
                 <span id="timer-display" class="font-mono text-sm font-semibold text-rose-600">25:00</span>
             </div>
+            
             <div class="flex justify-between items-center mb-4 px-2">
                 <button onclick="toggleSound('rain')" id="btn-rain" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Pioggia">🌧️</button>
                 <button onclick="toggleSound('cafe')" id="btn-cafe" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Caffè">☕</button>
                 <button onclick="toggleSound('fire')" id="btn-fire" class="text-stone-300 hover:text-stone-600 transition-colors text-lg" title="Camino">🔥</button>
+                <button onclick="stopAllSounds()" class="text-rose-400 hover:text-rose-600 transition-colors text-xs font-bold border border-rose-200 px-1.5 py-0.5 rounded ml-1">🔇 STOP</button>
             </div>
+
             <div class="flex gap-2">
                 <button onclick="toggleTimer()" id="timer-btn" class="flex-1 bg-stone-900 hover:bg-black text-white text-xs py-2 rounded-md font-medium transition-all shadow-sm">Focus</button>
                 <button onclick="resetTimer()" class="px-3 bg-stone-100 hover:bg-stone-200 text-stone-500 text-xs py-2 rounded-md transition-colors">↺</button>
@@ -240,30 +242,34 @@
                 <div class="flex justify-between items-end border-b border-stone-100 pb-6">
                     <div>
                         <h2 class="text-3xl font-medium text-stone-900 serif">Roadmap Strategica</h2>
-                        <p class="text-stone-500 text-sm mt-1">Seleziona un percorso di ricerca per visualizzare la struttura.</p>
+                        <p class="text-stone-500 text-sm mt-1">Scegli una strategia o creane una personalizzata con l'AI.</p>
                     </div>
-                    <button onclick="triggerSpark()" class="bg-rose-50 text-rose-600 border border-rose-100 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-rose-100 transition-colors">
-                        <span>✨</span> Sblocco Creativo
-                    </button>
                 </div>
                 
                 <div class="mb-8">
                      <label class="block text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">Seleziona Strategia</label>
                      <div class="relative">
-                        <select id="roadmapSelect" onchange="renderRoadmap()" class="w-full md:w-1/3 bg-white border border-stone-200 text-stone-900 font-medium text-sm px-4 py-3 rounded-lg outline-none cursor-pointer hover:border-stone-300 focus:ring-2 focus:ring-stone-100 appearance-none shadow-sm">
+                        <select id="roadmapSelect" onchange="renderRoadmap()" class="w-full md:w-1/2 bg-white border border-stone-200 text-stone-900 font-medium text-sm px-4 py-3 rounded-lg outline-none cursor-pointer hover:border-stone-300 focus:ring-2 focus:ring-stone-100 appearance-none shadow-sm">
                             <option value="A">Strategia A: Ontologica (Simondon/Deleuze)</option>
                             <option value="B">Strategia B: Tecno-Ecologica (Stiegler/Hui)</option>
                             <option value="C">Strategia C: Politica del Transindividuale</option>
+                            <option value="custom">Strategia D: Personalizzata (AI Powered)</option>
                         </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 md:right-2/3 mr-4">▼</div>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-stone-500 md:right-1/2 mr-4">▼</div>
                     </div>
                 </div>
 
-                <div class="bg-stone-50 border border-stone-200 p-6 rounded-xl mb-8 flex gap-4 items-start">
-                    <span class="text-2xl">💡</span>
-                    <div>
-                        <h3 class="text-stone-900 font-bold text-sm uppercase tracking-wide mb-1" id="roadmap-title"></h3>
-                        <p class="text-stone-600 text-sm leading-relaxed" id="roadmap-desc"></p>
+                <div class="bg-stone-50 border border-stone-200 p-6 rounded-xl mb-8 flex flex-col gap-4">
+                    <div class="flex gap-4 items-start">
+                        <span class="text-2xl">💡</span>
+                        <div class="flex-1">
+                            <h3 class="text-stone-900 font-bold text-sm uppercase tracking-wide mb-1" id="roadmap-title"></h3>
+                            <p class="text-stone-600 text-sm leading-relaxed" id="roadmap-desc"></p>
+                        </div>
+                    </div>
+                    <div id="custom-controls" class="hidden border-t border-stone-200 pt-4 flex gap-2 justify-end">
+                        <button onclick="generateCustomStrategy()" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-rose-600 transition-colors shadow-soft flex items-center gap-2">✨ Genera con AI</button>
+                        <button onclick="toggleEditMode()" class="bg-white border border-stone-300 text-stone-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-stone-50 transition-colors">✏️ Modifica Manuale</button>
                     </div>
                 </div>
 
@@ -316,6 +322,18 @@
             </div>
         </div>
 
+        <div id="custom-modal" class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+             <div class="bg-white w-full max-w-lg rounded-2xl shadow-float p-8 border border-stone-100">
+                 <h3 class="text-xl font-serif font-bold mb-4">Genera Strategia con AI</h3>
+                 <p class="text-sm text-stone-600 mb-4">Descrivi brevemente di cosa vuoi che parli la tua tesi.</p>
+                 <textarea id="custom-prompt-input" class="w-full h-32 p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm mb-4 outline-none focus:border-rose-300" placeholder="Es: Voglio esplorare il concetto di alienazione in Marx e Simondon..."></textarea>
+                 <div class="flex justify-end gap-2">
+                     <button onclick="document.getElementById('custom-modal').classList.add('hidden')" class="px-4 py-2 text-stone-500 text-xs font-bold hover:bg-stone-50 rounded-lg">Annulla</button>
+                     <button onclick="runCustomAiGeneration()" class="px-4 py-2 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600">Genera</button>
+                 </div>
+             </div>
+        </div>
+
         <div id="chat-widget" class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden">
             <div class="bg-white p-4 border-b border-stone-100 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-stone-900 flex items-center justify-center font-bold text-white text-[10px]">DS</div><div><h4 class="font-semibold text-stone-900 text-sm">Assistant</h4><div class="text-[10px] text-stone-400">DeepSeek v3.2</div></div></div>
@@ -337,7 +355,7 @@
     <audio id="audio-fire" loop src="https://assets.mixkit.co/active_storage/sfx/1239/1239-preview.mp3"></audio>
 
     <script>
-        // --- DATABASE EMBEDDED TO FIX 0 SOURCES BUG ---
+        // --- MASTER DB (DEFINED HERE TO FIX 0 SOURCES BUG) ---
         const MASTER_DB = [
             // SIMONDON
             { id: "S01", author: "Simondon, G.", year: "2005", title: "L'individuation à la lumière des notions de forme et d'information", pub: "Jérôme Millon", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Il testo base sull'individuatione." },
@@ -347,86 +365,107 @@
             { id: "S05", author: "Simondon, G.", year: "2010", title: "Communication et information", pub: "La Transparence", cat: "Primary Sources", prio: "MEDIUM", desc: "Cibernetica." },
             { id: "S11", author: "Simondon, G.", year: "1960", title: "Forme, information, potentiels", pub: "Bulletin SFP", cat: "Primary Sources", prio: "HIGH", desc: "Articolo chiave." },
             { id: "S13", author: "Simondon, G.", year: "1953", title: "La mentalité technique", pub: "PUF", cat: "Primary Sources", prio: "HIGH", desc: "Schemi cognitivi." },
-            
             // DELEUZE
             { id: "D01", author: "Deleuze, G.", year: "1968", title: "Différence et répétition", pub: "PUF", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Ontologia della differenza." },
             { id: "D02", author: "Deleuze, G.", year: "1969", title: "Logique du sens", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Evento e singolarità." },
             { id: "D04", author: "Deleuze, G. & Guattari, F.", year: "1980", title: "Mille Plateaux", pub: "Minuit", cat: "Primary Sources", prio: "ESSENTIAL", desc: "Rizoma e agencement." },
             { id: "D05", author: "Deleuze, G.", year: "1988", title: "Le Pli", pub: "Minuit", cat: "Primary Sources", prio: "HIGH", desc: "Modulazione." },
-            
             // COMPARATIVE
             { id: "C01", author: "Combes, M.", year: "1999", title: "Simondon. Individu et collectivité", pub: "PUF", cat: "Comparative Studies", prio: "ESSENTIAL", desc: "Politica transindividuale." },
             { id: "C02", author: "Barthélémy, J.H.", year: "2005", title: "Penser l'individuation", pub: "L'Harmattan", cat: "Comparative Studies", prio: "HIGH", desc: "Studio rigoroso." },
-            
             // TECH
             { id: "T01", author: "Stiegler, B.", year: "1994", title: "La technique et le temps 1", pub: "Galilée", cat: "Philosophy of Technology", prio: "ESSENTIAL", desc: "Epifilogenesi." },
             { id: "T03", author: "Hui, Y.", year: "2016", title: "On the Existence of Digital Objects", pub: "Minnesota UP", cat: "Philosophy of Technology", prio: "HIGH", desc: "Oggetti digitali." },
             { id: "E01", author: "Guattari, F.", year: "1989", title: "Les trois écologies", pub: "Galilée", cat: "Ecological Philosophy", prio: "ESSENTIAL", desc: "Ecosofia." }
         ];
 
-        // --- NEW ROADMAP DATA ---
-        const detailedRoadmaps = {
+        // --- UPDATED ROADMAP DATA (3 CHAPTERS EACH) ---
+        let detailedRoadmaps = {
             A: {
                 title: "Strategia A: Ontologica (Simondon/Deleuze)",
-                desc: "Un confronto rigoroso sulle fondamenta metafisiche: dall'individuazione alla differenza.",
+                desc: "Un confronto rigoroso sulle fondamenta metafisiche.",
                 chapters: [
                     { 
                         title: "1. La Genesi dell'Individuo", 
-                        goal: "Dimostrare l'insufficienza dell'ilemorfismo e introdurre la genesi dinamica.",
-                        topics: ["Critica all'ilemorfismo aristotelico", "Concetto di Preindividuale (Simondon)", "Il Virtuale e l'Attuale (Deleuze)", "Metastabilità e Disparazione"],
-                        texts: ["S01", "D01", "C02"],
-                        concepts: "Preindividuale, Metastabilità, Differenza in sé"
+                        goal: "Dimostrare l'insufficienza dell'ilemorfismo.",
+                        topics: ["Critica all'ilemorfismo", "Preindividuale", "Virtuale vs Attuale"],
+                        texts: ["S01", "D01"],
+                        concepts: "Preindividuale, Metastabilità"
                     },
                     {
                         title: "2. Individuazione e Tempo",
-                        goal: "Analizzare come il tempo emerge dal processo di individuazione.",
-                        topics: ["Il Cristallo di Tempo", "Cronogenesi", "Transduzione temporale"],
-                        texts: ["S01", "D13", "B01"],
-                        concepts: "Transduzione, Aion/Chronos, Ritmo"
+                        goal: "Analizzare come il tempo emerge dal processo.",
+                        topics: ["Il Cristallo di Tempo", "Cronogenesi", "Transduzione"],
+                        texts: ["S01", "D13"],
+                        concepts: "Transduzione, Aion/Chronos"
+                    },
+                    {
+                        title: "3. Etica e Divenire",
+                        goal: "Conclusioni etiche del processo di individuazione.",
+                        topics: ["Etica dell'evento", "Amor fati", "Divenire-impercettibile"],
+                        texts: ["D02", "S03"],
+                        concepts: "Evento, Divenire"
                     }
                 ]
             },
             B: {
                 title: "Strategia B: Tecno-Ecologica",
-                desc: "Un percorso contemporaneo che lega l'oggetto tecnico alla crisi ecologica.",
+                desc: "Il legame tra oggetto tecnico e crisi ecologica.",
                 chapters: [
                     { 
                         title: "1. Ecologia delle Macchine", 
-                        goal: "Definire l'oggetto tecnico non come strumento ma come mediatore.",
-                        topics: ["Oggetto Tecnico e Concretizzazione", "Il concetto di 'Milieu' associato", "Meccanologia"],
-                        texts: ["S02", "E01", "T03"],
-                        concepts: "Concretizzazione, Milieu, Tecno-diversità"
+                        goal: "L'oggetto tecnico come mediatore.",
+                        topics: ["Concretizzazione", "Milieu associato", "Meccanologia"],
+                        texts: ["S02", "E01"],
+                        concepts: "Concretizzazione, Milieu"
                     },
                     {
-                        title: "2. Cosmotecniche e Antropocene",
-                        goal: "Superare l'universalismo tecnologico occidentale.",
-                        topics: ["Cosmotecnica (Hui)", "Negentropia", "Ecosofia mentale/sociale/ambientale"],
-                        texts: ["T04", "T01", "E03"],
-                        concepts: "Cosmotecnica, Entropia, Chthulucene"
+                        title: "2. Cosmotecniche",
+                        goal: "Superare l'universalismo tecnologico.",
+                        topics: ["Cosmotecnica (Hui)", "Negentropia", "Ecosofia"],
+                        texts: ["T03", "T01"],
+                        concepts: "Cosmotecnica, Entropia"
+                    },
+                    {
+                        title: "3. Abitare la Tecnica",
+                        goal: "Nuove pratiche di cura.",
+                        topics: ["Farmacologia", "Cura", "Nuove ecologie"],
+                        texts: ["T01", "E01"],
+                        concepts: "Pharmakon, Cura"
                     }
                 ]
             },
             C: {
                 title: "Strategia C: Politica",
-                desc: "Dal controllo deleuziano alla liberazione del transindividuale.",
+                desc: "Dal controllo alla liberazione transindividuale.",
                 chapters: [
                     { 
                         title: "1. Le Società del Controllo", 
-                        goal: "Mappare le nuove forme di potere cibernetico.",
-                        topics: ["Dal disciplinare al controllo", "Il dividual", "Modulazione del comportamento"],
-                        texts: ["D09", "S05", "T11"],
-                        concepts: "Dividuale, Modulazione, Cibernetica"
+                        goal: "Mappare il potere cibernetico.",
+                        topics: ["Disciplinare vs Controllo", "Dividual", "Modulazione"],
+                        texts: ["D09", "S05"],
+                        concepts: "Dividuale, Modulazione"
                     },
                     {
-                        title: "2. Il Transindividuale come Resistenza",
-                        goal: "Proporre una nuova politica relazionale.",
-                        topics: ["Individuazione Psichica e Collettiva", "Affetto e politica", "Composizione di mondi"],
-                        texts: ["S03", "C01", "C09"],
-                        concepts: "Transindividuale, Angoscia, Collettivo"
+                        title: "2. Il Transindividuale",
+                        goal: "Una nuova politica relazionale.",
+                        topics: ["Individuazione Collettiva", "Affetto e politica", "Angoscia"],
+                        texts: ["S03", "C01"],
+                        concepts: "Transindividuale, Angoscia"
+                    },
+                    {
+                        title: "3. Moltitudini e Macchine",
+                        goal: "Organizzazione politica post-umana.",
+                        topics: ["Agencement collettivo", "Macchine da guerra", "Nomadismo"],
+                        texts: ["D04", "S02"],
+                        concepts: "Rizoma, Macchina da Guerra"
                     }
                 ]
             }
         };
+
+        // Custom Strategy Placeholder
+        let customStrategy = { title: "Strategia Personalizzata", desc: "Definisci il tuo percorso o chiedi all'AI.", chapters: [] };
 
         // GLOBALS
         let biblioData = []; 
@@ -441,11 +480,15 @@
         });
 
         function mergeData() {
+            // Fix 0 Sources: Always merge MASTER_DB
             const saved = JSON.parse(localStorage.getItem('millino_progress')) || [];
             biblioData = MASTER_DB.map(book => {
                 const userState = saved.find(s => s.id === book.id) || {};
                 return { ...book, status: userState.status || 'todo', notes: userState.notes || '', tags: userState.tags || [] };
             });
+            // Load custom roadmap if saved
+            const savedCustom = localStorage.getItem('custom_roadmap');
+            if(savedCustom) customStrategy = JSON.parse(savedCustom);
         }
 
         function initApp() {
@@ -455,7 +498,7 @@
             renderStats();
             renderJournal();
             renderTracker();
-            renderRoadmap(); // Uses new detailedRoadmaps
+            renderRoadmap();
             renderCitationsList();
         }
 
@@ -512,7 +555,6 @@
             document.getElementById('modal-notes').value = book.notes || '';
             document.getElementById('modal-tags').value = (book.tags || []).join(', ');
             document.getElementById('book-modal').classList.remove('hidden');
-            setTimeout(() => document.getElementById('book-modal').querySelector('div').classList.remove('scale-95', 'opacity-0'), 10);
         }
         function closeModal() { document.getElementById('book-modal').classList.add('hidden'); }
         function saveBookDetails() {
@@ -541,21 +583,30 @@
              document.getElementById('stat-primary').innerText = biblioData.filter(i => i.cat === 'Primary Sources').length;
         }
 
-        // --- NEW PROFESSIONAL ROADMAP RENDERER ---
+        // --- ROADMAP LOGIC ---
         function renderRoadmap() {
             const sel = document.getElementById('roadmapSelect').value;
-            const strategy = detailedRoadmaps[sel];
+            const strategy = sel === 'custom' ? customStrategy : detailedRoadmaps[sel];
             
             document.getElementById('roadmap-title').innerText = strategy.title;
             document.getElementById('roadmap-desc').innerText = strategy.desc;
             
+            // Show/Hide custom controls
+            const controls = document.getElementById('custom-controls');
+            if(sel === 'custom') controls.classList.remove('hidden'); else controls.classList.add('hidden');
+
             const container = document.getElementById('chapters-container');
             container.innerHTML = '';
             
+            if(strategy.chapters.length === 0 && sel === 'custom') {
+                container.innerHTML = '<div class="text-center text-stone-400 py-10 italic">Nessun capitolo. Clicca "Genera con AI" o "Modifica Manuale".</div>';
+                return;
+            }
+
             strategy.chapters.forEach((chap, idx) => {
-                const textLinks = chap.texts.map(tid => {
+                const textLinks = (chap.texts || []).map(tid => {
                     const b = biblioData.find(x => x.id === tid);
-                    return b ? `<span class="inline-block bg-white border border-stone-200 text-stone-600 px-2 py-0.5 rounded text-[10px] mr-1 mb-1">${b.author} - ${b.title.substring(0,20)}...</span>` : '';
+                    return b ? `<span class="inline-block bg-white border border-stone-200 text-stone-600 px-2 py-0.5 rounded text-[10px] mr-1 mb-1">${b.author}</span>` : '';
                 }).join('');
 
                 container.innerHTML += `
@@ -565,38 +616,65 @@
                         <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
                     </summary>
                     <div class="p-6 border-t border-stone-100 bg-white space-y-6">
-                        <div>
-                            <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Obiettivo</span>
-                            <p class="text-sm text-stone-700 italic border-l-2 border-rose-300 pl-3">${chap.goal}</p>
-                        </div>
-                        
+                        <div><span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Obiettivo</span><p class="text-sm text-stone-700 italic border-l-2 border-rose-300 pl-3">${chap.goal}</p></div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Argomenti Chiave</span>
-                                <ul class="text-sm text-stone-600 space-y-1 list-disc pl-4 marker:text-rose-400">
-                                    ${chap.topics.map(t => `<li>${t}</li>`).join('')}
-                                </ul>
-                            </div>
-                            <div>
-                                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Concetti Fondamentali</span>
-                                <div class="text-sm text-rose-600 font-medium">${chap.concepts}</div>
-                            </div>
+                            <div><span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Argomenti</span><ul class="text-sm text-stone-600 space-y-1 list-disc pl-4 marker:text-rose-400">${(chap.topics || []).map(t => `<li>${t}</li>`).join('')}</ul></div>
+                            <div><span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Concetti</span><div class="text-sm text-rose-600 font-medium">${chap.concepts}</div></div>
                         </div>
-
-                        <div>
-                            <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Testi Suggeriti</span>
-                            <div>${textLinks}</div>
-                        </div>
-
+                        <div><span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-2">Testi</span><div>${textLinks}</div></div>
                         <div class="pt-4 mt-2 border-t border-stone-100 flex justify-end">
-                            <button onclick="askAI('Analizza questo capitolo della tesi: ${chap.title}. L\\'obiettivo è: ${chap.goal}. Argomenti: ${chap.topics.join(', ')}. Suggerisci una scaletta dettagliata.')" 
-                                class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-soft">
-                                <span>⚡</span> Brainstorming con AI
-                            </button>
+                            <button onclick="askAI('Analizza capitolo: ${chap.title}. Obiettivo: ${chap.goal}. Suggerisci dettagli.')" class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-soft"><span>⚡</span> Brainstorming con AI</button>
                         </div>
                     </div>
                 </details>`;
             });
+        }
+
+        // --- CUSTOM STRATEGY FUNCTIONS ---
+        function generateCustomStrategy() { document.getElementById('custom-modal').classList.remove('hidden'); }
+        async function runCustomAiGeneration() {
+            const prompt = document.getElementById('custom-prompt-input').value;
+            document.getElementById('custom-modal').classList.add('hidden');
+            toggleChat();
+            addMessage(`Genera una strategia per: ${prompt}`, 'user');
+            
+            const loadId = 'load-' + Date.now();
+            document.getElementById('chat-messages').innerHTML += `<div id="${loadId}" class="text-xs text-stone-400 mt-2 ml-2">DeepSeek sta costruendo la struttura...</div>`;
+
+            try {
+                const res = await fetch('/api/chat', { 
+                    method:'POST', 
+                    headers:{'Content-Type':'application/json'}, 
+                    body:JSON.stringify({ 
+                        message: `Crea una struttura di tesi (Titolo, Descrizione, 3 Capitoli con titolo, obiettivo, argomenti, concetti) basata su: ${prompt}. Rispondi SOLO in formato JSON valido senza markdown.`, 
+                        mode: 'chat' 
+                    }) 
+                });
+                const data = await res.json();
+                document.getElementById(loadId).remove();
+                
+                // Parsing JSON from AI (Naive but functional for demo)
+                let cleanJson = data.choices[0].message.content.replace(/```json/g, '').replace(/```/g, '');
+                const aiStrategy = JSON.parse(cleanJson);
+                
+                customStrategy = aiStrategy;
+                localStorage.setItem('custom_roadmap', JSON.stringify(customStrategy));
+                renderRoadmap();
+                addMessage("Strategia generata e salvata! Controlla la tab Roadmap.", 'bot');
+                
+            } catch(e) {
+                document.getElementById(loadId).remove();
+                addMessage("Errore generazione JSON. Riprova.", 'bot');
+            }
+        }
+        function toggleEditMode() {
+            // Simple prompt implementation for MVP editing
+            const newTitle = prompt("Nuovo Titolo:", customStrategy.title);
+            if(newTitle) customStrategy.title = newTitle;
+            const newDesc = prompt("Nuova Descrizione:", customStrategy.desc);
+            if(newDesc) customStrategy.desc = newDesc;
+            localStorage.setItem('custom_roadmap', JSON.stringify(customStrategy));
+            renderRoadmap();
         }
 
         // --- JOURNAL & TRACKER & AI (Standard logic) ---
@@ -646,8 +724,15 @@
             askAI(`Ho preso queste note su "${book.title}": "${book.notes}". Aiutami a espanderle.`);
         }
 
-        // UTILS (Audio/Timer/Deadline)
+        // AUDIO & TIMER
         function toggleSound(id) { const el=document.getElementById('audio-'+id); const btn=document.getElementById('btn-'+id); if(el.paused){el.play(); btn.classList.remove('text-stone-300'); btn.classList.add('text-stone-900');}else{el.pause(); btn.classList.add('text-stone-300'); btn.classList.remove('text-stone-900');} }
+        function stopAllSounds() { 
+            ['rain','cafe','fire'].forEach(id => { 
+                const el=document.getElementById('audio-'+id); el.pause(); 
+                document.getElementById('btn-'+id).classList.add('text-stone-300'); 
+                document.getElementById('btn-'+id).classList.remove('text-stone-900');
+            });
+        }
         function initAudio(){}
         let timer,time=1500,running=false;
         function toggleTimer(){ if(running){clearInterval(timer);running=false;document.getElementById('timer-btn').innerText="Focus";}else{running=true;document.getElementById('timer-btn').innerText="Pausa";timer=setInterval(()=>{time--;let m=Math.floor(time/60),s=time%60;document.getElementById('timer-display').innerText=`${m}:${s.toString().padStart(2,'0')}`;if(time<=0)resetTimer();},1000);} }
