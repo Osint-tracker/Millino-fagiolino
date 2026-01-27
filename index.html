@@ -476,6 +476,7 @@
             biblioData[idx].status = map[biblioData[idx].status || 'todo'];
             renderList(biblioData);
             renderStats();
+            saveProgress(); 
         }
 
         function renderStats() {
