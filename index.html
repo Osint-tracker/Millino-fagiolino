@@ -375,20 +375,15 @@
 
     <script>
         
-        // --- CONFIGURAZIONE IMMAGINE JESSE ---
-        // IMPORTANTE: Metti il file "psicologo.jpeg" nella stessa cartella.
-        // Se non funziona, usa questo placeholder: "https://i.imgur.com/8Q5X2Xk.jpeg" (Cane con occhiali generico)
-        const JESSE_IMG = "psicologo.jpeg"; 
+         // --- CONFIGURAZIONE JESSE ---
+        // Foto profilo principale
+    const JESSE_IMG = "psicologo.jpeg";  
         
         // Applica l'immagine a tutti gli elementi
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('jesse-avatar').src = JESSE_IMG;
             document.querySelectorAll('.jesse-mini-avatar').forEach(img => img.src = JESSE_IMG);
         });
-
-        // --- CONFIGURAZIONE JESSE ---
-    // Foto profilo principale
-    const JESSE_IMG = "psicologo.jpeg"; 
     
     // Album Completo (Tutte le foto che hai caricato nella cartella /jesse/)
     const JESSE_GALLERY = [
