@@ -1345,80 +1345,135 @@
         async function runCustomAiGeneration() { const p = document.getElementById('custom-prompt-input').value; document.getElementById('custom-modal').classList.add('hidden'); toggleChat(); addMessage(`Jesse, crea una strategia per: ${p}`, 'user'); sendChat('chat'); }
         function toggleEditMode() { const t = prompt("Nuovo Titolo:", customStrategy.title); if (t) { customStrategy.title = t; localStorage.setItem('custom_roadmap', JSON.stringify(customStrategy)); renderRoadmap(); } }
 
-        // --- SMART SCHEDULER LOGIC ---
-        function calculateStudySchedule() {
+        // --- SMART SCHEDULER LOGIC (AI POWERED) ---
+        async function calculateStudySchedule() {
             const input = document.getElementById('schedule-input').value.toLowerCase();
             const resultBox = document.getElementById('schedule-result');
             const loader = document.getElementById('schedule-output');
 
             if (!input) return alert("Inserisci la tua disponibilità!");
 
-            // Show loader
+            // UI Reset
+            resultBox.classList.add('hidden');
             loader.classList.remove('hidden');
-            resultBox.innerHTML = '';
+            loader.innerHTML = `<div class="space-y-3"><div class="bg-stone-100 h-10 rounded w-3/4 animate-pulse"></div><div class="text-xs text-stone-400 font-mono">Analisi vincoli e scadenze...</div></div>`;
 
-            setTimeout(() => {
+            // Prepare Context
+            const activeCourses = COURSES.map(c => `${c.name} (Esame: ${c.date})`).join(", ");
+            const todoCount = biblioData.filter(b => b.status === 'todo').length;
+            const context = `
+            CURRENT DATE: ${new Date().toLocaleDateString()}
+            ACTIVE COURSES: ${activeCourses}
+            PENDING SOURCES: ${todoCount}
+            USER CONSTRAINTS: "${input}"
+            `;
+
+            const systemPrompt = `
+            Sei un Esperto Pianificatore Accademico.
+            Il tuo obiettivo è generare un JSON array valido rappresentante una settimana di studio OTTIMIZZATA.
+            
+            RULES:
+            1. Output MUST be strictly a valid JSON Array. No markdown, no text before/after.
+            2. Structure per day: { "day": "Lunedì", "slots": [{ "time": "09:00-11:00", "activity": "Studio Profondo", "course": "Nome Corso", "focus": "Argomento specifico" }] }
+            3. Respect User Constraints implicitly.
+            4. Balance "Deep Work" (mattina/pomeriggio presto) with "Review" (sera).
+            5. Insert specific breaks.
+            `;
+
+            try {
+                const schedule = await fetchScheduleWithRetry(input, context, systemPrompt);
+                renderSchedule(schedule);
                 loader.classList.add('hidden');
                 resultBox.classList.remove('hidden');
+            } catch (e) {
+                console.error(e);
+                loader.innerHTML = `<div class="text-red-500 font-bold">Errore nella generazione. Riprova.</div>`;
+            }
+        }
 
-                // Heuristic Logic
-                const daysMap = { 'lun': 'Lunedì', 'mar': 'Martedì', 'mer': 'Mercoledì', 'gio': 'Giovedì', 'ven': 'Venerdì', 'sab': 'Sabato', 'dom': 'Domenica' };
-                const availableDays = Object.keys(daysMap).filter(d => input.includes(d)).map(d => daysMap[d]);
+        async function fetchScheduleWithRetry(userPrompt, context, systemInst, retries = 1) {
+            // PHASE 1: GENERATION
+            let payload = {
+                message: `Genera programma settimanale. ${context}`,
+                systemOverride: systemInst,
+                context: [] // No biblio context needed for pure scheduling, saves tokens
+            };
 
-                // If no specific days found, assume "Tutti i giorni" or parse generic
-                const daysCount = availableDays.length || 5;
+            // Helper to call API
+            const callApi = async (body) => {
+                const r = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                return r.json();
+            };
 
-                // Calculate Workload
-                // Total incomplete items in Database
-                const todoCount = biblioData.filter(b => b.status === 'todo').length;
-                // Nearest Exam
-                const nextCourse = COURSES.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
-                const daysLeft = Math.ceil((new Date(nextCourse.date) - new Date()) / (1000 * 60 * 60 * 24));
+            let response = await callApi(payload);
+            let json = tryParseJson(response.response);
 
-                const intensity = daysLeft < 14 ? "ALTA 🔥" : (daysLeft < 30 ? "MEDIA ⚖️" : "BASSA 🧘");
-                const hoursPerDay = Math.ceil((todoCount * 2) / (daysLeft > 0 ? daysLeft : 1)); // Assume 2h per source? Rough estimate
+            // PHASE 2: SELF-CORRECTION (THE JUDGE)
+            if (!json && retries > 0) {
+                document.getElementById('schedule-output').innerHTML = `<div class="space-y-3"><div class="bg-rose-50 h-10 rounded w-1/2 animate-pulse"></div><div class="text-xs text-rose-500 font-mono">Ottimizzazione strutturale (Self-Correction)...</div></div>`;
 
-                let html = `
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <div class="bg-rose-50 p-4 rounded-xl border border-rose-100">
-                        <span class="text-[10px] items-center flex gap-1 font-bold text-rose-500 uppercase tracking-wider mb-1">🔥 Intensità</span>
-                        <div class="text-xl font-serif text-stone-900">${intensity}</div>
-                    </div>
-                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
-                        <span class="text-[10px] items-center flex gap-1 font-bold text-stone-400 uppercase tracking-wider mb-1">⏳ Stima Studio</span>
-                        <div class="text-xl font-serif text-stone-900">${hoursPerDay > 0 ? hoursPerDay : 1}h <span class="text-sm text-stone-500 font-sans">al giorno</span></div>
-                    </div>
-                    <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
-                         <span class="text-[10px] items-center flex gap-1 font-bold text-stone-400 uppercase tracking-wider mb-1">📅 Prossimo Esame</span>
-                        <div class="text-xl font-serif text-stone-900">${nextCourse.name}</div>
-                    </div>
-                </div>
+                const errorPrompt = `
+                SYSTEM: Il tuo output precedente NON era un JSON valido.
+                ERROR: Invalid JSON format.
+                PREVIOUS_OUTPUT: ${response.response}
                 
-                <h4 class="font-bold text-xs uppercase tracking-widest text-stone-400 mb-4">Programma Orario Suggerito</h4>
-                <div class="space-y-3">`;
+                TASK: Correggi l'output. Restituisci SOLO il JSON Array corretto. Nessun commento.
+                `;
 
-                const scheduleDays = availableDays.length > 0 ? availableDays : ["Lunedì", "Mercoledì", "Venerdì"];
+                payload.message = errorPrompt;
+                response = await callApi(payload);
+                json = tryParseJson(response.response);
+            }
 
-                scheduleDays.forEach(day => {
+            if (!json) throw new Error("Failed to generate valid JSON schedule.");
+            return json;
+        }
+
+        function tryParseJson(str) {
+            try {
+                // Heuristic cleanup: remove markdown code blocks if present
+                const clean = str.replace(/```json/g, '').replace(/```/g, '').trim();
+                return JSON.parse(clean);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function renderSchedule(scheduleData) {
+            const div = document.getElementById('schedule-result');
+            let html = `<div class="grid grid-cols-1 gap-4">`;
+
+            scheduleData.forEach(day => {
+                html += `
+                <div class="border border-stone-200 rounded-xl overflow-hidden">
+                    <div class="bg-stone-50 px-4 py-2 border-b border-stone-200 font-bold text-stone-700 flex justify-between">
+                        <span>${day.day}</span>
+                        <span class="text-[10px] uppercase tracking-wider text-stone-400 self-center">${day.slots.length} Sessioni</span>
+                    </div>
+                    <div class="p-3 space-y-3">`;
+
+                day.slots.forEach(slot => {
+                    const isBreak = slot.activity.toLowerCase().includes('pausa') || slot.activity.toLowerCase().includes('break');
+                    const color = isBreak ? 'bg-teal-50 text-teal-700 border-teal-100' : 'bg-white text-stone-800 border-stone-100 hover:border-rose-200';
                     html += `
-                    <div class="flex items-start gap-4 p-3 hover:bg-stone-50 rounded-lg transition-colors border border-transparent hover:border-stone-100">
-                        <div class="w-24 font-bold text-stone-900 text-sm mt-1">${day}</div>
-                        <div class="flex-1 space-y-2">
-                             <div class="flex gap-2 items-center">
-                                <span class="bg-stone-900 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">09:00 - 11:30</span>
-                                <span class="text-sm text-stone-600">Deep Work: ${nextCourse.name} (Moduli)</span>
-                             </div>
-                             <div class="flex gap-2 items-center">
-                                <span class="bg-rose-100 text-rose-600 text-[10px] font-bold px-1.5 py-0.5 rounded">15:00 - 16:30</span>
-                                <span class="text-sm text-stone-600">Lettura Fonti & Ripasso</span>
-                             </div>
-                        </div>
-                    </div>`;
+                        <div class="flex gap-3 text-sm p-3 rounded-lg border ${color} transition-colors">
+                            <span class="font-mono font-bold w-24 shrink-0">${slot.time}</span>
+                            <div>
+                                <div class="font-bold leading-tight">${slot.activity}</div>
+                                ${slot.course ? `<div class="text-xs text-stone-500 mt-1">📚 ${slot.course}</div>` : ''}
+                                ${slot.focus ? `<div class="text-xs italic opacity-80">${slot.focus}</div>` : ''}
+                            </div>
+                        </div>`;
                 });
 
-                html += `</div>`;
-                resultBox.innerHTML = html;
-            }, 1000);
+                html += `</div></div>`;
+            });
+            html += `</div>`;
+            div.innerHTML = html;
         }
 
     </script>
