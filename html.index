@@ -272,7 +272,7 @@
 
     <script>
         // --- CONFIG ---
-        const DEFAULT_API_KEY = "AIzaSyBrUwYGQGVzsopcgPjKFjb8kVKDqv5z6wM"; 
+        const DEFAULT_API_KEY = ""; 
         let userApiKey = localStorage.getItem('gemini_api_key') || DEFAULT_API_KEY;
 
         // --- MASSIVE BIBLIOGRAPHY (100 Sources) ---
