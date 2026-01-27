@@ -592,112 +592,154 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div id="book-modal"
-            class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
-            <div
-                class="bg-white w-full max-w-2xl rounded-2xl shadow-float p-8 transform transition-all scale-100 border border-stone-100">
-                <div class="flex justify-between items-start mb-8">
-                    <div>
-                        <h3 id="modal-title" class="text-2xl font-serif font-medium text-stone-900 mb-1"></h3>
-                        <p id="modal-author" class="text-rose-500 text-sm font-medium"></p>
+            <!-- MODALS -->
+            <!-- NEW: Course Editor Modal -->
+            <div id="course-modal"
+                class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm hidden z-50 flex items-center justify-center fade-in">
+                <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden m-4">
+                    <div class="p-6 border-b border-stone-100 flex justify-between items-center bg-stone-50">
+                        <h3 id="modal-course-title" class="font-serif text-2xl font-bold text-stone-900">Nuovo Corso
+                        </h3>
+                        <button onclick="closeCourseModal()" class="text-stone-400 hover:text-stone-900">✕</button>
                     </div>
-                    <button onclick="closeModal()"
-                        class="text-stone-300 hover:text-stone-600 text-2xl leading-none">&times;</button>
-                </div>
-                <div class="space-y-6">
-                    <div><label
-                            class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Tag</label><input
-                            type="text" id="modal-tags"
-                            class="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 transition-colors"
-                            placeholder="#angoscia, #capitolo1..."></div>
-                    <div><label class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Note
-                            personali</label><textarea id="modal-notes"
-                            class="w-full h-40 p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm resize-none outline-none focus:border-stone-400 transition-colors leading-relaxed"></textarea>
+                    <div class="p-6 space-y-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Nome
+                                Corso</label>
+                            <input type="text" id="edit-course-name"
+                                class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-900 outline-none font-bold text-stone-800"
+                                placeholder="Es. Filosofia Teoretica">
+                        </div>
+                        <div>
+                            <label
+                                class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Professore</label>
+                            <input type="text" id="edit-course-prof"
+                                class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-900 outline-none"
+                                placeholder="Es. Prof. Simondon">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Data
+                                Esame</label>
+                            <input type="date" id="edit-course-date"
+                                class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm focus:border-stone-900 outline-none">
+                        </div>
                     </div>
-                </div>
-                <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-stone-100">
-                    <button onclick="askAIAboutBook()"
-                        class="px-4 py-2 bg-white border border-stone-200 text-stone-600 font-medium rounded-lg text-xs hover:border-rose-200 hover:text-rose-600 transition-all">Chiedi
-                        a Jesse</button>
-                    <button onclick="saveBookDetails()"
-                        class="px-6 py-2 bg-stone-900 text-white font-medium rounded-lg text-xs hover:bg-black transition-colors shadow-soft">Salva
-                        Modifiche</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="custom-modal"
-            class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-            <div class="bg-white w-full max-w-lg rounded-2xl shadow-float p-8 border border-stone-100">
-                <h3 class="text-xl font-serif font-bold mb-4">Genera Strategia con AI</h3>
-                <p class="text-sm text-stone-600 mb-4">Descrivi brevemente a Jesse di cosa vuoi che parli la tua tesi.
-                </p>
-                <textarea id="custom-prompt-input"
-                    class="w-full h-32 p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm mb-4 outline-none focus:border-rose-300"
-                    placeholder="Es: Voglio esplorare il concetto di alienazione in Marx e Simondon..."></textarea>
-                <div class="flex justify-end gap-2">
-                    <button onclick="document.getElementById('custom-modal').classList.add('hidden')"
-                        class="px-4 py-2 text-stone-500 text-xs font-bold hover:bg-stone-50 rounded-lg">Annulla</button>
-                    <button onclick="runCustomAiGeneration()"
-                        class="px-4 py-2 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600">Genera</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="chat-widget"
-            class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden origin-bottom-right transition-all duration-300">
-            <div class="bg-stone-900 p-4 flex justify-between items-center shrink-0 w-full text-white">
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-rose-500 relative shrink-0">
-                        <img id="jesse-avatar" src="" alt="Jesse" class="w-full h-full object-cover">
-                    </div>
-                    <div class="flex flex-col">
-                        <h4 class="font-bold text-sm leading-tight">Jesse the Assistant</h4>
-                        <div class="text-[10px] text-stone-400">Research Doggo 🐶</div>
+                    <div class="p-4 border-t border-stone-100 bg-stone-50 flex justify-end gap-3">
+                        <button onclick="closeCourseModal()"
+                            class="px-4 py-2 text-stone-500 font-bold text-xs uppercase hover:bg-stone-200 rounded-lg">Annulla</button>
+                        <button onclick="saveCourse()"
+                            class="px-6 py-2 bg-stone-900 text-white font-bold text-xs uppercase rounded-lg shadow-lg hover:bg-black hover:scale-105 transition-all">Salva
+                            Corso</button>
                     </div>
                 </div>
-                <div class="flex gap-1">
-                    <button onclick="document.getElementById('chat-messages').innerHTML=''"
-                        class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors"
-                        title="Pulisci Chat">🗑️</button>
-                    <button onclick="toggleChat()"
-                        class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors text-lg font-bold leading-none"
-                        title="Chiudi">×</button>
-                </div>
             </div>
-            <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
-                <div class="flex gap-3 fade-in mt-2">
-                    <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0"><img
-                            src="jesse/psicologo.jpeg" class="w-full h-full object-cover jesse-mini-avatar"></div>
-                    <div class="p-3 rounded-2xl text-sm max-w-[85%] msg-jesse">Bau! Ciao padrona, io sono Jesse. Sto
-                        analizzando la tua richiesta... Se ti è stato utile padrona, dammi del cibo, ho fame!!</div>
-                </div>
-            </div>
-            <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
-                <button onclick="setMode('Socrajess')"
-                    class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrajess</button>
-                <button onclick="setMode('critic')"
-                    class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Relatore</button>
-                <button onclick="setMode('discuss')"
-                    class="whitespace-nowrap bg-stone-800 text-white hover:bg-stone-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors">🎓
-                    Discussione</button>
-            </div>
-            <div class="p-3 bg-white border-t border-stone-100 shrink-0 relative">
-                <input type="text" id="chat-input" placeholder="Chiedi a Jesse..."
-                    class="w-full pl-4 pr-12 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 focus:bg-white outline-none transition-all placeholder-stone-400 text-stone-800"
-                    onkeypress="if(event.key==='Enter') sendChat()">
-                <button onclick="sendChat()"
-                    class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors shadow-sm text-sm">➤</button>
-            </div>
-        </div>
 
-        <button onclick="toggleChat()"
-            class="fixed bottom-6 right-6 w-14 h-14 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group overflow-hidden border-2 border-white">
-            <img src="" class="w-full h-full object-cover jesse-mini-avatar" alt="Chat">
-        </button>
+            <div id="book-modal"
+                class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
+                <div
+                    class="bg-white w-full max-w-2xl rounded-2xl shadow-float p-8 transform transition-all scale-100 border border-stone-100">
+                    <div class="flex justify-between items-start mb-8">
+                        <div>
+                            <h3 id="modal-title" class="text-2xl font-serif font-medium text-stone-900 mb-1"></h3>
+                            <p id="modal-author" class="text-rose-500 text-sm font-medium"></p>
+                        </div>
+                        <button onclick="closeModal()"
+                            class="text-stone-300 hover:text-stone-600 text-2xl leading-none">&times;</button>
+                    </div>
+                    <div class="space-y-6">
+                        <div><label
+                                class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Tag</label><input
+                                type="text" id="modal-tags"
+                                class="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 transition-colors"
+                                placeholder="#angoscia, #capitolo1..."></div>
+                        <div><label
+                                class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Note
+                                personali</label><textarea id="modal-notes"
+                                class="w-full h-40 p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm resize-none outline-none focus:border-stone-400 transition-colors leading-relaxed"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-stone-100">
+                        <button onclick="askAIAboutBook()"
+                            class="px-4 py-2 bg-white border border-stone-200 text-stone-600 font-medium rounded-lg text-xs hover:border-rose-200 hover:text-rose-600 transition-all">Chiedi
+                            a Jesse</button>
+                        <button onclick="saveBookDetails()"
+                            class="px-6 py-2 bg-stone-900 text-white font-medium rounded-lg text-xs hover:bg-black transition-colors shadow-soft">Salva
+                            Modifiche</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="custom-modal"
+                class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+                <div class="bg-white w-full max-w-lg rounded-2xl shadow-float p-8 border border-stone-100">
+                    <h3 class="text-xl font-serif font-bold mb-4">Genera Strategia con AI</h3>
+                    <p class="text-sm text-stone-600 mb-4">Descrivi brevemente a Jesse di cosa vuoi che parli la tua
+                        tesi.
+                    </p>
+                    <textarea id="custom-prompt-input"
+                        class="w-full h-32 p-3 bg-stone-50 border border-stone-200 rounded-xl text-sm mb-4 outline-none focus:border-rose-300"
+                        placeholder="Es: Voglio esplorare il concetto di alienazione in Marx e Simondon..."></textarea>
+                    <div class="flex justify-end gap-2">
+                        <button onclick="document.getElementById('custom-modal').classList.add('hidden')"
+                            class="px-4 py-2 text-stone-500 text-xs font-bold hover:bg-stone-50 rounded-lg">Annulla</button>
+                        <button onclick="runCustomAiGeneration()"
+                            class="px-4 py-2 bg-rose-500 text-white text-xs font-bold rounded-lg hover:bg-rose-600">Genera</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chat-widget"
+                class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden origin-bottom-right transition-all duration-300">
+                <div class="bg-stone-900 p-4 flex justify-between items-center shrink-0 w-full text-white">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-rose-500 relative shrink-0">
+                            <img id="jesse-avatar" src="" alt="Jesse" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex flex-col">
+                            <h4 class="font-bold text-sm leading-tight">Jesse the Assistant</h4>
+                            <div class="text-[10px] text-stone-400">Research Doggo 🐶</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="document.getElementById('chat-messages').innerHTML=''"
+                            class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors"
+                            title="Pulisci Chat">🗑️</button>
+                        <button onclick="toggleChat()"
+                            class="text-stone-400 hover:text-white p-2 rounded hover:bg-stone-800 transition-colors text-lg font-bold leading-none"
+                            title="Chiudi">×</button>
+                    </div>
+                </div>
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
+                    <div class="flex gap-3 fade-in mt-2">
+                        <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0"><img
+                                src="jesse/psicologo.jpeg" class="w-full h-full object-cover jesse-mini-avatar"></div>
+                        <div class="p-3 rounded-2xl text-sm max-w-[85%] msg-jesse">Bau! Ciao padrona, io sono Jesse. Sto
+                            analizzando la tua richiesta... Se ti è stato utile padrona, dammi del cibo, ho fame!!</div>
+                    </div>
+                </div>
+                <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
+                    <button onclick="setMode('Socrajess')"
+                        class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrajess</button>
+                    <button onclick="setMode('critic')"
+                        class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Relatore</button>
+                    <button onclick="setMode('discuss')"
+                        class="whitespace-nowrap bg-stone-800 text-white hover:bg-stone-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors">🎓
+                        Discussione</button>
+                </div>
+                <div class="p-3 bg-white border-t border-stone-100 shrink-0 relative">
+                    <input type="text" id="chat-input" placeholder="Chiedi a Jesse..."
+                        class="w-full pl-4 pr-12 py-3 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:border-stone-400 focus:bg-white outline-none transition-all placeholder-stone-400 text-stone-800"
+                        onkeypress="if(event.key==='Enter') sendChat()">
+                    <button onclick="sendChat()"
+                        class="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center hover:bg-black transition-colors shadow-sm text-sm">➤</button>
+                </div>
+            </div>
+
+            <button onclick="toggleChat()"
+                class="fixed bottom-6 right-6 w-14 h-14 bg-stone-900 text-white rounded-full shadow-float flex items-center justify-center hover:scale-105 transition-transform z-40 group overflow-hidden border-2 border-white">
+                <img src="" class="w-full h-full object-cover jesse-mini-avatar" alt="Chat">
+            </button>
 
     </main>
 
@@ -714,7 +756,7 @@
             "jesse/WhatsApp Image 2026-01-27 at 15.31.41.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.45.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.51 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.51.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.52 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.52.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.53.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.54 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.54.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.55.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.56 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.56.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.57 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.57.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.58.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.59 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.31.59.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.00 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.00.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.01.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.04 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.04.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.05.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.06 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.06.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.07 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.07.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.09.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.10 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.10.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.13 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.13.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.14.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.15 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.15.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.16 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.16.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17 (3).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.17.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.18 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.18.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.19 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.19.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.20 (2).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.20.jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.21 (1).jpeg", "jesse/WhatsApp Image 2026-01-27 at 15.32.21.jpeg"
         ];
 
-        // --- VARIABILI GLOBALI (UNICA DICHIARAZIONE) ---
+        // --- STATE MANAGEMENT ---
         let biblioData = [];
         let currentBookId = null;
         let wordHistory = JSON.parse(localStorage.getItem('word_history')) || [];
@@ -724,6 +766,9 @@
         let chartInstance = null;
         let customStrategy = { title: "Strategia Personalizzata", desc: "Generata da Jesse AI.", top_sources: [], chapters: [] };
 
+        // NEW: Dynamic Course Management
+        let courses = JSON.parse(localStorage.getItem('millino_courses')) || DEFAULT_COURSES;
+        let editingCourseId = null;
 
         // NEW: Advanced Source Management State
         let pinnedSources = JSON.parse(localStorage.getItem('millino_pinned')) || [];
@@ -731,6 +776,7 @@
         let aiSelectedSources = []; // Temporary, per session
 
         // --- MASTER DB (85 Fonti) ---
+
         // --- ROADMAP DENSA (Con Obiettivi e Metodo) ---
         let detailedRoadmaps = {
             A: {
@@ -823,12 +869,85 @@
             const customBooks = biblioData.filter(b => !MASTER_DB.some(m => m.id === b.id));
             localStorage.setItem('millino_custom_books', JSON.stringify(customBooks));
 
-            // NEW: Persist Pin/Delete
+            // NEW: Persist Pin/Delete/Courses
             localStorage.setItem('millino_pinned', JSON.stringify(pinnedSources));
             localStorage.setItem('millino_deleted', JSON.stringify(deletedSources));
+            localStorage.setItem('millino_courses', JSON.stringify(courses));
         }
 
-        function forceReset() { if (confirm("Vuoi resettare tutto?")) { localStorage.removeItem('millino_progress'); localStorage.removeItem('millino_custom_books'); localStorage.removeItem('millino_pinned'); localStorage.removeItem('millino_deleted'); localStorage.removeItem('custom_roadmap'); location.reload(); } }
+        function forceReset() { if (confirm("Vuoi resettare tutto?")) { localStorage.removeItem('millino_progress'); localStorage.removeItem('millino_custom_books'); localStorage.removeItem('millino_pinned'); localStorage.removeItem('millino_deleted'); localStorage.removeItem('custom_roadmap'); localStorage.removeItem('millino_courses'); location.reload(); } }
+
+        // --- DYNAMIC COURSE CRUD ---
+        function openCourseModal(id = null) {
+            editingCourseId = id;
+            const modal = document.getElementById('course-modal');
+            const titleEl = document.getElementById('modal-course-title');
+
+            if (id) {
+                // Edit Text
+                const course = courses.find(c => c.id === id);
+                titleEl.textContent = "Modifica Corso";
+                document.getElementById('edit-course-name').value = course.name;
+                document.getElementById('edit-course-prof').value = course.prof;
+                document.getElementById('edit-course-date').value = course.date;
+                // Topics area currently simple JSON or text
+                // For simplicity, we let user edit topics as JSON or basic text?
+                // Request says "modify everything". Let's assume standard fields first.
+                // Advanced: We could add a topics editor, but let's start with basic metadata.
+            } else {
+                // New
+                titleEl.textContent = "Nuovo Corso";
+                document.getElementById('edit-course-name').value = "";
+                document.getElementById('edit-course-prof').value = "";
+                document.getElementById('edit-course-date').value = "";
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeCourseModal() { document.getElementById('course-modal').classList.add('hidden'); }
+
+        function saveCourse() {
+            const name = document.getElementById('edit-course-name').value;
+            const prof = document.getElementById('edit-course-prof').value;
+            const date = document.getElementById('edit-course-date').value;
+
+            if (!name || !prof || !date) return alert("Compila tutti i campi!");
+
+            if (editingCourseId) {
+                // Update
+                const c = courses.find(x => x.id === editingCourseId);
+                c.name = name; c.prof = prof; c.date = date;
+            } else {
+                // Create
+                const newC = {
+                    id: "c_" + Date.now(),
+                    name: name,
+                    prof: prof,
+                    date: date,
+                    status: 'active',
+                    topics: [] // Empty topics for new course
+                };
+                courses.push(newC);
+            }
+            saveData();
+            closeCourseModal();
+            // Refresh
+            if (currentCourseId) {
+                renderCourseDetail(currentCourseId);
+            } else {
+                renderDashboard();
+            }
+            router(currentCourseId ? 'course-detail' : 'dashboard');
+        }
+
+        function deleteCourse(id) {
+            if (!confirm("Eliminare definitivamente questo corso?")) return;
+            courses = courses.filter(c => c.id !== id);
+            saveData();
+            currentCourseId = null;
+            renderDashboard();
+            router('dashboard');
+        }
 
         function initApp() {
             renderDashboard();
@@ -979,7 +1098,7 @@
         // --- DASHBOARD LOGIC (NEW) ---
         function renderDashboard() {
             const container = document.getElementById('course-grid');
-            container.innerHTML = COURSES.map(course => {
+            let html = courses.map(course => {
                 const daysLeft = Math.ceil((new Date(course.date) - new Date()) / (1000 * 60 * 60 * 24));
                 const totalTopics = course.topics.length;
                 // Quick fake progress: count how many primary sources of this subject are "done"
@@ -1016,6 +1135,15 @@
                     </div>
                 </div>`;
             }).join('');
+
+            // ADD NEW COURSE CARD
+            html += `
+            <div onclick="openCourseModal()" class="border-2 border-dashed border-stone-300 rounded-xl p-6 flex flex-col items-center justify-center text-stone-400 cursor-pointer hover:border-text-stone-600 hover:text-stone-600 hover:bg-stone-50 transition-colors min-h-[160px]">
+                <div class="text-3xl mb-2">+</div>
+                <div class="font-bold text-sm uppercase tracking-wider">Aggiungi Corso</div>
+            </div>`;
+
+            container.innerHTML = html;
         }
 
         function selectCourse(id) {
@@ -1025,15 +1153,49 @@
         }
 
         function renderCourseDetail(id) {
-            const course = COURSES.find(c => c.id === id);
+            const course = courses.find(c => c.id === id);
             if (!course) return;
 
             document.getElementById('course-title').innerText = course.name;
             document.getElementById('course-prof').innerText = "Prof. " + course.prof;
             document.getElementById('course-date').innerText = course.date;
 
+            // Add Edit/Delete Buttons to Detail Header (dynamically injected to avoid clutter)
+            const headerActions = document.getElementById('course-detail-actions'); // Need to add this to HTML or reuse exists
+            if (!headerActions) {
+                // Creating a dynamic action bar if not exists in HTML (User didn't add it in my view)
+                // Or I can inject it into 'course-date' parent?
+                // Let's create a dedicated controls area in HTML later. 
+                // For now, let's append distinct buttons to the description area.
+            }
+
+            // Re-render actions
+            const dateBox = document.getElementById('course-date').parentNode;
+            if (!document.getElementById('course-actions-wrap')) {
+                const d = document.createElement('div');
+                d.id = 'course-actions-wrap';
+                d.className = "flex gap-2 justify-end mt-2";
+                d.innerHTML = `
+                 <button onclick="openCourseModal('${course.id}')" class="text-xs border border-stone-200 px-3 py-1 rounded hover:bg-stone-50">Modifica</button>
+                 <button onclick="deleteCourse('${course.id}')" class="text-xs border border-red-100 text-red-500 px-3 py-1 rounded hover:bg-red-50">Elimina</button>
+                 `;
+                dateBox.appendChild(d);
+            } else {
+                // Update IDs for click handlers
+                const w = document.getElementById('course-actions-wrap');
+                w.innerHTML = `
+                 <button onclick="openCourseModal('${course.id}')" class="text-xs border border-stone-200 px-3 py-1 rounded hover:bg-stone-50">Modifica</button>
+                 <button onclick="deleteCourse('${course.id}')" class="text-xs border border-red-100 text-red-500 px-3 py-1 rounded hover:bg-red-50">Elimina</button>
+                 `;
+            }
+
+
             const box = document.getElementById('course-syllabus-container');
             box.innerHTML = '';
+
+            if (course.topics.length === 0) {
+                box.innerHTML = `<div class="text-center text-stone-400 py-10 italic">Nessun modulo nel sillabo. (L'editor dei moduli arriverà presto!)</div>`;
+            }
 
             course.topics.forEach((topic, idx) => {
                 box.innerHTML += `
@@ -1167,7 +1329,7 @@
                 contextData = biblioData.filter(b => pinnedSources.includes(b.id));
             } else if (currentCourseId) {
                 // Default to course context if nothing pinned/selected
-                const course = COURSES.find(c => c.id === currentCourseId);
+                const course = courses.find(c => c.id === currentCourseId);
                 if (course) contextData = biblioData.filter(b => b.subject === course.name);
             }
 
@@ -1179,7 +1341,7 @@
             - Il tuo obiettivo primario è aiutare nello studio.
 
             CONTESTO ATTUALE:
-            - Corso Attivo: ${currentCourseId ? COURSES.find(c => c.id === currentCourseId).name : "Panoramica Generale"}
+            - Corso Attivo: ${currentCourseId ? courses.find(c => c.id === currentCourseId).name : "Panoramica Generale"}
             - Modalità: ${activeMode}
             
             ISTRUZIONI FOTO: Se chiedono foto, rispondi entusiasta (la foto sarà aggiunta automaticamente).`;
@@ -1356,10 +1518,15 @@
             // UI Reset
             resultBox.classList.add('hidden');
             loader.classList.remove('hidden');
-            loader.innerHTML = `<div class="space-y-3"><div class="bg-stone-100 h-10 rounded w-3/4 animate-pulse"></div><div class="text-xs text-stone-400 font-mono">Analisi vincoli e scadenze...</div></div>`;
+
+            const setStatus = (text) => {
+                loader.innerHTML = `<div class="space-y-3"><div class="bg-stone-100 h-10 rounded w-3/4 animate-pulse"></div><div class="text-xs text-stone-400 font-mono">${text}</div></div>`;
+            };
+
+            setStatus("Generazione bozza (Qwen 72b)...");
 
             // Prepare Context
-            const activeCourses = COURSES.map(c => `${c.name} (Esame: ${c.date})`).join(", ");
+            const activeCourses = courses.map(c => `${c.name} (Esame: ${c.date})`).join(", ");
             const todoCount = biblioData.filter(b => b.status === 'todo').length;
             const context = `
             CURRENT DATE: ${new Date().toLocaleDateString()}
@@ -1381,24 +1548,18 @@
             `;
 
             try {
-                const schedule = await fetchScheduleWithRetry(input, context, systemPrompt);
+                // Phase 1: Qwen 72b, Phase 2: Mandatory Judge (DeepSeek)
+                const schedule = await fetchScheduleWithRetry(input, context, systemPrompt, 1, 'qwen/qwen2.5-vl-72b-instruct', setStatus);
                 renderSchedule(schedule);
                 loader.classList.add('hidden');
                 resultBox.classList.remove('hidden');
             } catch (e) {
                 console.error(e);
-                loader.innerHTML = `<div class="text-red-500 font-bold">Errore nella generazione. Riprova.</div>`;
+                loader.innerHTML = `<div class="text-red-500 font-bold">Errore: ${e.message}. Riprova.</div>`;
             }
         }
 
-        async function fetchScheduleWithRetry(userPrompt, context, systemInst, retries = 1) {
-            // PHASE 1: GENERATION
-            let payload = {
-                message: `Genera programma settimanale. ${context}`,
-                systemOverride: systemInst,
-                context: [] // No biblio context needed for pure scheduling, saves tokens
-            };
-
+        async function fetchScheduleWithRetry(userPrompt, context, systemInst, retries = 1, genModel = null, statusCallback = null) {
             // Helper to call API
             const callApi = async (body) => {
                 const r = await fetch('/api/chat', {
@@ -1409,28 +1570,54 @@
                 return r.json();
             };
 
+            // PHASE 1: GENERATION (Qwen)
+            let payload = {
+                message: `Genera programma settimanale. ${context}`,
+                systemOverride: systemInst,
+                context: [],
+                model: genModel
+            };
+
             let response = await callApi(payload);
-            let json = tryParseJson(response.response);
+            let rawDraft = response.response;
 
-            // PHASE 2: SELF-CORRECTION (THE JUDGE)
-            if (!json && retries > 0) {
-                document.getElementById('schedule-output').innerHTML = `<div class="space-y-3"><div class="bg-rose-50 h-10 rounded w-1/2 animate-pulse"></div><div class="text-xs text-rose-500 font-mono">Ottimizzazione strutturale (Self-Correction)...</div></div>`;
+            // PHASE 2: MANDATORY JUDGE (DeepSeek V3.2)
+            if (statusCallback) statusCallback("DeepSeek Judge: Verifica vincoli e logica...");
 
-                const errorPrompt = `
-                SYSTEM: Il tuo output precedente NON era un JSON valido.
-                ERROR: Invalid JSON format.
-                PREVIOUS_OUTPUT: ${response.response}
-                
-                TASK: Correggi l'output. Restituisci SOLO il JSON Array corretto. Nessun commento.
-                `;
+            const judgePrompt = `
+            SYSTEM: Sei un Giudice Severo e un Esperto di Logica.
+            
+            USER INPUT (Vincoli Reali): "${userPrompt}"
+            CONTEXT: ${context}
+            
+            INPUT (Bozza generata da altra AI): 
+            ${rawDraft}
+            
+            TASK: 
+            1. CLASSIFICAZIONE: La bozza rispetta TUTTI i vincoli dell'utente? (Es: se dice "no martedì", il martedì deve essere vuoto/assente).
+            2. FORMATTAZIONE: È un JSON Array valido?
+            3. AZIONE:
+               - Se PERFETTO: Restituisci il JSON originale.
+               - Se IMPERFETTO (Vincoli violati O Json rotto): CORREGGI e restituisci SOLO la versione corretta.
+            
+            OUTPUT: Solo il JSON Array. Nessun preambolo.
+            `;
 
-                payload.message = errorPrompt;
-                response = await callApi(payload);
-                json = tryParseJson(response.response);
+            let judgePayload = {
+                message: judgePrompt,
+                systemOverride: "Sei un validatore JSON rigoroso. Output SOLO JSON.",
+                context: []
+                // No model specified => defaults to configured Model A (DeepSeek V3)
+            };
+
+            let judgeResponse = await callApi(judgePayload);
+            let finalJson = tryParseJson(judgeResponse.response);
+
+            if (!finalJson) {
+                throw new Error("Validazione Fallita: Il Giudice non ha approvato il piano.");
             }
 
-            if (!json) throw new Error("Failed to generate valid JSON schedule.");
-            return json;
+            return finalJson;
         }
 
         function tryParseJson(str) {

@@ -101,7 +101,7 @@ const MASTER_DB = [
     { id: "B10", subject: "Filosofia Teoretica", author: "Uexküll, J. von", year: "1934", title: "Streifzüge durch die Umwelten", pub: "-", cat: "Background", prio: "MEDIUM", desc: "Umwelt." }
 ];
 
-const COURSES = [
+const DEFAULT_COURSES = [
     {
         id: "theo_phil",
         name: "Filosofia Teoretica",
