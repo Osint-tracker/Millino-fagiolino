@@ -323,15 +323,15 @@
              </div>
         </div>
 
-        <div id="chat-widget" class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden transform transition-all duration-300 origin-bottom-right">
+        <div id="chat-widget" class="fixed bottom-6 right-6 w-[380px] h-[600px] bg-white rounded-2xl shadow-float border border-stone-200 flex flex-col z-50 chat-closed overflow-hidden origin-bottom-right transition-all duration-300">
     
-    <div class="bg-stone-900 p-4 flex justify-between items-center shrink-0 w-full">
+    <div class="bg-stone-900 p-4 flex justify-between items-center shrink-0 w-full text-white">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-rose-500 relative shrink-0">
-                <img id="jesse-avatar-header" src="" alt="Jesse" class="w-full h-full object-cover jesse-mini-avatar">
+                <img id="jesse-avatar" src="" alt="Jesse" class="w-full h-full object-cover">
             </div>
             <div class="flex flex-col">
-                <h4 class="font-bold text-sm text-white leading-tight">Jesse the Assistant</h4>
+                <h4 class="font-bold text-sm leading-tight">Jesse the Assistant</h4>
                 <div class="text-[10px] text-stone-400">Research Doggo 🐶</div>
             </div>
         </div>
@@ -344,7 +344,7 @@
     <div id="chat-messages" class="flex-1 overflow-y-auto p-5 space-y-6 bg-[#FAFAFA]">
         <div class="flex gap-3 fade-in mt-2">
             <div class="w-8 h-8 rounded-full overflow-hidden border border-stone-200 shrink-0">
-                <img src="" class="w-full h-full object-cover jesse-mini-avatar">
+                <img src="jesse/psicologo.jpeg" class="w-full h-full object-cover jesse-mini-avatar">
             </div>
             <div class="p-3 rounded-2xl text-sm max-w-[85%] msg-jesse">
                 Bau! Ciao padrona, io sono Jesse 🐶. <br>Se ti aiuto con la tesi mi dai un biscottino?
@@ -353,7 +353,7 @@
     </div>
     
     <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
-        <button onclick="setMode('Socrajesse')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrajesse</button>
+        <button onclick="setMode('socrate')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrate</button>
         <button onclick="setMode('critic')" class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Relatore</button>
         <button onclick="setMode('discuss')" class="whitespace-nowrap bg-stone-800 text-white hover:bg-stone-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors">🎓 Discussione</button>
     </div>
@@ -791,6 +791,50 @@
         function copyFootnoteStyle(){ const c=Array.from(document.querySelectorAll('.cite-cb:checked')).map(x=>x.value); const i=biblioData.filter(x=>c.includes(x.id)); let o = i.map(x => `${x.author.split(',')[1].trim()} ${x.author.split(',')[0]}, *${x.title}*, ${x.pub}, Paris ${x.year}.`).join('\n'); document.getElementById('citation-output').value=o; copyCitationOutput(); }
         function generateBibliography(){ const c=Array.from(document.querySelectorAll('.cite-cb:checked')).map(x=>x.value); const i=biblioData.filter(x=>c.includes(x.id)); let o=""; const s=document.getElementById('citation-style').value; if(s==='classic'){copyFootnoteStyle(); return;} i.forEach(x=>{o+=s==='bibtex'?`@book{${x.id}, title={${x.title}}...}\n`:`${x.author} (${x.year}). ${x.title}.\n\n`}); document.getElementById('citation-output').value=o; }
         function downloadBibliography(){ const t=biblioData.filter(b=>b.status==='done'||b.status==='reading').map(b=>`${b.author} (${b.year}). ${b.title}.`).join('\n\n'); const b=new Blob([t],{type:'text/plain'}); const u=window.URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download="bibliografia.txt"; a.click(); }
+        // --- FUNZIONI MANCANTI ---
+
+        // 1. Risolve l'errore initAudio is not defined
+        function initAudio() {
+            const sounds = ['rain', 'cafe', 'fire'];
+            sounds.forEach(id => {
+                const el = document.getElementById('audio-' + id);
+                if(el) el.volume = 0.5; // Imposta volume di default
+            });
+        }
+
+        // 2. Risolve l'errore del Grafico (Chart destroyed)
+        let chartInstance = null; // Assicuriamoci che sia globale
+        function renderTracker() {
+            const ctx = document.getElementById('wordChart').getContext('2d');
+            
+            // DISTRUGGI IL GRAFICO VECCHIO PRIMA DI CREARNE UNO NUOVO
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: wordHistory.map(h => h.date),
+                    datasets: [{
+                        label: 'Parole Scritte',
+                        data: wordHistory.map(h => h.count),
+                        borderColor: '#1C1917',
+                        backgroundColor: 'rgba(28, 25, 23, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { color: '#F5F5F4' }, border: { display: false } }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
