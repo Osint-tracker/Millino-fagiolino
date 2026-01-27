@@ -903,37 +903,36 @@
             document.getElementById('roadmap-title').innerText = st.title;
             document.getElementById('roadmap-desc').innerText = st.desc;
             
-            // 2. Mostra/Nascondi controlli custom
+            // 2. Gestione controlli custom
             document.getElementById('custom-controls').className = sel === 'custom' ? 'border-t border-stone-200 pt-4 flex gap-2 justify-end' : 'hidden';
 
             // 3. Renderizza le TOP FONTI (Il "Best of" per quella strategia)
-            // Nota: Se non esiste il container nel HTML, lo creiamo al volo per evitare errori
-            let bibContainer = document.getElementById('roadmap-biblio-container');
+            // Se il container non esiste, lo crea al volo
+            let bibContainer = document.getElementById('roadmap-biblio');
+            let bibList = document.getElementById('roadmap-biblio-list');
+            
             if (!bibContainer) {
-                const descBox = document.getElementById('roadmap-desc').parentNode.parentNode; // Risale al box grigio
+                // Creazione dinamica del container se manca nell'HTML
+                const descBox = document.getElementById('roadmap-desc').parentNode.parentNode;
                 bibContainer = document.createElement('div');
-                bibContainer.id = 'roadmap-biblio-container';
-                bibContainer.className = "mt-4 pt-4 border-t border-stone-200";
+                bibContainer.id = 'roadmap-biblio';
+                bibContainer.className = "mt-4 pt-4 border-t border-stone-200 hidden";
+                bibContainer.innerHTML = `<span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-2 block">📚 Bibliografia Essenziale:</span><div id="roadmap-biblio-list" class="flex flex-wrap gap-2"></div>`;
                 descBox.appendChild(bibContainer);
+                bibList = document.getElementById('roadmap-biblio-list');
             }
 
             if (st.top_sources && st.top_sources.length > 0) {
-                bibContainer.innerHTML = `
-                    <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider mb-2 block">📚 Bibliografia Essenziale per questo percorso:</span>
-                    <div class="flex flex-wrap gap-2">
-                        ${st.top_sources.map(id => {
-                            const b = biblioData.find(x => x.id === id);
-                            // Se il libro esiste, crea un badge cliccabile che apre il modale
-                            return b ? `<button onclick="openBookModal('${b.id}')" class="text-xs bg-white border border-stone-200 px-2 py-1 rounded text-stone-700 shadow-sm hover:border-rose-300 hover:text-rose-600 transition-colors" title="${b.title}">${b.author} (${b.year})</button>` : '';
-                        }).join('')}
-                    </div>
-                `;
                 bibContainer.classList.remove('hidden');
+                bibList.innerHTML = st.top_sources.map(id => {
+                    const b = biblioData.find(x => x.id === id);
+                    return b ? `<button onclick="openBookModal('${b.id}')" class="text-xs bg-white border border-stone-200 px-2 py-1 rounded text-stone-700 shadow-sm hover:border-rose-300 hover:text-rose-600 transition-colors" title="${b.title}">${b.author} (${b.year})</button>` : '';
+                }).join('');
             } else {
                 bibContainer.classList.add('hidden');
             }
 
-            // 4. Renderizza i Capitoli Densi
+            // 4. Renderizza i Capitoli
             const c = document.getElementById('chapters-container'); 
             c.innerHTML = '';
             
@@ -942,7 +941,7 @@
                 return; 
             }
 
-            st.chapters.forEach((ch, idx) => {
+            st.chapters.forEach(ch => {
                 const textLinks = (ch.texts || []).map(tid => { 
                     const b = biblioData.find(x => x.id === tid); 
                     return b ? `<span class="inline-block bg-stone-50 border border-stone-200 text-stone-500 px-1.5 py-0.5 rounded text-[10px] mr-1 mb-1">${b.author}</span>` : ''; 
@@ -956,94 +955,31 @@
                     </summary>
                     
                     <div class="p-6 border-t border-stone-100 bg-white space-y-5">
-                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Obiettivo Filosofico</span>
                                 <p class="text-sm text-stone-800 font-medium leading-relaxed">${ch.goal}</p>
                             </div>
                             <div>
-                                <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Metodologia Suggerita</span>
-                                <p class="text-sm text-stone-600 leading-relaxed">${ch.method || "Analisi comparativa dei testi."}</p>
+                                <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Metodologia</span>
+                                <p class="text-sm text-stone-600 leading-relaxed">${ch.method || "Analisi comparativa."}</p>
                             </div>
                         </div>
 
                         <div class="bg-yellow-50/50 border border-yellow-100 p-4 rounded-lg">
-                            <span class="text-[9px] font-bold text-yellow-600 uppercase tracking-wider block mb-1">🔍 Focus di Lettura (Cosa cercare)</span>
+                            <span class="text-[9px] font-bold text-yellow-600 uppercase tracking-wider block mb-1">🔍 Focus di Lettura</span>
                             <p class="text-sm text-stone-700 italic">"${ch.focus || 'Definire focus...'}"</p>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                            <div>
-                                <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Definizioni Chiave</span>
-                                <div class="text-sm text-rose-600 font-medium">${ch.concepts || '-'}</div>
-                            </div>
-                            <div>
-                                <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Fonti del Capitolo</span>
-                                <div>${textLinks}</div>
-                            </div>
+                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Concetti Chiave</span><div class="text-sm text-rose-600 font-medium">${ch.concepts || '-'}</div></div>
+                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Fonti</span><div>${textLinks}</div></div>
                         </div>
 
                         <div class="pt-4 mt-2 border-t border-stone-100 flex justify-end">
                             <button onclick="askAI('Aiutami a scrivere il capitolo: ${ch.title}. Focus: ${ch.focus}. Concetti: ${ch.concepts}.')" class="bg-stone-900 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-black transition-colors shadow-sm">
                                 <span>🐕</span> Scrivi bozza con Jesse
                             </button>
-                        </div>
-                    </div>
-                </details>`;
-            });
-        }
-
-            // --- RENDER TOP SOURCES ---
-            const bibContainer = document.getElementById('roadmap-biblio');
-            const bibList = document.getElementById('roadmap-biblio-list');
-            
-            if (st.top_sources && st.top_sources.length > 0) {
-                bibContainer.classList.remove('hidden');
-                bibList.innerHTML = st.top_sources.map(id => {
-                    const b = biblioData.find(x => x.id === id);
-                    return b ? `<span class="text-xs bg-white border border-stone-200 px-2 py-1 rounded text-stone-600 shadow-sm" title="${b.title}">${b.author} (${b.year})</span>` : '';
-                }).join('');
-            } else {
-                bibContainer.classList.add('hidden');
-            }
-            // ---------------------------
-
-            const c = document.getElementById('chapters-container'); 
-            c.innerHTML = '';
-            
-            if (st.chapters.length === 0 && sel === 'custom') { 
-                c.innerHTML = '<div class="text-center text-stone-400 py-10 italic">Nessun capitolo. Chiedi a Jesse!</div>'; 
-                return; 
-            }
-
-            st.chapters.forEach(ch => {
-                const textLinks = (ch.texts || []).map(tid => { 
-                    const b = biblioData.find(x => x.id === tid); 
-                    return b ? `<span class="inline-block bg-stone-50 border border-stone-200 text-stone-600 px-1.5 py-0.5 rounded text-[10px] mr-1">${b.author}</span>` : ''; 
-                }).join('');
-
-                // Renderizza Card Capitolo Arricchita
-                c.innerHTML += `
-                <details class="group bg-white border border-stone-200 rounded-xl overflow-hidden hover:border-stone-300 transition-colors">
-                    <summary class="flex justify-between items-center p-5 cursor-pointer bg-stone-50/50 hover:bg-stone-50">
-                        <h4 class="font-bold text-stone-800 text-lg serif">${ch.title}</h4>
-                        <span class="text-stone-400 group-open:rotate-180 transition-transform">▼</span>
-                    </summary>
-                    <div class="p-6 border-t border-stone-100 bg-white space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Obiettivo</span><p class="text-sm text-stone-800 font-medium">${ch.goal}</p></div>
-                            <div><span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Concetti Chiave</span><div class="text-sm text-rose-600">${ch.concepts || '-'}</div></div>
-                        </div>
-                        
-                        <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">
-                            <span class="text-[9px] font-bold text-stone-400 uppercase tracking-wider block mb-1">Focus di Lettura</span>
-                            <p class="text-sm text-stone-600 italic">"${ch.focus || 'Definire focus con Jesse...'}"</p>
-                        </div>
-
-                        <div class="flex justify-between items-center pt-2">
-                            <div class="text-xs text-stone-400">Fonti: ${textLinks}</div>
-                            <button onclick="askAI('Aiutami a scrivere il capitolo: ${ch.title}. Focus: ${ch.focus}')" class="bg-stone-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-black transition-colors shadow-sm">Scrivi con Jesse 🐾</button>
                         </div>
                     </div>
                 </details>`;
