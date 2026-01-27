@@ -357,7 +357,19 @@
                             Powered</span>
                     </div>
                     <!-- ELEGANT ADD BOOK BUTTON -->
-                    <!-- REMOVED UPLOAD BUTTON FROM HERE -->
+                    <!-- RESTORED PLANNER UI -->
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="schedule-input"
+                            placeholder="Es: 'Posso studiare 4 ore al giorno la mattina, tranne il weekend...'"
+                            class="flex-1 bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-stone-200 outline-none transition-all placeholder-stone-400">
+                        <button onclick="calculateStudySchedule()"
+                            class="bg-stone-900 text-white px-6 rounded-xl hover:bg-black transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 font-bold flex items-center gap-2">
+                            <span>🤖</span>
+                            <span class="hidden md:inline">Genera</span>
+                        </button>
+                    </div>
+                    <div class="text-[10px] text-stone-400 mb-4 ml-1">Powered by Qwen-72b & DeepSeek</div>
+
                     <div id="schedule-output" class="hidden animate-pulse">
                         <div class="space-y-3">
                             <div class="bg-stone-100 h-10 rounded w-3/4"></div>
@@ -1763,9 +1775,21 @@
         }
         function updateWordCount() { const v = parseInt(document.getElementById('word-input').value); if (v) { const d = new Date().toLocaleDateString('it-IT'); const i = wordHistory.findIndex(h => h.date === d); if (i >= 0) wordHistory[i].count = v; else wordHistory.push({ date: d, count: v }); localStorage.setItem('word_history', JSON.stringify(wordHistory)); renderTracker(); } }
 
+        // --- TOAST NOTIFICATION ---
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-10 left-1/2 -translate-x-1/2 bg-stone-900 text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-2 animate-fadeIn";
+            toast.innerHTML = `<span>✨</span> ${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                setTimeout(() => toast.remove(), 500);
+            }, 2000);
+        }
+
         function selectAllCitations() { document.querySelectorAll('.cite-cb').forEach(cb => cb.checked = true); generateBibliography(); }
         function renderCitationsList() { const l = document.getElementById('citation-list'); l.innerHTML = ''; biblioData.forEach(i => { l.innerHTML += `<label class="flex items-center gap-3 p-2 hover:bg-stone-50 rounded-lg cursor-pointer"><input type="checkbox" class="accent-stone-900 cite-cb" value="${i.id}" onchange="generateBibliography()"><span class="text-xs text-stone-600 truncate">${i.title}</span></label>` }); }
-        function copyCitationOutput() { const t = document.getElementById('citation-output'); t.select(); navigator.clipboard.writeText(t.value); alert("Copiato."); }
+        function copyCitationOutput() { const t = document.getElementById('citation-output'); t.select(); navigator.clipboard.writeText(t.value); showToast("Copiato negli appunti"); }
         function copyFootnoteStyle() { const c = Array.from(document.querySelectorAll('.cite-cb:checked')).map(x => x.value); const i = biblioData.filter(x => c.includes(x.id)); let o = i.map(x => `${x.author.split(',')[1].trim()} ${x.author.split(',')[0]}, *${x.title}*, ${x.pub}, Paris ${x.year}.`).join('\n'); document.getElementById('citation-output').value = o; copyCitationOutput(); }
         function generateBibliography() { const c = Array.from(document.querySelectorAll('.cite-cb:checked')).map(x => x.value); const i = biblioData.filter(x => c.includes(x.id)); let o = ""; const s = document.getElementById('citation-style').value; if (s === 'classic') { copyFootnoteStyle(); return; } i.forEach(x => { o += s === 'bibtex' ? `@book{${x.id}, title={${x.title}}...}\n` : `${x.author} (${x.year}). ${x.title}.\n\n` }); document.getElementById('citation-output').value = o; }
         function downloadBibliography() { const t = biblioData.filter(b => b.status === 'done' || b.status === 'reading').map(b => `${b.author} (${b.year}). ${b.title}.`).join('\n\n'); const b = new Blob([t], { type: 'text/plain' }); const u = window.URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = "bibliografia.txt"; a.click(); }
