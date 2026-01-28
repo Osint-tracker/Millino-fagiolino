@@ -10,10 +10,10 @@ class SquadEngine {
         this.status = 'idle'; // idle, running, completed
         this.extractedText = "";
         this.steps = [
-            { id: 'architect', name: 'The Architect', model: 'meta-llama/llama-3.2-90b-vision-instruct', task: 'Mermaid Structure' },
-            { id: 'relationist', name: 'The Relationist', model: 'deepseek/deepseek-chat', task: 'Concept Mapping' },
-            { id: 'extractor', name: 'The Extractor', model: 'deepseek/deepseek-chat', task: 'Atomic Notes' },
-            { id: 'strategist', name: 'The Strategist', model: 'deepseek/deepseek-chat', task: 'Argument Mining' },
+            { id: 'architect', name: 'The Architect', model: 'meta-llama/llama-4-maverick', task: 'Mermaid Structure' },
+            { id: 'relationist', name: 'The Relationist', model: 'deepseek/deepseek-v3.2', task: 'Concept Mapping' },
+            { id: 'extractor', name: 'The Extractor', model: 'deepseek/deepseek-v3.2', task: 'Atomic Notes' },
+            { id: 'strategist', name: 'The Strategist', model: 'deepseek/deepseek-v3.2', task: 'Argument Mining' },
             { id: 'archivist', name: 'The Archivist', model: 'gpt-4o-mini', task: 'Synthesis & JSON Repair' }
         ];
         this.mockData = {};
