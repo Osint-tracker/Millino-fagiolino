@@ -616,6 +616,18 @@
                                 Serve per usare <strong>GPT-4o-mini</strong> come riparatore di JSON.
                             </p>
                         </div>
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-stone-500 uppercase tracking-wider mb-2">OpenRouter
+                                API
+                                Key (Opzionale)</label>
+                            <input type="password" id="openrouter-key-input"
+                                class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm outline-none focus:border-rose-300"
+                                placeholder="sk-or-..." onchange="saveOpenerKey()">
+                            <p class="text-[10px] text-stone-400 mt-2">
+                                🔑 Usata per modelli avanzati (DeepSeek, Qwen) se specificati.
+                            </p>
+                        </div>
 
                         <!-- CLOUD SYNC SETTINGS -->
                         <div class="pt-4 border-t border-stone-100">
@@ -2540,6 +2552,7 @@
         // --- SETTINGS LOGIC ---
         function openSettingsModal() {
             document.getElementById('openai-key-input').value = localStorage.getItem('millino_openai_key') || '';
+            document.getElementById('openrouter-key-input').value = localStorage.getItem('millino_openrouter_key') || '';
             document.getElementById('github-token').value = localStorage.getItem('millino_gh_token') || '';
             document.getElementById('gist-id').value = localStorage.getItem('millino_gist_id') || '';
             document.getElementById('settings-modal').classList.remove('hidden');
@@ -2547,21 +2560,44 @@
         function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
         function saveOpenerKey() {
             const key = document.getElementById('openai-key-input').value.trim();
+            const orKey = document.getElementById('openrouter-key-input').value.trim();
+
             if (key) localStorage.setItem('millino_openai_key', key);
             else localStorage.removeItem('millino_openai_key');
+
+            if (orKey) localStorage.setItem('millino_openrouter_key', orKey);
+            else localStorage.removeItem('millino_openrouter_key');
+
+            showToast("Chiavi API salvate 🔑");
         }
 
         async function fetchScheduleWithRetry(userPrompt, context, systemInst, retries = 1, genModel = null, statusCallback = null) {
-            const callApi = async (body) => {
-                const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-                const resData = await r.json();
-                if (!r.ok) throw new Error(resData.error || "Errore API");
-                return resData;
+            const callOpenRouterDirect = async (messages, model) => {
+                const key = localStorage.getItem('millino_openrouter_key');
+                if (!key) throw new Error("Manca la chiave OpenRouter! Configurala nelle impostazioni.");
+
+                const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${key}`,
+                        'Content-Type': 'application/json',
+                        'HTTP-Referer': 'https://millino-fagiolino.github.io', // Required by OpenRouter
+                        'X-Title': 'Millino Fagiolino'
+                    },
+                    body: JSON.stringify({
+                        model: model || "qwen/qwen2.5-vl-72b-instruct",
+                        messages: messages,
+                        temperature: 0.7
+                    })
+                });
+                const data = await r.json();
+                if (!r.ok) throw new Error(data.error?.message || "Errore OpenRouter");
+                return { response: data.choices[0].message.content };
             };
 
             const callOpenAIDirect = async (messages) => {
                 const key = localStorage.getItem('millino_openai_key');
-                if (!key) throw new Error("Manca la chiave locale");
+                if (!key) throw new Error("Manca la chiave OpenAI locale per la riparazione.");
                 const r = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
@@ -2572,11 +2608,27 @@
                 return { response: data.choices[0].message.content };
             };
 
-            // PHASE 1: GENERATION (Qwen)
-            if (statusCallback) statusCallback("Generazione bozza (Qwen 72b)...");
-            let payload = { message: `Genera programma settimanale. ${context}`, systemOverride: systemInst, context: [], model: genModel };
-            let response = await callApi(payload);
-            let rawDraft = response.choices[0].message.content;
+            // PHASE 1: GENERATION (OpenRouter/Qwen)
+            if (statusCallback) statusCallback("Generazione bozza (Via OpenRouter)...");
+
+            // Construct messages for Chat API
+            const genMessages = [
+                { role: "system", content: systemInst },
+                { role: "user", content: `CONTEXT: ${context}\nTASK: Genera programma settimanale.` }
+            ];
+
+            let rawDraft;
+            try {
+                const response = await callOpenRouterDirect(genMessages, genModel);
+                rawDraft = response.response;
+            } catch (e) {
+                // Fallback to OpenAI if OpenRouter fails or missing
+                console.warn("OpenRouter failed, trying OpenAI...", e);
+                if (statusCallback) statusCallback("OpenRouter fallito. Provo OpenAI...");
+                const response = await callOpenAIDirect(genMessages);
+                rawDraft = response.response;
+            }
+
             let finalJson = tryParseJson(rawDraft);
 
             // PHASE 2: REPAIR (GPT-4o-mini Hybrid)
