@@ -21,8 +21,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
-    <script src="js/database.js"></script>
-    <script src="js/squad_engine.js"></script>
+    <script src="./js/database.js"></script>
+    <script src="./js/squad_engine.js"></script>
 
     <script>
         tailwind.config = {
@@ -324,6 +324,11 @@
             </div>
         </div>
     </aside>
+    <!-- SETTINGS BUTTON (FIXED Z-INDEX) -->
+    <button onclick="openSettingsModal()"
+        class="fixed bottom-6 left-6 z-[9999] w-14 h-14 bg-stone-900 text-white rounded-full shadow-2xl border-2 border-white flex items-center justify-center hover:scale-110 transition-transform cursor-pointer">
+        ⚙️
+    </button>
 
     <main class="flex-1 flex flex-col h-full relative bg-white" id="main-wrapper">
         <div
@@ -358,7 +363,7 @@
                             title="Stato Cloud (Gist)">☁️❓</span>
                         <button onclick="askAI('Fammi un briefing sui miei corsi attivi e cosa devo studiare oggi')"
                             class="group bg-white border border-stone-200 hover:border-rose-200 hover:shadow-soft text-stone-600 px-5 py-2.5 rounded-full transition-all text-sm font-medium flex items-center gap-2">
-                            <img src="jesse/psicologo.jpeg"
+                            <img src="./jesse/psicologo.jpeg"
                                 class="w-6 h-6 rounded-full object-cover border border-stone-200 group-hover:scale-110 transition-transform shadow-sm"
                                 alt="Jesse">
                             Briefing Mattutino
@@ -1053,7 +1058,7 @@
 
     <script>
         // --- CONFIGURAZIONE JESSE ---
-        const JESSE_IMG = "jesse/psicologo.jpeg";
+        const JESSE_IMG = "./jesse/psicologo.jpeg";
 
         // --- ALBUM FOTO JESSE (67 FOTO) ---
         const JESSE_GALLERY = [
@@ -2258,11 +2263,37 @@
             }
 
             try {
-                const res = await fetch('/api/chat', {
+                // CLIENT-SIDE FETCH (Compatible with GitHub Pages)
+                const apiKey = localStorage.getItem('millino_openai_key');
+                if (!apiKey) throw new Error("Manca la chiave API. Configurala nelle impostazioni ⚙️.");
+
+                const endpoint = "https://api.openai.com/v1/chat/completions";
+                // Note: For DeepSeek used via OpenAI Client pattern or compatible endpoint.
+
+                const messages = [
+                    { role: "system", content: systemInstruction },
+                    { role: "user", content: `CONTEXT JSON: ${JSON.stringify(contextData).slice(0, 15000)}` },
+                    { role: "user", content: txt + (personaOverride ? "" : " (Rispondi come Jesse il cane)") }
+                ];
+
+                const res = await fetch(endpoint, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: txt + (personaOverride ? "" : " (Rispondi come Jesse il cane)"), context: contextData, systemOverride: systemInstruction })
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o-mini",
+                        messages: messages,
+                        temperature: 0.7
+                    })
                 });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.error?.message || "Errore API");
+                }
+
                 const data = await res.json();
                 document.getElementById(loadId).remove();
                 let aiText = data.choices[0].message.content;
@@ -2273,9 +2304,10 @@
                     aiText += `<br><br><img src="${encodeURI(randomPic)}" class="rounded-xl mt-2 w-full border border-stone-200 shadow-sm" alt="Jesse">`;
                 }
                 addMessage(aiText, 'bot');
+
             } catch (e) {
-                document.getElementById(loadId).remove();
-                addMessage("Bau! Qualcosa non va con la connessione... 😿", 'bot');
+                if (document.getElementById(loadId)) document.getElementById(loadId).remove();
+                addMessage(`Bau! Errore: ${e.message} 😿`, 'bot');
             }
         }
 
