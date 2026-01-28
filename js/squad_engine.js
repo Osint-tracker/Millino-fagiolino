@@ -129,30 +129,72 @@ class SquadEngine {
         const agent = this.steps.find(s => s.id === stepId);
 
         try {
-            const response = await fetch('/api/chat', {
+            // AUTH & CONFIG
+            let apiKey = localStorage.getItem('millino_openrouter_key');
+            let endpoint = "https://openrouter.ai/api/v1/chat/completions";
+            let model = agent.model; // e.g., 'deepseek/deepseek-chat'
+            let headers = {
+                'Content-Type': 'application/json',
+                'HTTP-Referer': 'https://millino-fagiolino.github.io',
+                'X-Title': 'Millino Fagiolino'
+            };
+
+            // Fallback to OpenAI if OpenRouter key is missing
+            if (!apiKey) {
+                apiKey = localStorage.getItem('millino_openai_key');
+                if (!apiKey) throw new Error("Missing API Key. Check Settings.");
+
+                endpoint = "https://api.openai.com/v1/chat/completions";
+
+                // Map agent models to OpenAI equivalents if needed
+                // But for now, let's assume if they strictly want specific models they need OpenRouter.
+                // If using OpenAI key, we force gpt-4o-mini to avoid 404s on deepseek models
+                model = "gpt-4o-mini";
+                headers = { 'Content-Type': 'application/json' };
+            }
+
+            headers['Authorization'] = `Bearer ${apiKey}`;
+
+            // PAYLOAD CONSTRUCTION
+            const payload = {
+                model: model,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: `CONTEXT:\n${contextText ? contextText.slice(0, 30000) : "No Context"}` }
+                ],
+                temperature: 0.7
+            };
+
+            // DIRECT FETCH
+            const response = await fetch(endpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: "Analyze the text.",
-                    systemOverride: systemPrompt + (contextText ? `\n\nTEXT TO ANALYZE:\n${contextText}` : ""),
-                    model: agent.model
-                })
+                headers: headers,
+                body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error(`API Error: ${response.status}`);
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(`API Error: ${response.status} - ${err.error?.message || response.statusText}`);
+            }
 
             const data = await response.json();
             const rawContent = data.choices[0].message.content;
 
-            // Parse Logic
+            // CLEANING & PARSING
+            // DeepSeek/LLMs often wrap JSON in markdown blocks
             let parsed = SquadEngine.safeJSONParse(rawContent);
 
-            // Special handling for Architect (Code Block)
+            // Special Architect Handling (Mermaid Code Block)
             if (stepId === 'architect') {
                 const match = rawContent.match(/```mermaid([\s\S]*?)```/);
-                parsed = match ? match[1].trim() : rawContent;
-            } else if (!parsed) {
-                parsed = { error: "Parse Failed", raw: rawContent };
+                parsed = match ? match[1].trim() : rawContent.replace(/```/g, ''); // Fallback
+            }
+            // If parsing failed (and not architect), try to extract JSON block
+            else if (!parsed) {
+                const jsonMatch = rawContent.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+                if (jsonMatch) parsed = SquadEngine.safeJSONParse(jsonMatch[0]);
+
+                if (!parsed) parsed = { error: "Parse Failed", raw: rawContent };
             }
 
             this.mockData[stepId] = parsed;

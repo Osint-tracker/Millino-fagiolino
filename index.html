@@ -1595,11 +1595,37 @@
 
         // --- AI SYLLABUS IMPORTER ---
         async function runSyllabusImport() {
-            const text = document.getElementById('import-text').value;
+            let text = document.getElementById('import-text').value.trim();
             if (!text) return alert("Incolla qualcosa (Testo o URL)!");
 
             const loader = document.getElementById('import-loader');
             loader.classList.remove('hidden');
+
+            // --- JINA READER INTEGRATION (URL SUPPORT) ---
+            if (text.startsWith('http://') || text.startsWith('https://')) {
+                const btn = document.querySelector('[onclick="runSyllabusImport()"]');
+                const originalBtnText = btn.innerHTML;
+                btn.innerHTML = "<span>🌍</span> Scarico Syllabus...";
+
+                try {
+                    const jinaUrl = `https://r.jina.ai/${text}`;
+                    const res = await fetch(jinaUrl);
+                    if (!res.ok) throw new Error("Jina Reader fallito");
+                    const pageText = await res.text();
+
+                    if (pageText.length < 50) throw new Error("Contenuto troppo breve");
+
+                    text = `SOURCE URL: ${text}\n\nCONTENT:\n${pageText}`;
+                    showToast("Pagina scaricata con successo! 📄");
+                } catch (e) {
+                    alert("Impossibile leggere il link. Incolla il testo manualmente.\nErrore: " + e.message);
+                    loader.classList.add('hidden');
+                    btn.innerHTML = originalBtnText;
+                    return;
+                } finally {
+                    btn.innerHTML = originalBtnText;
+                }
+            }
 
             const systemPrompt = `
             ROLE: You are an Academic Syllabus Parser.
