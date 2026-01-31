@@ -3036,25 +3036,35 @@ Respond with ONLY the template string, nothing else.`
 
         // IMPLEMENTATION: Global Callback for Squad Engine
         window.receiveBookData = function (data) {
+            console.log("📥 Receiving Squad Data:", data);
+
             const newId = "AUTO_" + Date.now();
 
-            // Handle both legacy and new 'headless' data structure
+            // 1. Unpack Payload (Handle 'handoffData' wrapper OR flat structure)
             const meta = data.meta || data;
-            const agents = data.agents || {};
+            const source = data.agents || data; // Look in 'agents' or top-level
 
-            // Fallback for legacy flat structure
-            if (!data.agents && (data.structure || data.connections)) {
-                agents.architect = data.structure?.mermaid;
-                agents.relationist = data.connections;
-                agents.extractor = data.quotes;
-                agents.strategist = data.arguments || data.strategist;
-            }
+            // 2. Normalize Fields (The Mapper)
+            // Helper: Extract string content if wrapped in object (e.g. {mermaid: "..."})
+            const normalizeArchitect = (val) => {
+                if (!val) return "";
+                if (typeof val === 'string') return val;
+                if (val.mermaid) return val.mermaid;
+                if (val.content) return val.content;
+                return JSON.stringify(val); // Fallback
+            };
 
+            const architectContent = normalizeArchitect(source.architect || source.structure || source.mermaid);
+            const relationistContent = source.relationist || source.connections || [];
+            const extractorContent = source.extractor || source.quotes || [];
+            const strategistContent = source.strategist || source.arguments || [];
+
+            // 3. Construct Book Object with snake_case 'squad_analysis'
             const newBook = {
                 id: newId,
                 author: meta.author || "Unknown Author",
                 title: meta.title || "Untitled Document",
-                year: meta.year || new Date().getFullYear().toString(),
+                year: meta.year ? String(meta.year) : new Date().getFullYear().toString(),
                 pub: meta.pub || "Squad Import",
                 desc: meta.desc || "",
                 cat: "Squad Imported",
@@ -3062,12 +3072,12 @@ Respond with ONLY the template string, nothing else.`
                 notes: "",
                 tags: ["AI_SQUAD"],
 
-                // SCHEMA ALIGNMENT: match openBookModal expectation (snake_case)
+                // CRITICAL: Must match openBookModal expectations (snake_case + content prop)
                 squad_analysis: {
-                    architect: { content: agents.architect || '', status: 'done' },
-                    relationist: { content: agents.relationist || [], status: 'done' },
-                    extractor: { content: agents.extractor || [], status: 'done' },
-                    strategist: { content: agents.strategist || [], status: 'done' }
+                    architect: { content: architectContent, status: 'done' },
+                    relationist: { content: relationistContent, status: 'done' },
+                    extractor: { content: extractorContent, status: 'done' },
+                    strategist: { content: strategistContent, status: 'done' }
                 },
 
                 subject: currentCourseId ? courses.find(c => c.id === currentCourseId)?.name : (currentSubject !== 'all' ? currentSubject : null),
@@ -3075,20 +3085,23 @@ Respond with ONLY the template string, nothing else.`
                 processedAt: new Date().toISOString()
             };
 
-            // Add to database
+            // 4. Persistence & UI Refresh
             biblioData.unshift(newBook);
 
-            // Persist to LocalStorage
             const customBooks = biblioData.filter(b => b.cat === 'User Added' || b.cat === 'Squad Imported');
             localStorage.setItem('millino_custom_books', JSON.stringify(customBooks));
+
             if (typeof saveData === 'function') saveData();
 
-            // Refresh UI
+            // Clear legacy processing wrappers if any
+            document.querySelectorAll('.squad-processing-badge').forEach(el => el.remove());
+
+            // Force View Update
             router('database');
             runSearch();
             CitationEngine.render();
 
-            showToast(`✅ Squad Engine: "${newBook.title}" salvato correttamente!`, 'success');
+            showToast(`✅ Squad: "${newBook.title}" salvato e pronto!`, 'success');
         };
 
         function initApp() {

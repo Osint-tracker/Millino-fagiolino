@@ -466,21 +466,21 @@ class SquadEngine {
         const title = archivistData?.title || 'Unknown Title';
 
         // Pack raw data for the receiver
+        // KEYS MATCHING USER REQUEST EXACTLY (Task 3)
         const handoffData = {
-            meta: {
-                title: title,
-                author: archivistData?.author || 'Unknown',
-                year: archivistData?.year || new Date().getFullYear(),
-                pub: archivistData?.pub || 'Squad Engine',
-                desc: archivistData?.desc || '',
-                pdfPath: this.file?.name || null
-            },
-            agents: {
-                architect: this.mockData.architect,
-                relationist: this.mockData.relationist,
-                extractor: this.mockData.extractor,
-                strategist: this.mockData.strategist
-            }
+            title: title,
+            author: archivistData?.author || 'Unknown',
+            year: archivistData?.year || new Date().getFullYear(),
+            pub: archivistData?.pub || 'Squad Engine',
+            desc: archivistData?.desc || '',
+
+            // EXACT KEYS
+            structure: this.mockData.architect, // Mermaid string
+            connections: this.mockData.relationist, // Array/Object
+            quotes: this.mockData.extractor, // Array
+            strategist: this.mockData.strategist, // Array
+
+            pdfPath: this.file?.name || null
         };
 
         // Call Receiver
