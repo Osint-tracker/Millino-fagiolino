@@ -3260,7 +3260,16 @@ Respond with ONLY the template string, nothing else.`
         function openBookModal(id) {
             currentBookId = id;
             const b = biblioData.find(x => x.id === id);
-            if (!b) return;
+
+            // Safety Guard: Check if book exists
+            if (!b) {
+                console.error("Book ID not found in memory (Ghost Item):", id);
+                showToast("Impossibile aprire: Dati mancanti. Prova a ricaricare.", "error");
+                // Optional: attempt to remove ghost element
+                const ghostEl = document.querySelector(`[onclick*="${id}"]`)?.closest('.pro-card');
+                if (ghostEl) ghostEl.remove();
+                return;
+            }
 
             // Basic info
             document.getElementById('modal-title').innerText = b.title;
@@ -4541,6 +4550,40 @@ Respond with ONLY the template string, nothing else.`
                 </div>
             `;
         }
+
+        // --- SAFETY GUARD: ROBUST DELETE FUNCTION ---
+        function deleteSource(id) {
+            const book = biblioData.find(b => b.id === id);
+
+            // Safety: Check if book exists
+            if (!book) {
+                console.error("Tentativo di eliminare un libro inesistente:", id);
+                // Remove ghost element from DOM immediately
+                const el = document.querySelector(`[onclick *= "${id}"]`)?.closest('.pro-card');
+                if (el) {
+                    el.remove();
+                    showToast("Rimosso elemento fantasma.", "info");
+                } else {
+                    showToast("Errore: Libro non trovato. Prova a ricaricare.", "error");
+                }
+                return;
+            }
+
+            showConfirmModal(
+                `Vuoi davvero eliminare "${book.title}" ? `,
+                () => {
+                    biblioData = biblioData.filter(b => b.id !== id);
+                    const customBooks = biblioData.filter(b => b.cat === 'User Added');
+                    localStorage.setItem('millino_custom_books', JSON.stringify(customBooks));
+
+                    saveData();
+                    runSearch();
+                    CitationEngine.render();
+                    showToast("Libro eliminato.", "success");
+                }
+            );
+        }
+
 
     </script>
 </body>
