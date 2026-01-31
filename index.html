@@ -3282,6 +3282,28 @@ Respond with ONLY the template string, nothing else.`
             renderCitationsList();
             renderConcepts(); // Refresh stats/concepts
         }
+        // HELPER: Universal Data Adapter (Fix Blank Tabs)
+        function getAgentContent(book, agentKey) {
+            if (!book) return "";
+
+            // 1. Resolve Root (Handle casing: squad_analysis vs squadAnalysis)
+            const root = book.squad_analysis || book.squadAnalysis || {};
+
+            // 2. Resolve Key (Handle casing: Architect vs architect)
+            const key = agentKey.toLowerCase();
+            const raw = root[key] || root[agentKey] || root[key.charAt(0).toUpperCase() + key.slice(1)];
+
+            if (!raw) return "";
+
+            // 3. Resolve Content (Handle String vs nested Object vs Array)
+            if (typeof raw === 'string') return raw;
+            if (Array.isArray(raw)) return raw; // Return arrays directly (Relationist/Strategist)
+            if (typeof raw === 'object') {
+                return raw.content || raw.text || raw.mermaid || JSON.stringify(raw);
+            }
+            return "";
+        }
+
         function openBookModal(id) {
             currentBookId = id;
             const b = biblioData.find(x => x.id === id);
@@ -3290,7 +3312,6 @@ Respond with ONLY the template string, nothing else.`
             if (!b) {
                 console.error("Book ID not found in memory (Ghost Item):", id);
                 showToast("Impossibile aprire: Dati mancanti. Prova a ricaricare.", "error");
-                // Optional: attempt to remove ghost element
                 const ghostEl = document.querySelector(`[onclick*="${id}"]`)?.closest('.pro-card');
                 if (ghostEl) ghostEl.remove();
                 return;
@@ -3302,12 +3323,12 @@ Respond with ONLY the template string, nothing else.`
             document.getElementById('modal-notes').value = b.notes || '';
             document.getElementById('modal-tags').value = (b.tags || []).join(', ');
 
-            // Squad Analysis Tabs - Show/hide based on squad_analysis existence
-            const hasSquadAnalysis = b.squad_analysis && (
-                b.squad_analysis.architect?.content ||
-                b.squad_analysis.relationist?.content ||
-                b.squad_analysis.strategist?.content
-            );
+            // UNIVERSAL DATA RETRIEVAL
+            const architectData = getAgentContent(b, 'architect');
+            const relationistData = getAgentContent(b, 'relationist'); // Likely Array
+            const strategistData = getAgentContent(b, 'strategist');   // Likely Array
+
+            const hasSquadAnalysis = !!(architectData || (Array.isArray(relationistData) && relationistData.length) || (Array.isArray(strategistData) && strategistData.length));
 
             // Tab buttons visibility
             const architectTab = document.getElementById('modal-architect-tab');
@@ -3323,12 +3344,12 @@ Respond with ONLY the template string, nothing else.`
                 if (runSquadBtn) runSquadBtn.classList.add('hidden');
 
                 // Render Architect (Mermaid)
-                if (b.squad_analysis.architect?.content) {
+                if (architectData) {
                     const architectRender = document.getElementById('modal-architect-render');
                     const architectCode = document.getElementById('modal-architect-code');
                     if (architectRender && architectCode) {
-                        architectCode.value = b.squad_analysis.architect.content;
-                        architectRender.innerHTML = `<div class="mermaid">${b.squad_analysis.architect.content}</div>`;
+                        architectCode.value = architectData;
+                        architectRender.innerHTML = `<div class="mermaid">${architectData}</div>`;
                         try { mermaid.init(undefined, architectRender.querySelectorAll('.mermaid')); } catch (e) {
                             architectRender.innerHTML = `<pre class="text-xs text-rose-500">Mermaid Error: ${e.message}</pre>`;
                         }
@@ -3336,50 +3357,48 @@ Respond with ONLY the template string, nothing else.`
                 }
 
                 // Render Relationist (Concept links)
-                if (b.squad_analysis.relationist?.content) {
+                if (relationistData) {
                     const relationistList = document.getElementById('modal-relationist-list');
                     if (relationistList) {
-                        try {
-                            const relations = typeof b.squad_analysis.relationist.content === 'string'
-                                ? JSON.parse(b.squad_analysis.relationist.content)
-                                : b.squad_analysis.relationist.content;
+                        const relations = typeof relationistData === 'string'
+                            ? (tryParseJSON(relationistData) || [{ concept: 'Error', relation: 'Parse Failed', link: relationistData }])
+                            : relationistData;
 
-                            if (Array.isArray(relations)) {
-                                relationistList.innerHTML = relations.map(r => `
-                                    <div class="flex items-center gap-2 bg-white rounded-lg p-2 border border-rose-200">
-                                        <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-bold rounded">${r.concept || r.from || 'Concept'}</span>
-                                        <span class="text-rose-400">→</span>
-                                        <span class="text-sm text-stone-700">${r.relation || r.to || r.link || 'Related'}</span>
-                                    </div>
-                                `).join('');
-                            } else {
-                                relationistList.innerHTML = `<div class="text-sm text-stone-600 whitespace-pre-wrap">${b.squad_analysis.relationist.content}</div>`;
-                            }
-                        } catch (e) {
-                            relationistList.innerHTML = `<div class="text-sm text-stone-600 whitespace-pre-wrap">${b.squad_analysis.relationist.content}</div>`;
+                        if (Array.isArray(relations) && relations.length > 0) {
+                            relationistList.innerHTML = relations.map(r => `
+                                <div class="flex items-center gap-2 bg-white rounded-lg p-2 border border-rose-200">
+                                    <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-bold rounded">${r.source || r.concept || 'Concept'}</span>
+                                    <span class="text-rose-400">→</span>
+                                    <span class="text-sm text-stone-700">${r.relation || 'Related'}</span>
+                                    <span class="font-bold text-stone-800 text-xs">${r.target || r.link || ''}</span>
+                                </div>
+                            `).join('');
+                        } else {
+                            relationistList.innerHTML = `<div class="text-sm text-stone-600 font-italic">Nessuna connessione identificata.</div>`;
                         }
                     }
                 }
 
                 // Render Strategist (Arguments)
-                if (b.squad_analysis.strategist?.content) {
+                if (strategistData) {
                     const strategistList = document.getElementById('modal-strategist-list');
                     if (strategistList) {
-                        try {
-                            const strategies = typeof b.squad_analysis.strategist.content === 'string'
-                                ? b.squad_analysis.strategist.content.split(/\d+\.\s+/).filter(s => s.trim())
-                                : (Array.isArray(b.squad_analysis.strategist.content) ? b.squad_analysis.strategist.content : [b.squad_analysis.strategist.content]);
+                        const strategies = typeof strategistData === 'string'
+                            ? strategistData.split(/\d+\.\s+/)
+                            : strategistData;
 
-                            strategistList.innerHTML = strategies.map((s, i) => `
+                        if (Array.isArray(strategies) && strategies.length > 0) {
+                            strategistList.innerHTML = strategies.filter(s => s).map((s, i) => `
                                 <li class="bg-white rounded-lg p-3 border border-amber-200 text-sm text-stone-700">
                                     <span class="font-bold text-amber-700">${i + 1}.</span> ${s}
                                 </li>
                             `).join('');
-                        } catch (e) {
-                            strategistList.innerHTML = `<li class="text-sm text-stone-600 whitespace-pre-wrap">${b.squad_analysis.strategist.content}</li>`;
+                        } else {
+                            strategistList.innerHTML = `<li class="text-sm text-stone-600">${typeof strategistData === 'string' ? strategistData : 'Nessuna strategia.'}</li>`;
                         }
                     }
                 }
+
             } else {
                 // Hide Squad tabs, show Run Squad button (if book has source file)
                 if (architectTab) architectTab.classList.add('hidden');
@@ -3394,6 +3413,8 @@ Respond with ONLY the template string, nothing else.`
 
             document.getElementById('book-modal').classList.remove('hidden');
         }
+
+        function tryParseJSON(str) { try { return JSON.parse(str); } catch { return null; } }
 
         function switchBookModalTab(tab) {
             const tabs = ['notes', 'architect', 'relationist', 'strategist'];
@@ -4609,6 +4630,65 @@ Respond with ONLY the template string, nothing else.`
             );
         }
 
+        // --- EXAM MODE & PDF UTILS (FIXED) ---
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+        }
+
+        window.handleExamPdfUpload = async function () {
+            const input = document.getElementById('exam-pdf-upload');
+            if (!input || !input.files[0]) return showToast("Carica un PDF con le domande!", 'warning');
+
+            const file = input.files[0];
+            showToast("Analisi PDF in corso...", "info");
+
+            try {
+                const text = await extractPdfText(file);
+                console.log("PDF Text Len:", text.length);
+
+                const questions = extractQuestionsFromText(text);
+
+                if (questions.length === 0) {
+                    showToast("Nessuna domanda trovata. (Formato: '1. Domanda?')", "warning");
+                    return;
+                }
+
+                renderExamQuestions(questions);
+                showToast(`Caricate ${questions.length} domande!`, "success");
+            } catch (e) {
+                console.error(e);
+                showToast("Errore PDF: " + e.message, "error");
+            }
+        };
+
+        async function extractPdfText(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = "";
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                fullText += content.items.map(item => item.str).join(' ') + "\n";
+            }
+            return fullText;
+        }
+
+        function extractQuestionsFromText(text) {
+            // Loose Regex: Numbered lines OR lines ending in ?
+            return text.split('\n')
+                .map(l => l.trim())
+                .filter(l => /^\d+[\.\)]/.test(l) || (l.length > 10 && l.endsWith('?')));
+        }
+
+        function renderExamQuestions(questions) {
+            const list = document.getElementById('exam-questions-list');
+            if (list) {
+                list.innerHTML = questions.map((q, i) =>
+                    `<div class="p-2 border-b border-stone-100 text-sm text-stone-700 hover:bg-stone-50"><strong class="text-rose-500">${i + 1}.</strong> ${q.replace(/^\d+[\.\)]\s*/, '')}</div>`
+                ).join('');
+                document.getElementById('exam-mode-ui')?.classList.remove('hidden');
+            }
+        }
 
     </script>
 </body>
