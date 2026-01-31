@@ -785,48 +785,179 @@
             </div>
 
             <div id="view-citations" class="hidden space-y-6 fade-in pb-20 max-w-5xl mx-auto">
-                <!-- ... unchanged ... -->
-                <div class="flex justify-between items-center border-b border-stone-100 pb-6">
-                    <h2 class="text-3xl font-medium text-stone-900 serif">Citation Manager</h2>
-                    <button onclick="downloadBibliography()"
-                        class="text-stone-600 text-xs font-bold border border-stone-200 px-3 py-1.5 rounded hover:bg-stone-50 transition-colors">📥
-                        Export .txt</button>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[600px]">
-                    <div class="lg:col-span-1 pro-card flex flex-col overflow-hidden">
-                        <div class="p-3 bg-stone-50 border-b border-stone-100 flex flex-col gap-2">
-                            <div class="flex justify-between items-center">
-                                <span
-                                    class="font-semibold text-stone-500 text-[10px] uppercase tracking-wider">Fonti</span>
-                                <button onclick="selectAllCitations()"
-                                    class="text-rose-500 text-[10px] font-bold hover:underline">Seleziona Tutti</button>
+                <!-- Citation Manager 2.0: "Clean Lab" Look -->
+                <div class="bg-white/80 backdrop-blur-md border border-stone-200 rounded-2xl shadow-xl overflow-hidden">
+
+                    <!-- Sticky Header -->
+                    <div class="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-stone-100 p-6">
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                            <div>
+                                <h2 class="text-2xl font-serif font-bold text-stone-900">Citation Manager</h2>
+                                <p class="text-xs text-stone-500 uppercase tracking-wider mt-1">Deterministic
+                                    Bibliography Engine v2.0</p>
                             </div>
-                            <input type="text" id="citation-search" onkeyup="renderCitationsList()"
-                                placeholder="Cerca autore o titolo..."
-                                class="w-full text-xs p-1.5 rounded border border-stone-200 outline-none focus:border-rose-300">
+                            <div class="flex items-center gap-2">
+                                <button onclick="openManualSourceModal()"
+                                    class="bg-stone-900 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-black transition-all hover:scale-105 flex items-center gap-2 shadow-lg">
+                                    <span>➕</span> Manual Add
+                                </button>
+                                <input type="file" id="style-pdf-upload" class="hidden" accept=".pdf"
+                                    onchange="parseCustomStylePDF(this.files[0])">
+                                <button onclick="document.getElementById('style-pdf-upload').click()"
+                                    class="bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-rose-600 transition-all hover:scale-105 flex items-center gap-2 shadow-lg">
+                                    <span>📄</span> Upload Style PDF
+                                </button>
+                                <button onclick="copyAllCitations()"
+                                    class="bg-white border border-stone-200 text-stone-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-stone-50 transition-colors flex items-center gap-2">
+                                    <span>📋</span> Copy All
+                                </button>
+                            </div>
                         </div>
-                        <div class="flex-1 overflow-y-auto p-2 space-y-1" id="citation-list"></div>
+
+                        <!-- Controls Row -->
+                        <div class="flex flex-wrap items-center gap-4">
+                            <!-- Style Selector -->
+                            <div class="flex items-center gap-2">
+                                <label
+                                    class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Style:</label>
+                                <select id="citation-style-select" onchange="CitationEngine.render()"
+                                    class="bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm font-medium text-stone-800 outline-none focus:border-rose-300 transition-colors cursor-pointer shadow-sm min-w-[140px]">
+                                    <option value="apa7">APA 7</option>
+                                    <option value="mla9">MLA 9</option>
+                                    <option value="chicago">Chicago</option>
+                                    <option value="harvard">Harvard</option>
+                                    <option value="ieee">IEEE</option>
+                                    <option value="custom" id="custom-style-option" class="hidden">🔧 Custom Style
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Sorting Tools -->
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Sort:</span>
+                                <button onclick="CitationEngine.sort('alpha')" id="sort-alpha-btn"
+                                    class="px-3 py-1.5 text-[10px] font-bold rounded-full border border-stone-200 bg-white text-stone-600 hover:bg-stone-100 hover:border-stone-300 transition-all">
+                                    A-Z
+                                </button>
+                                <button onclick="CitationEngine.sort('year')" id="sort-year-btn"
+                                    class="px-3 py-1.5 text-[10px] font-bold rounded-full border border-stone-200 bg-white text-stone-600 hover:bg-stone-100 hover:border-stone-300 transition-all">
+                                    Year ↓
+                                </button>
+                                <button onclick="CitationEngine.sort('added')" id="sort-added-btn"
+                                    class="px-3 py-1.5 text-[10px] font-bold rounded-full border border-stone-200 bg-white text-stone-600 hover:bg-stone-100 hover:border-stone-300 transition-all">
+                                    Newest
+                                </button>
+                            </div>
+
+                            <!-- Search -->
+                            <div class="flex-1 min-w-[200px]">
+                                <input type="text" id="citation-search-input" placeholder="Search author, title..."
+                                    onkeyup="CitationEngine.render()"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-rose-300 transition-colors">
+                            </div>
+
+                            <!-- Count Badge -->
+                            <div class="bg-stone-100 px-3 py-1.5 rounded-full text-[10px] font-bold text-stone-600">
+                                <span id="citation-count">0</span> sources
+                            </div>
+                        </div>
                     </div>
-                    <div class="lg:col-span-2 pro-card flex flex-col">
-                        <div class="p-3 bg-stone-50 border-b border-stone-100 flex gap-4 items-center justify-between">
-                            <select id="citation-style" onchange="generateBibliography()"
-                                class="bg-white border border-stone-200 rounded px-2 py-1 text-xs outline-none text-stone-600">
-                                <option value="classic">🇮🇹 Classica (Note)</option>
-                                <option value="apa">APA 7</option>
-                                <option value="chicago">Chicago</option>
-                                <option value="bibtex">BibTeX</option>
-                            </select>
-                            <div class="flex gap-2">
-                                <button onclick="copyFootnoteStyle()"
-                                    class="text-xs font-bold text-rose-600 border border-rose-100 bg-rose-50 px-2 py-1 rounded hover:bg-rose-100">Copia
-                                    Nota</button>
-                                <button onclick="copyCitationOutput()"
-                                    class="text-xs font-bold text-stone-600 hover:text-stone-900">Copia Biblio</button>
+
+                    <!-- Citation List Container -->
+                    <div id="citation-list-container" class="p-6 space-y-2 max-h-[500px] overflow-y-auto">
+                        <!-- Citations rendered here by CitationEngine -->
+                        <div class="text-center text-stone-400 py-12 text-sm italic">
+                            Loading bibliography...
+                        </div>
+                    </div>
+
+                    <!-- Footer with Custom Style Info -->
+                    <div id="custom-style-footer" class="hidden p-4 bg-amber-50 border-t border-amber-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-amber-600 text-sm">🔧</span>
+                                <span class="text-xs font-bold text-amber-700">Custom Style Active:</span>
+                                <span id="custom-style-name" class="text-xs text-amber-600 font-mono">None</span>
+                            </div>
+                            <button onclick="CitationEngine.clearCustomStyle()"
+                                class="text-[10px] font-bold text-amber-600 hover:text-amber-800">
+                                Reset to Standard
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MANUAL SOURCE MODAL -->
+            <div id="manual-source-modal"
+                class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 fade-in">
+                <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden border border-stone-100">
+                    <div
+                        class="p-6 border-b border-stone-100 bg-gradient-to-r from-stone-50 to-white flex justify-between items-center">
+                        <div>
+                            <h3 class="font-serif text-xl font-bold text-stone-900">➕ Add Source Manually</h3>
+                            <p class="text-xs text-stone-500 mt-1">Enter bibliographic details</p>
+                        </div>
+                        <button onclick="closeManualSourceModal()"
+                            class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-400">✕</button>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Title
+                                    *</label>
+                                <input type="text" id="manual-src-title"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-sm outline-none focus:border-rose-300"
+                                    placeholder="The Origin of Species">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Author
+                                    *</label>
+                                <input type="text" id="manual-src-author"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-sm outline-none focus:border-rose-300"
+                                    placeholder="Charles Darwin">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Year
+                                    *</label>
+                                <input type="text" id="manual-src-year"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-sm outline-none focus:border-rose-300"
+                                    placeholder="1859">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">Publisher</label>
+                                <input type="text" id="manual-src-publisher"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-sm outline-none focus:border-rose-300"
+                                    placeholder="John Murray">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">City</label>
+                                <input type="text" id="manual-src-city"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-sm outline-none focus:border-rose-300"
+                                    placeholder="London">
+                            </div>
+                            <div class="col-span-2">
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-1">DOI
+                                    / URL (optional)</label>
+                                <input type="text" id="manual-src-doi"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-2.5 text-sm outline-none focus:border-rose-300"
+                                    placeholder="https://doi.org/...">
                             </div>
                         </div>
-                        <textarea id="citation-output"
-                            class="flex-1 p-6 font-mono text-xs text-stone-600 outline-none resize-none bg-white"
-                            readonly placeholder="Output bibliografico..."></textarea>
+                    </div>
+                    <div class="p-4 bg-stone-50 border-t border-stone-100 flex justify-end gap-3">
+                        <button onclick="closeManualSourceModal()"
+                            class="px-4 py-2 text-xs font-bold text-stone-500 hover:bg-stone-200 rounded-lg">Cancel</button>
+                        <button onclick="addManualSource()"
+                            class="px-6 py-2 bg-stone-900 text-white text-xs font-bold rounded-lg shadow-lg hover:bg-black transition-all hover:scale-105">
+                            Add Source
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2245,6 +2376,508 @@ COMPORTAMENTO:
         function closeExamSimulation() {
             document.getElementById('exam-simulation-output').classList.add('hidden');
         }
+
+        // ============================================================
+        // CITATION MANAGER 2.0: THE DETERMINISTIC ENGINE
+        // ============================================================
+
+        const CitationEngine = {
+            // State
+            currentSort: 'alpha',
+            customStyleTemplate: localStorage.getItem('millino_custom_citation_style') || null,
+
+            // --- AUTHOR PARSING (Deterministic) ---
+            parseAuthor(authorStr, style) {
+                if (!authorStr) return '';
+
+                // Handle "et al." or multiple authors separated by ","
+                const authors = authorStr.split(/[,;&]/).map(a => a.trim()).filter(a => a && a !== 'et al.');
+
+                return authors.map((author, idx) => {
+                    // Try to split "FirstName LastName" or "LastName, FirstName"
+                    let first = '', last = '';
+
+                    if (author.includes(',')) {
+                        // Already "Lastname, Firstname"
+                        const parts = author.split(',').map(p => p.trim());
+                        last = parts[0];
+                        first = parts[1] || '';
+                    } else {
+                        // "Firstname Lastname" format
+                        const parts = author.trim().split(/\s+/);
+                        if (parts.length === 1) {
+                            last = parts[0];
+                        } else {
+                            last = parts.pop();
+                            first = parts.join(' ');
+                        }
+                    }
+
+                    const initial = first ? first.charAt(0).toUpperCase() + '.' : '';
+
+                    switch (style) {
+                        case 'apa7':
+                            return `${last}, ${initial}`.trim().replace(/, $/, '');
+                        case 'mla9':
+                            return idx === 0 ? `${last}, ${first}` : `${first} ${last}`;
+                        case 'chicago':
+                            return idx === 0 ? `${last}, ${first}` : `${first} ${last}`;
+                        case 'harvard':
+                            return `${last}, ${initial}`.trim().replace(/, $/, '');
+                        case 'ieee':
+                            return `${initial} ${last}`.trim();
+                        default:
+                            return `${last}, ${initial}`.trim();
+                    }
+                }).join(style === 'ieee' ? ', ' : ', ');
+            },
+
+            // --- NORMALIZE DATA (Handle Missing Fields) ---
+            normalize(book) {
+                return {
+                    author: book.author || 'Unknown Author',
+                    title: book.title || 'Untitled',
+                    year: book.year || 'n.d.',
+                    publisher: book.pub || book.publisher || '',
+                    city: book.city || '',
+                    doi: book.doi || book.url || '',
+                    id: book.id
+                };
+            },
+
+            // --- DETERMINISTIC FORMATTERS ---
+            formatAPA7(book) {
+                const b = this.normalize(book);
+                const author = this.parseAuthor(b.author, 'apa7');
+                // APA 7: Author (Year). *Title*. Publisher.
+                let citation = `${author} (${b.year}). *${b.title}*.`;
+                if (b.publisher) citation += ` ${b.publisher}.`;
+                if (b.doi) citation += ` ${b.doi}`;
+                return citation.trim();
+            },
+
+            formatMLA9(book) {
+                const b = this.normalize(book);
+                const author = this.parseAuthor(b.author, 'mla9');
+                // MLA 9: Author. *Title*. Publisher, Year.
+                let citation = `${author}. *${b.title}*.`;
+                const pubParts = [b.publisher, b.year].filter(Boolean);
+                if (pubParts.length) citation += ` ${pubParts.join(', ')}.`;
+                return citation.trim();
+            },
+
+            formatChicago(book) {
+                const b = this.normalize(book);
+                const author = this.parseAuthor(b.author, 'chicago');
+                // Chicago: Author. *Title*. City: Publisher, Year.
+                let citation = `${author}. *${b.title}*.`;
+                const locParts = [];
+                if (b.city) locParts.push(b.city);
+                if (b.publisher) locParts.push(b.publisher);
+                if (locParts.length) {
+                    citation += ` ${locParts.join(': ')}`;
+                    if (b.year) citation += `, ${b.year}`;
+                    citation += '.';
+                } else if (b.year) {
+                    citation += ` ${b.year}.`;
+                }
+                return citation.trim();
+            },
+
+            formatHarvard(book) {
+                const b = this.normalize(book);
+                const author = this.parseAuthor(b.author, 'harvard');
+                // Harvard: Author, (Year). *Title*. City: Publisher.
+                let citation = `${author}, (${b.year}). *${b.title}*.`;
+                const locParts = [];
+                if (b.city) locParts.push(b.city);
+                if (b.publisher) locParts.push(b.publisher);
+                if (locParts.length) citation += ` ${locParts.join(': ')}.`;
+                return citation.trim();
+            },
+
+            formatIEEE(book) {
+                const b = this.normalize(book);
+                const author = this.parseAuthor(b.author, 'ieee');
+                // IEEE: Author, *Title*. Publisher, Year.
+                let citation = `${author}, *${b.title}*.`;
+                const pubParts = [b.publisher, b.year].filter(Boolean);
+                if (pubParts.length) citation += ` ${pubParts.join(', ')}.`;
+                return citation.trim();
+            },
+
+            formatCustom(book) {
+                if (!this.customStyleTemplate) return this.formatAPA7(book);
+
+                const b = this.normalize(book);
+                let output = this.customStyleTemplate;
+
+                // Replace placeholders
+                const lastName = b.author.split(/[,\s]+/).pop() || '';
+                const firstInitial = b.author.charAt(0).toUpperCase() + '.';
+
+                output = output.replace(/{SURNAME}/gi, lastName);
+                output = output.replace(/{INITIAL}/gi, firstInitial);
+                output = output.replace(/{AUTHOR}/gi, b.author);
+                output = output.replace(/{YEAR}/gi, b.year);
+                output = output.replace(/{TITLE}/gi, b.title);
+                output = output.replace(/{PUBLISHER}/gi, b.publisher);
+                output = output.replace(/{CITY}/gi, b.city);
+                output = output.replace(/{DOI}/gi, b.doi);
+
+                // Clean up empty placeholders and trailing punctuation
+                output = output.replace(/\s*[,:;]+\s*(?=[,:;.\s]*$)/g, '');
+                output = output.replace(/\s+/g, ' ').trim();
+
+                return output;
+            },
+
+            // --- MAIN FORMAT DISPATCHER ---
+            format(book, style = null) {
+                const selectedStyle = style || document.getElementById('citation-style-select')?.value || 'apa7';
+
+                switch (selectedStyle) {
+                    case 'apa7': return this.formatAPA7(book);
+                    case 'mla9': return this.formatMLA9(book);
+                    case 'chicago': return this.formatChicago(book);
+                    case 'harvard': return this.formatHarvard(book);
+                    case 'ieee': return this.formatIEEE(book);
+                    case 'custom': return this.formatCustom(book);
+                    default: return this.formatAPA7(book);
+                }
+            },
+
+            // --- SORTING ---
+            sort(criteria) {
+                this.currentSort = criteria;
+
+                // Update button states
+                ['alpha', 'year', 'added'].forEach(c => {
+                    const btn = document.getElementById(`sort-${c}-btn`);
+                    if (btn) {
+                        btn.classList.toggle('bg-stone-900', c === criteria);
+                        btn.classList.toggle('text-white', c === criteria);
+                        btn.classList.toggle('bg-white', c !== criteria);
+                        btn.classList.toggle('text-stone-600', c !== criteria);
+                    }
+                });
+
+                this.render();
+            },
+
+            getSortedSources() {
+                let sources = [...biblioData].filter(b => !deletedSources.includes(b.id));
+
+                // Apply search filter
+                const searchTerm = document.getElementById('citation-search-input')?.value?.toLowerCase() || '';
+                if (searchTerm) {
+                    sources = sources.filter(b =>
+                        b.author?.toLowerCase().includes(searchTerm) ||
+                        b.title?.toLowerCase().includes(searchTerm)
+                    );
+                }
+
+                // Apply sorting
+                switch (this.currentSort) {
+                    case 'alpha':
+                        sources.sort((a, b) => {
+                            const lastA = (a.author || '').split(/[,\s]+/).pop() || '';
+                            const lastB = (b.author || '').split(/[,\s]+/).pop() || '';
+                            return lastA.localeCompare(lastB);
+                        });
+                        break;
+                    case 'year':
+                        sources.sort((a, b) => {
+                            const yearA = parseInt(a.year) || 0;
+                            const yearB = parseInt(b.year) || 0;
+                            return yearB - yearA; // Descending
+                        });
+                        break;
+                    case 'added':
+                        // Assumes later IDs = newer entries
+                        sources.reverse();
+                        break;
+                }
+
+                return sources;
+            },
+
+            // --- RENDER ---
+            render() {
+                const container = document.getElementById('citation-list-container');
+                const countEl = document.getElementById('citation-count');
+
+                if (!container) return;
+
+                const sources = this.getSortedSources();
+                countEl.textContent = sources.length;
+
+                if (sources.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-stone-400 py-12">
+                            <div class="text-4xl mb-3">📚</div>
+                            <p class="text-sm">No sources found</p>
+                            <p class="text-xs mt-1">Add sources using the Manual Add button</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = sources.map((book, idx) => {
+                    const citation = this.format(book);
+                    // Convert markdown italics to HTML
+                    const htmlCitation = citation.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+                    return `
+                        <div class="group flex items-start gap-3 p-3 rounded-lg border border-transparent hover:border-stone-200 hover:bg-stone-50 transition-all duration-300" data-id="${book.id}">
+                            <span class="text-[10px] font-mono text-stone-400 pt-1 w-6">${idx + 1}.</span>
+                            <div class="flex-1 text-sm text-stone-700 leading-relaxed font-serif">
+                                ${htmlCitation}
+                            </div>
+                            <button onclick="CitationEngine.copySingle('${book.id}')" 
+                                class="opacity-0 group-hover:opacity-100 transition-opacity text-stone-400 hover:text-stone-600 p-1.5 rounded hover:bg-stone-100">
+                                📋
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            // --- COPY FUNCTIONS ---
+            copySingle(id) {
+                const book = biblioData.find(b => b.id === id);
+                if (!book) return;
+
+                const citation = this.format(book).replace(/\*/g, ''); // Remove markdown for plain text
+                navigator.clipboard.writeText(citation);
+                showToast('Citation copied!', 'success');
+            },
+
+            copyAll() {
+                const sources = this.getSortedSources();
+                const citations = sources.map(b => this.format(b).replace(/\*/g, '')).join('\n\n');
+                navigator.clipboard.writeText(citations);
+                showToast(`Copied ${sources.length} citations!`, 'success');
+            },
+
+            // --- CUSTOM STYLE ---
+            setCustomStyle(template, name = 'Custom') {
+                this.customStyleTemplate = template;
+                localStorage.setItem('millino_custom_citation_style', template);
+                localStorage.setItem('millino_custom_citation_name', name);
+
+                // Show custom option in dropdown
+                const customOpt = document.getElementById('custom-style-option');
+                if (customOpt) {
+                    customOpt.classList.remove('hidden');
+                    customOpt.textContent = `🔧 ${name}`;
+                }
+
+                // Select custom style
+                const select = document.getElementById('citation-style-select');
+                if (select) select.value = 'custom';
+
+                // Show footer
+                const footer = document.getElementById('custom-style-footer');
+                if (footer) {
+                    footer.classList.remove('hidden');
+                    document.getElementById('custom-style-name').textContent = template.slice(0, 50) + '...';
+                }
+
+                this.render();
+            },
+
+            clearCustomStyle() {
+                this.customStyleTemplate = null;
+                localStorage.removeItem('millino_custom_citation_style');
+                localStorage.removeItem('millino_custom_citation_name');
+
+                // Hide custom option
+                const customOpt = document.getElementById('custom-style-option');
+                if (customOpt) customOpt.classList.add('hidden');
+
+                // Reset dropdown
+                const select = document.getElementById('citation-style-select');
+                if (select) select.value = 'apa7';
+
+                // Hide footer
+                const footer = document.getElementById('custom-style-footer');
+                if (footer) footer.classList.add('hidden');
+
+                this.render();
+                showToast('Custom style cleared', 'info');
+            },
+
+            // --- INIT ---
+            init() {
+                // Check for existing custom style
+                if (this.customStyleTemplate) {
+                    const name = localStorage.getItem('millino_custom_citation_name') || 'Custom';
+                    const customOpt = document.getElementById('custom-style-option');
+                    if (customOpt) {
+                        customOpt.classList.remove('hidden');
+                        customOpt.textContent = `🔧 ${name}`;
+                    }
+                }
+
+                this.render();
+            }
+        };
+
+        // --- MANUAL SOURCE MODAL FUNCTIONS ---
+        function openManualSourceModal() {
+            document.getElementById('manual-src-title').value = '';
+            document.getElementById('manual-src-author').value = '';
+            document.getElementById('manual-src-year').value = '';
+            document.getElementById('manual-src-publisher').value = '';
+            document.getElementById('manual-src-city').value = '';
+            document.getElementById('manual-src-doi').value = '';
+            document.getElementById('manual-source-modal').classList.remove('hidden');
+        }
+
+        function closeManualSourceModal() {
+            document.getElementById('manual-source-modal').classList.add('hidden');
+        }
+
+        function addManualSource() {
+            const title = document.getElementById('manual-src-title').value.trim();
+            const author = document.getElementById('manual-src-author').value.trim();
+            const year = document.getElementById('manual-src-year').value.trim();
+            const publisher = document.getElementById('manual-src-publisher').value.trim();
+            const city = document.getElementById('manual-src-city').value.trim();
+            const doi = document.getElementById('manual-src-doi').value.trim();
+
+            if (!title || !author || !year) {
+                return showToast('Title, Author, and Year are required!', 'warning');
+            }
+
+            const newId = 'M' + Date.now().toString().slice(-6);
+            const newBook = {
+                id: newId,
+                author: author,
+                title: title,
+                year: year,
+                pub: publisher,
+                city: city,
+                doi: doi,
+                cat: 'User Added',
+                status: 'todo',
+                notes: '',
+                tags: []
+            };
+
+            biblioData.unshift(newBook);
+
+            // Save to localStorage
+            const customBooks = biblioData.filter(b => b.cat === 'User Added');
+            localStorage.setItem('millino_custom_books', JSON.stringify(customBooks));
+
+            closeManualSourceModal();
+            CitationEngine.render();
+            runSearch();
+            showToast('Source added successfully!', 'success');
+        }
+
+        // --- COPY ALL CITATIONS ---
+        function copyAllCitations() {
+            CitationEngine.copyAll();
+        }
+
+        // --- PARSE CUSTOM STYLE PDF (DeepSeek Integration) ---
+        async function parseCustomStylePDF(file) {
+            if (!file) return;
+
+            showToast('Analyzing style guide...', 'info');
+
+            try {
+                // Extract text using PDF.js
+                if (typeof pdfjsLib === 'undefined') {
+                    throw new Error('PDF.js not loaded');
+                }
+
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let fullText = '';
+
+                for (let i = 1; i <= Math.min(pdf.numPages, 5); i++) { // First 5 pages only
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const pageText = content.items.map(item => item.str).join(' ');
+                    fullText += pageText + '\n';
+                }
+
+                if (fullText.length < 100) {
+                    throw new Error('Not enough text extracted from PDF');
+                }
+
+                // Send to DeepSeek for analysis
+                const apiKey = localStorage.getItem('millino_openai_key');
+                if (!apiKey) throw new Error('API key not configured');
+
+                const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `You are a citation style analyzer. Analyze the given text which describes a bibliographic style guide.
+                                
+Return ONLY a template string using these placeholders:
+- {SURNAME} = Author's last name
+- {INITIAL} = Author's first initial with period
+- {AUTHOR} = Full author name
+- {YEAR} = Publication year
+- {TITLE} = Work title
+- {PUBLISHER} = Publisher name
+- {CITY} = Publication city
+- {DOI} = DOI or URL
+
+Example output: "{SURNAME}, {INITIAL} ({YEAR}). {TITLE}. {CITY}: {PUBLISHER}."
+
+Respond with ONLY the template string, nothing else.`
+                            },
+                            {
+                                role: 'user',
+                                content: `Analyze this citation style guide and extract the format template:\n\n${fullText.slice(0, 3000)}`
+                            }
+                        ],
+                        temperature: 0.3,
+                        max_tokens: 200
+                    })
+                });
+
+                if (!res.ok) throw new Error('API request failed');
+
+                const data = await res.json();
+                const template = data.choices[0].message.content.trim();
+
+                // Validate template has at least some placeholders
+                if (!template.includes('{') || !template.includes('}')) {
+                    throw new Error('Could not extract valid format template');
+                }
+
+                CitationEngine.setCustomStyle(template, file.name.replace('.pdf', ''));
+                showToast('Custom style extracted successfully!', 'success');
+
+            } catch (e) {
+                console.error('Style PDF parsing error:', e);
+                showToast(`Error: ${e.message}`, 'error');
+            }
+
+            // Reset file input
+            document.getElementById('style-pdf-upload').value = '';
+        }
+
+        // Initialize CitationEngine when view is shown
+        const originalSwitchView = typeof switchView === 'function' ? switchView : null;
+        window.switchView = function (view) {
+            if (originalSwitchView) originalSwitchView(view);
+            if (view === 'citations') {
+                setTimeout(() => CitationEngine.init(), 100);
+            }
+        };
 
         // IMPLEMENTATION: Global Callback for Squad Engine
         window.receiveBookData = function (data) {
