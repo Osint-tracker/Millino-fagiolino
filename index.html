@@ -3038,45 +3038,57 @@ Respond with ONLY the template string, nothing else.`
         window.receiveBookData = function (data) {
             const newId = "AUTO_" + Date.now();
 
-            // v6.0: Save Squad output to SEPARATE squadAnalysis property (NOT notes)
+            // Handle both legacy and new 'headless' data structure
+            const meta = data.meta || data;
+            const agents = data.agents || {};
+
+            // Fallback for legacy flat structure
+            if (!data.agents && (data.structure || data.connections)) {
+                agents.architect = data.structure?.mermaid;
+                agents.relationist = data.connections;
+                agents.extractor = data.quotes;
+                agents.strategist = data.arguments || data.strategist;
+            }
+
             const newBook = {
                 id: newId,
-                author: data.author || "Unknown Author",
-                title: data.title || "Untitled Document",
-                year: data.year || new Date().getFullYear().toString(),
-                pub: data.pub || "Squad Engine Ingest",
-                cat: "User Added",
+                author: meta.author || "Unknown Author",
+                title: meta.title || "Untitled Document",
+                year: meta.year || new Date().getFullYear().toString(),
+                pub: meta.pub || "Squad Import",
+                desc: meta.desc || "",
+                cat: "Squad Imported",
                 status: "todo",
-                notes: "", // Empty - no more dumping analysis here
-                tags: ["AI_SQUAD", ...(data.quotes || []).map(q => q.tag?.replace('#', '') || '')],
-                subject: currentCourseId ? courses.find(c => c.id === currentCourseId)?.name : (currentSubject !== 'all' ? currentSubject : null),
+                notes: "",
+                tags: ["AI_SQUAD"],
 
-                // NEW: squadAnalysis property for structured visualization
-                squadAnalysis: {
-                    architect: data.structure?.mermaid || '',
-                    relationist: data.connections || [],
-                    extractor: data.quotes || [],
-                    strategist: data.arguments || data.strategist || [],
-                    desc: data.desc || '',
-                    processedAt: new Date().toISOString()
-                }
+                // SCHEMA ALIGNMENT: match openBookModal expectation (snake_case)
+                squad_analysis: {
+                    architect: { content: agents.architect || '', status: 'done' },
+                    relationist: { content: agents.relationist || [], status: 'done' },
+                    extractor: { content: agents.extractor || [], status: 'done' },
+                    strategist: { content: agents.strategist || [], status: 'done' }
+                },
+
+                subject: currentCourseId ? courses.find(c => c.id === currentCourseId)?.name : (currentSubject !== 'all' ? currentSubject : null),
+                pdfPath: meta.pdfPath || null,
+                processedAt: new Date().toISOString()
             };
 
-            // Add to TOP of list (unshift)
+            // Add to database
             biblioData.unshift(newBook);
 
-            // Persist & Update UI
-            saveData();
+            // Persist to LocalStorage
+            const customBooks = biblioData.filter(b => b.cat === 'User Added' || b.cat === 'Squad Imported');
+            localStorage.setItem('millino_custom_books', JSON.stringify(customBooks));
+            if (typeof saveData === 'function') saveData();
 
-            // Clear processing badge from any card
-            document.querySelectorAll('.squad-processing-badge').forEach(el => el.remove());
-
-            // Switch to Database View to show result
+            // Refresh UI
             router('database');
-            runSearch(); // Update list immediately
+            runSearch();
+            CitationEngine.render();
 
-            // Success Trigger
-            showToast(`✅ Squad Engine: "${newBook.title}" aggiunto al database!`, 'success');
+            showToast(`✅ Squad Engine: "${newBook.title}" salvato correttamente!`, 'success');
         };
 
         function initApp() {
