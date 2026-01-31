@@ -452,7 +452,7 @@ class SquadEngine {
                 <div class="p-4 bg-white border-t border-stone-200 shrink-0 flex justify-end">
                      <button onclick="window.location.reload()" class="text-xs text-stone-400 font-bold hover:text-stone-900 mr-auto">ANNULLA</button>
                     <div class="text-[10px] text-stone-400 text-right">
-                        <div>SQUAD V5.0 POWERED BY OPENROUTER</div>
+                        <div>SQUAD V5.0 POWERED BY LUCA&JESSE</div>
                     </div>
                 </div>
             </div>
@@ -461,11 +461,57 @@ class SquadEngine {
     }
 
     complete(finalData) {
-        document.getElementById('squad-modal').innerHTML += `
-            <div class="absolute inset-x-0 bottom-0 p-6 bg-green-500 text-white text-center font-bold uppercase tracking-widest animate-bounce cursor-pointer shadow-lg z-50 hover:bg-green-600 transition-colors" onclick="window.receiveBookData(window.squadEngine.mockData.archivist); document.getElementById('squad-modal').classList.add('hidden');">
-                Processo Completato! Clicca per Salvare
-            </div>
-        `;
+        // Non-blocking: Auto-save with squad_analysis schema
+        const archivistData = this.mockData.archivist;
+        const title = archivistData?.title || this.file?.name || 'Unknown';
+
+        // Build squad_analysis object with proper schema
+        const squadAnalysis = {
+            architect: { content: this.mockData.architect, status: 'done' },
+            relationist: { content: this.mockData.relationist, status: 'done' },
+            extractor: { content: this.mockData.extractor, status: 'done' },
+            strategist: { content: this.mockData.strategist, status: 'done' }
+        };
+
+        // Create new book object
+        const newBook = {
+            id: Date.now(),
+            title: archivistData?.title || 'Titolo Estratto',
+            author: archivistData?.author || 'Autore Sconosciuto',
+            year: archivistData?.year || new Date().getFullYear(),
+            pub: archivistData?.pub || 'Editore Ignoto',
+            desc: archivistData?.desc || 'Descrizione generata dalla Squad AI.',
+            cat: 'Squad Imported',
+            status: 'todo',
+            notes: '',
+            tags: [],
+            squad_analysis: squadAnalysis,
+            pdfPath: this.file?.name || null,
+            processedAt: new Date().toISOString()
+        };
+
+        // Add to biblioData and save
+        if (typeof biblioData !== 'undefined') {
+            biblioData.unshift(newBook);
+            if (typeof saveData === 'function') saveData();
+        }
+
+        // Show success toast (no ugly popup!)
+        showToast(`✅ Squad: "${title}" aggiunto!`, 'success');
+
+        // Remove processing badge if exists
+        const processingBadge = document.getElementById(`squad-processing-${newBook.id}`);
+        if (processingBadge) processingBadge.remove();
+
+        // Auto-close modal after brief delay
+        setTimeout(() => {
+            document.getElementById('squad-modal')?.classList.add('hidden');
+        }, 1500);
+
+        // Refresh UI
+        if (typeof runSearch === 'function') runSearch();
+        if (typeof CitationEngine !== 'undefined') CitationEngine.render();
+
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     }
 

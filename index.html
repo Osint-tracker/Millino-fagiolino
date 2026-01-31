@@ -1020,6 +1020,155 @@
                 </div>
             </div>
 
+            <!-- BOOK DETAILS MODAL (v2.0 - Tabbed Squad Interface) -->
+            <div id="book-modal"
+                class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 fade-in">
+                <div
+                    class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden border border-stone-100 transform transition-all flex flex-col max-h-[90vh]">
+                    <!-- Header -->
+                    <div class="p-6 border-b border-stone-100 bg-stone-50 shrink-0">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 id="modal-title" class="font-serif text-2xl font-bold text-stone-900">Book Title
+                                </h3>
+                                <p id="modal-author" class="text-sm text-stone-500 mt-1">Author Name</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <!-- Run Squad Button (visible if no squad_analysis) -->
+                                <button id="modal-run-squad-btn" onclick="runSquadOnCurrentBook()"
+                                    class="hidden bg-rose-500 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-rose-600 transition-all hover:scale-105 flex items-center gap-1.5 shadow-lg">
+                                    <span>⚡</span> Run Squad
+                                </button>
+                                <button onclick="closeModal()"
+                                    class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-200 text-stone-400 font-bold transition-colors">✕</button>
+                            </div>
+                        </div>
+
+                        <!-- Tab Navigation -->
+                        <div class="flex gap-1 mt-4 bg-stone-100 p-1 rounded-xl">
+                            <button onclick="switchBookModalTab('notes')" id="modal-notes-tab"
+                                class="flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all bg-stone-900 text-white">
+                                📝 Notes
+                            </button>
+                            <button onclick="switchBookModalTab('architect')" id="modal-architect-tab"
+                                class="hidden flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all bg-white text-stone-600 hover:bg-stone-50">
+                                🗺️ Architect
+                            </button>
+                            <button onclick="switchBookModalTab('relationist')" id="modal-relationist-tab"
+                                class="hidden flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all bg-white text-stone-600 hover:bg-stone-50">
+                                🕸️ Relationist
+                            </button>
+                            <button onclick="switchBookModalTab('strategist')" id="modal-strategist-tab"
+                                class="hidden flex-1 px-4 py-2 text-xs font-bold rounded-lg transition-all bg-white text-stone-600 hover:bg-stone-50">
+                                ⚔️ Strategist
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="flex-1 overflow-y-auto p-6">
+                        <!-- Notes Tab -->
+                        <div id="modal-notes-content" class="space-y-4">
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Personal
+                                    Notes</label>
+                                <textarea id="modal-notes" rows="6"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm outline-none focus:border-rose-300 resize-none transition-colors"
+                                    placeholder="Add your notes, highlights, or thoughts about this source..."></textarea>
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Tags</label>
+                                <input type="text" id="modal-tags"
+                                    class="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-sm outline-none focus:border-rose-300 transition-colors"
+                                    placeholder="ontology, individuation, metaphysics...">
+                            </div>
+                        </div>
+
+                        <!-- Architect Tab -->
+                        <div id="modal-architect-content" class="hidden">
+                            <div class="bg-stone-50 rounded-xl p-4 border border-stone-200 mb-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="font-bold text-stone-800 text-sm flex items-center gap-2">
+                                        <span
+                                            class="w-6 h-6 bg-stone-800 text-white rounded-full flex items-center justify-center text-xs">🏛️</span>
+                                        The Architect - Structure Map
+                                    </h4>
+                                    <button onclick="toggleMermaidEdit()" id="mermaid-edit-toggle"
+                                        class="text-[10px] text-stone-500 hover:text-stone-800 font-medium">✏️ Edit
+                                        Code</button>
+                                </div>
+                                <div id="modal-architect-render"
+                                    class="bg-white rounded-lg p-4 border border-stone-100 overflow-auto max-h-64">
+                                </div>
+                                <div id="modal-architect-edit" class="hidden mt-2">
+                                    <textarea id="modal-architect-code"
+                                        class="w-full h-40 font-mono text-xs bg-white border border-stone-200 rounded-lg p-3 outline-none focus:border-rose-300"></textarea>
+                                    <button onclick="reRenderMermaid()"
+                                        class="mt-2 text-xs bg-stone-800 text-white px-3 py-1.5 rounded-lg hover:bg-black">🔄
+                                        Re-render</button>
+                                </div>
+                            </div>
+                            <button onclick="discussWithJesse('architect')"
+                                class="w-full bg-rose-50 text-rose-600 border border-rose-200 px-4 py-3 rounded-xl text-sm font-bold hover:bg-rose-100 transition-colors flex items-center justify-center gap-2">
+                                💬 Discuss this Structure with Jesse
+                            </button>
+                        </div>
+
+                        <!-- Relationist Tab -->
+                        <div id="modal-relationist-content" class="hidden">
+                            <div class="bg-rose-50 rounded-xl p-4 border border-rose-100 mb-4">
+                                <h4 class="font-bold text-rose-800 text-sm flex items-center gap-2 mb-3">
+                                    <span
+                                        class="w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs">🔗</span>
+                                    The Relationist - Concept Connections
+                                </h4>
+                                <div id="modal-relationist-list" class="space-y-2">
+                                    <!-- Concept relations rendered here -->
+                                </div>
+                            </div>
+                            <button onclick="discussWithJesse('relationist')"
+                                class="w-full bg-rose-50 text-rose-600 border border-rose-200 px-4 py-3 rounded-xl text-sm font-bold hover:bg-rose-100 transition-colors flex items-center justify-center gap-2">
+                                💬 Discuss these Connections with Jesse
+                            </button>
+                        </div>
+
+                        <!-- Strategist Tab -->
+                        <div id="modal-strategist-content" class="hidden">
+                            <div class="bg-amber-50 rounded-xl p-4 border border-amber-200 mb-4">
+                                <h4 class="font-bold text-amber-800 text-sm flex items-center gap-2 mb-3">
+                                    <span
+                                        class="w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center text-xs">⚔️</span>
+                                    The Strategist - Argument Arsenal
+                                </h4>
+                                <ul id="modal-strategist-list" class="space-y-2">
+                                    <!-- Strategy items rendered here -->
+                                </ul>
+                            </div>
+                            <button onclick="discussWithJesse('strategist')"
+                                class="w-full bg-rose-50 text-rose-600 border border-rose-200 px-4 py-3 rounded-xl text-sm font-bold hover:bg-rose-100 transition-colors flex items-center justify-center gap-2">
+                                💬 Discuss these Strategies with Jesse
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="p-4 bg-stone-50 border-t border-stone-100 flex justify-between items-center shrink-0">
+                        <button onclick="deleteCurrentBook()"
+                            class="text-xs font-bold text-rose-500 hover:text-rose-700 px-3 py-2 hover:bg-rose-50 rounded-lg transition-colors">
+                            🗑️ Delete
+                        </button>
+                        <div class="flex gap-3">
+                            <button onclick="closeModal()"
+                                class="px-5 py-2.5 text-xs font-bold text-stone-500 uppercase hover:bg-stone-200 rounded-lg transition-colors">Cancel</button>
+                            <button onclick="saveBookDetails()"
+                                class="px-6 py-2.5 bg-stone-900 text-white text-xs font-bold uppercase rounded-lg shadow-lg hover:bg-black hover:scale-105 transition-all">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- MODALS -->
             <!-- NEW: Course Editor Modal -->
             <div id="course-modal"
@@ -3145,26 +3294,189 @@ Respond with ONLY the template string, nothing else.`
             const b = biblioData.find(x => x.id === id);
             if (!b) return;
 
+            // Basic info
             document.getElementById('modal-title').innerText = b.title;
             document.getElementById('modal-author').innerText = b.author;
             document.getElementById('modal-notes').value = b.notes || '';
             document.getElementById('modal-tags').value = (b.tags || []).join(', ');
 
-            // Squad Analysis Tab - Render if squadAnalysis exists
-            const squadTab = document.getElementById('modal-squad-tab');
-            const squadContent = document.getElementById('modal-squad-content');
+            // Squad Analysis Tabs - Show/hide based on squad_analysis existence
+            const hasSquadAnalysis = b.squad_analysis && (
+                b.squad_analysis.architect?.content ||
+                b.squad_analysis.relationist?.content ||
+                b.squad_analysis.strategist?.content
+            );
 
-            if (b.squadAnalysis && squadTab && squadContent) {
-                squadTab.classList.remove('hidden');
-                renderSquadAnalysis(b.squadAnalysis, squadContent);
-            } else if (squadTab) {
-                squadTab.classList.add('hidden');
+            // Tab buttons visibility
+            const architectTab = document.getElementById('modal-architect-tab');
+            const relationistTab = document.getElementById('modal-relationist-tab');
+            const strategistTab = document.getElementById('modal-strategist-tab');
+            const runSquadBtn = document.getElementById('modal-run-squad-btn');
+
+            if (hasSquadAnalysis) {
+                // Show Squad tabs
+                if (architectTab) architectTab.classList.remove('hidden');
+                if (relationistTab) relationistTab.classList.remove('hidden');
+                if (strategistTab) strategistTab.classList.remove('hidden');
+                if (runSquadBtn) runSquadBtn.classList.add('hidden');
+
+                // Render Architect (Mermaid)
+                if (b.squad_analysis.architect?.content) {
+                    const architectRender = document.getElementById('modal-architect-render');
+                    const architectCode = document.getElementById('modal-architect-code');
+                    if (architectRender && architectCode) {
+                        architectCode.value = b.squad_analysis.architect.content;
+                        architectRender.innerHTML = `<div class="mermaid">${b.squad_analysis.architect.content}</div>`;
+                        try { mermaid.init(undefined, architectRender.querySelectorAll('.mermaid')); } catch (e) {
+                            architectRender.innerHTML = `<pre class="text-xs text-rose-500">Mermaid Error: ${e.message}</pre>`;
+                        }
+                    }
+                }
+
+                // Render Relationist (Concept links)
+                if (b.squad_analysis.relationist?.content) {
+                    const relationistList = document.getElementById('modal-relationist-list');
+                    if (relationistList) {
+                        try {
+                            const relations = typeof b.squad_analysis.relationist.content === 'string'
+                                ? JSON.parse(b.squad_analysis.relationist.content)
+                                : b.squad_analysis.relationist.content;
+
+                            if (Array.isArray(relations)) {
+                                relationistList.innerHTML = relations.map(r => `
+                                    <div class="flex items-center gap-2 bg-white rounded-lg p-2 border border-rose-200">
+                                        <span class="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-bold rounded">${r.concept || r.from || 'Concept'}</span>
+                                        <span class="text-rose-400">→</span>
+                                        <span class="text-sm text-stone-700">${r.relation || r.to || r.link || 'Related'}</span>
+                                    </div>
+                                `).join('');
+                            } else {
+                                relationistList.innerHTML = `<div class="text-sm text-stone-600 whitespace-pre-wrap">${b.squad_analysis.relationist.content}</div>`;
+                            }
+                        } catch (e) {
+                            relationistList.innerHTML = `<div class="text-sm text-stone-600 whitespace-pre-wrap">${b.squad_analysis.relationist.content}</div>`;
+                        }
+                    }
+                }
+
+                // Render Strategist (Arguments)
+                if (b.squad_analysis.strategist?.content) {
+                    const strategistList = document.getElementById('modal-strategist-list');
+                    if (strategistList) {
+                        try {
+                            const strategies = typeof b.squad_analysis.strategist.content === 'string'
+                                ? b.squad_analysis.strategist.content.split(/\d+\.\s+/).filter(s => s.trim())
+                                : (Array.isArray(b.squad_analysis.strategist.content) ? b.squad_analysis.strategist.content : [b.squad_analysis.strategist.content]);
+
+                            strategistList.innerHTML = strategies.map((s, i) => `
+                                <li class="bg-white rounded-lg p-3 border border-amber-200 text-sm text-stone-700">
+                                    <span class="font-bold text-amber-700">${i + 1}.</span> ${s}
+                                </li>
+                            `).join('');
+                        } catch (e) {
+                            strategistList.innerHTML = `<li class="text-sm text-stone-600 whitespace-pre-wrap">${b.squad_analysis.strategist.content}</li>`;
+                        }
+                    }
+                }
+            } else {
+                // Hide Squad tabs, show Run Squad button (if book has source file)
+                if (architectTab) architectTab.classList.add('hidden');
+                if (relationistTab) relationistTab.classList.add('hidden');
+                if (strategistTab) strategistTab.classList.add('hidden');
+                if (runSquadBtn && b.pdfPath) runSquadBtn.classList.remove('hidden');
+                else if (runSquadBtn) runSquadBtn.classList.add('hidden');
             }
 
             // Reset to notes tab
             switchBookModalTab('notes');
 
             document.getElementById('book-modal').classList.remove('hidden');
+        }
+
+        function switchBookModalTab(tab) {
+            const tabs = ['notes', 'architect', 'relationist', 'strategist'];
+            tabs.forEach(t => {
+                const content = document.getElementById(`modal-${t}-content`);
+                const btn = document.getElementById(`modal-${t}-tab`);
+                if (content) content.classList.toggle('hidden', t !== tab);
+                if (btn && !btn.classList.contains('hidden')) {
+                    btn.classList.toggle('bg-stone-900', t === tab);
+                    btn.classList.toggle('text-white', t === tab);
+                    btn.classList.toggle('bg-white', t !== tab);
+                    btn.classList.toggle('text-stone-600', t !== tab);
+                }
+            });
+        }
+
+        function toggleMermaidEdit() {
+            const editArea = document.getElementById('modal-architect-edit');
+            if (editArea) editArea.classList.toggle('hidden');
+        }
+
+        function reRenderMermaid() {
+            const code = document.getElementById('modal-architect-code')?.value;
+            const render = document.getElementById('modal-architect-render');
+            if (code && render) {
+                render.innerHTML = `<div class="mermaid">${code}</div>`;
+                try { mermaid.init(undefined, render.querySelectorAll('.mermaid')); } catch (e) {
+                    render.innerHTML = `<pre class="text-xs text-rose-500">Mermaid Error: ${e.message}</pre>`;
+                }
+            }
+        }
+
+        function discussWithJesse(tabType) {
+            const b = biblioData.find(x => x.id === currentBookId);
+            if (!b || !b.squad_analysis) return;
+
+            let contextText = '';
+            switch (tabType) {
+                case 'architect':
+                    contextText = `Analizza questa struttura del libro "${b.title}":\n\n${b.squad_analysis.architect?.content || 'N/A'}`;
+                    break;
+                case 'relationist':
+                    contextText = `Discutiamo le connessioni concettuali di "${b.title}":\n\n${b.squad_analysis.relationist?.content || 'N/A'}`;
+                    break;
+                case 'strategist':
+                    contextText = `Analizziamo gli argomenti strategici di "${b.title}":\n\n${b.squad_analysis.strategist?.content || 'N/A'}`;
+                    break;
+            }
+
+            // Close modal and open chat with context
+            closeModal();
+            showSection('chat');
+            const chatInput = document.getElementById('chat-input');
+            if (chatInput) {
+                chatInput.value = contextText;
+                chatInput.focus();
+            }
+            showToast(`📚 Contesto di "${b.title}" caricato in chat`, 'info');
+        }
+
+        function runSquadOnCurrentBook() {
+            const b = biblioData.find(x => x.id === currentBookId);
+            if (!b) return;
+
+            // Show toast and close modal (non-blocking)
+            showToast('🕵️ Squadra avviata in background...', 'info');
+            closeModal();
+
+            // Add processing badge to book card
+            const bookCard = document.querySelector(`[data-book-id="${currentBookId}"]`);
+            if (bookCard) {
+                const badge = document.createElement('div');
+                badge.id = `squad-processing-${currentBookId}`;
+                badge.className = 'absolute top-2 right-2 bg-rose-500 text-white text-[8px] font-bold px-2 py-1 rounded-full animate-pulse';
+                badge.innerText = '⚙️ Processing...';
+                bookCard.style.position = 'relative';
+                bookCard.appendChild(badge);
+            }
+
+            // TODO: Trigger actual Squad Engine processing for existing book
+            // This would require passing the book's pdfPath to SquadEngine
+            if (b.pdfPath && window.squadEngine) {
+                // Placeholder - would need actual file reference
+                showToast(`📄 Avvia analisi per: ${b.title}`, 'info');
+            }
         }
 
         function closeModal() {
@@ -3830,6 +4142,21 @@ Respond with ONLY the template string, nothing else.`
                         clearInterval(timerInterval);
                         running = false;
                         btn.classList.remove('animate-pulse');
+
+                        // Play completion sound (ding)
+                        try {
+                            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                            const oscillator = audioCtx.createOscillator();
+                            const gainNode = audioCtx.createGain();
+                            oscillator.connect(gainNode);
+                            gainNode.connect(audioCtx.destination);
+                            oscillator.frequency.value = 800;
+                            oscillator.type = 'sine';
+                            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                            oscillator.start(audioCtx.currentTime);
+                            oscillator.stop(audioCtx.currentTime + 0.5);
+                        } catch (e) { /* Audio not available */ }
 
                         // Switch Mode Forcefully
                         if (timerMode === 'focus') {
