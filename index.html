@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Millino Fagiolino | Research OS v4.4 (Stable)</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -412,7 +414,8 @@
 
         <div class="p-4 border-t border-stone-100 bg-white">
             <div class="flex justify-between items-center mb-3">
-                <span class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Deep Work</span>
+                <span id="timer-mode-label" class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">FOCUS
+                    MODE</span>
                 <span id="timer-display" class="font-mono text-sm font-semibold text-rose-600">25:00</span>
             </div>
             <div class="flex justify-between items-center mb-4 px-2">
@@ -4081,18 +4084,26 @@ Respond with ONLY the template string, nothing else.`
 
             if (running) {
                 running = false;
-                modeLabel.innerText = "Paused";
-                modeLabel.classList.add('text-stone-400');
-                modeLabel.classList.remove('text-rose-400', 'text-teal-400');
-                btn.classList.remove('animate-pulse', 'border-rose-500');
-                btn.classList.add('border-stone-800');
+                if (modeLabel) {
+                    modeLabel.innerText = "Paused";
+                    modeLabel.classList.add('text-stone-400');
+                    modeLabel.classList.remove('text-rose-400', 'text-teal-400');
+                }
+                if (btn) {
+                    btn.classList.remove('animate-pulse', 'border-rose-500');
+                    btn.classList.add('border-stone-800');
+                }
             } else {
                 running = true;
-                modeLabel.innerText = timerMode === 'focus' ? "Running..." : "Chilling...";
-                modeLabel.classList.remove('text-stone-400');
-                modeLabel.classList.add(timerMode === 'focus' ? 'text-rose-400' : 'text-teal-400');
-                btn.classList.add('animate-pulse');
-                if (timerMode === 'focus') btn.classList.add('border-rose-500');
+                if (modeLabel) {
+                    modeLabel.innerText = timerMode === 'focus' ? "Running..." : "Chilling...";
+                    modeLabel.classList.remove('text-stone-400');
+                    modeLabel.classList.add(timerMode === 'focus' ? 'text-rose-400' : 'text-teal-400');
+                }
+                if (btn) {
+                    btn.classList.add('animate-pulse');
+                    if (timerMode === 'focus') btn.classList.add('border-rose-500');
+                }
 
                 timerInterval = setInterval(() => {
                     time--;
