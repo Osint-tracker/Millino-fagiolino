@@ -1422,41 +1422,6 @@
                 </div>
             </div>
 
-            <div id="book-modal"
-                class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 transition-opacity duration-300">
-                <div
-                    class="bg-white w-full max-w-2xl rounded-2xl shadow-float p-8 transform transition-all scale-100 border border-stone-100">
-                    <div class="flex justify-between items-start mb-8">
-                        <div>
-                            <h3 id="modal-title" class="text-2xl font-serif font-medium text-stone-900 mb-1"></h3>
-                            <p id="modal-author" class="text-rose-500 text-sm font-medium"></p>
-                        </div>
-                        <button onclick="closeModal()"
-                            class="text-stone-300 hover:text-stone-600 text-2xl leading-none">&times;</button>
-                    </div>
-                    <div class="space-y-6">
-                        <div><label
-                                class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Tag</label><input
-                                type="text" id="modal-tags"
-                                class="w-full p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm outline-none focus:border-stone-400 transition-colors"
-                                placeholder="#angoscia, #capitolo1..."></div>
-                        <div><label
-                                class="block text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-2">Note
-                                personali</label><textarea id="modal-notes"
-                                class="w-full h-40 p-3 bg-stone-50 rounded-lg border border-stone-200 text-sm resize-none outline-none focus:border-stone-400 transition-colors leading-relaxed"></textarea>
-                        </div>
-                    </div>
-                    <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-stone-100">
-                        <button onclick="askAIAboutBook()"
-                            class="px-4 py-2 bg-white border border-stone-200 text-stone-600 font-medium rounded-lg text-xs hover:border-rose-200 hover:text-rose-600 transition-all">Chiedi
-                            a Jesse</button>
-                        <button onclick="saveBookDetails()"
-                            class="px-6 py-2 bg-stone-900 text-white font-medium rounded-lg text-xs hover:bg-black transition-colors shadow-soft">Salva
-                            Modifiche</button>
-                    </div>
-                </div>
-            </div>
-
             <div id="custom-modal"
                 class="fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
                 <div class="bg-white w-full max-w-lg rounded-2xl shadow-float p-8 border border-stone-100">
@@ -2794,10 +2759,10 @@ COMPORTAMENTO:
                 const container = document.getElementById('citation-list-container');
                 const countEl = document.getElementById('citation-count');
 
-                if (!container) return;
+                if (!container) return; // Safety: stop if container doesn't exist
 
                 const sources = this.getSortedSources();
-                countEl.textContent = sources.length;
+                if (countEl) countEl.textContent = sources.length;
 
                 if (sources.length === 0) {
                     container.innerHTML = `
