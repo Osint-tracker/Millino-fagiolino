@@ -1,104 +1,76 @@
-# 🧶 Millino Fagiolino | Research OS v4.4
-> *“L'individuo è un sistema metastabile.”*
+# 🐕 Millino Fagiolino (Research OS v6.0)
+> **Client-Side Research OS for PhD Candidates.**
+> *Forged in the fires of late-night study sessions.*
 
-![Version](https://img.shields.io/badge/version-4.4-rose.svg) ![Status](https://img.shields.io/badge/status-stable-success.svg) ![Focus](https://img.shields.io/badge/focus-Simondon%2FDeleuze-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Version](https://img.shields.io/badge/version-6.0-rose.svg) ![Status](https://img.shields.io/badge/status-Stable-green.svg)
 
-**Millino Fagiolino** non è un semplice sito web. È un **Sistema Operativo di Ricerca** progettato specificamente per accompagnare la stesura di tesi complesse in filosofia o lo studio di materie, con un focus verticale su Gilbert Simondon, Gilles Deleuze e la filosofia della tecnologia.
+## 🔭 Vision
+**Millino Fagiolino** is not just a dashboard; it's a **Client-Side Operating System** designed to manage the chaos of a doctoral thesis. 
+Unlike traditional tools (Notion, Obsidian) which are either too rigid or too blank, Millino provides a **structured, opinionated workflow** centered around:
+1. **Deep Reading**: Turning PDFs into atomic notes via AI agents.
+2. **Syllabus Parsing**: Instantly converting chaotic exam programs into structured modules.
+3. **Thesis Strategy**: Shaping raw knowledge into academic arguments.
 
-Costruito per eliminare le distrazioni e favorire il "Deep Work", integra un database bibliografico curato, strumenti di tracciamento delle abitudini e **Jesse**, un assistente AI con personalità canina che funge da relatore empatico (e un po' esigente).
-
----
-
-## ✨ Funzionalità Principali
-
-### 🧠 Database Specializzato
-Un catalogo curato manualmente di testi essenziali ("Primary Sources", "Comparative Studies", "Tech & Ecology") con:
-- **Priorità di Lettura**: Essenziale, High, Medium, Low.
-- **Stato Dinamico**: Todo, Reading, Done (con animazione confetti al completamento 🎉).
-- **Tagging Semantico**: Collega concetti tra libri diversi per creare una "nuvola di concetti".
-
-### 🐕 Jesse (AI Research Assistant)
-Un chatbot integrato (potenziato da **DeepSeek V3.2** tramite OpenRouter) che conosce l'intero database bibliografico.
-- **Context-Aware**: Sa quali libri hai letto e quali no.
-- **Note-Aware**: Se gli chiedi "cosa ho scritto su...", cerca nelle TUE note personali.
-- **Multi-Modalità**:
-    - *Chat Standard*: Risposte accademiche ma empatiche.
-    - *Socrajess*: Risponde solo con domande maieutiche.
-    - *Relatore Severo*: Ti mette sotto torchio. 
-    - *Bonus*: Se gli chiedi una foto, te la manda (pescando dalla sua galleria personale).
-
-### 🎯 Roadmap & Strategia Tesi
-- **Roadmap Predefinite**: Percorsi di lettura strutturati per argomento (es. "Genesi Tecnica").
-- **Custom Strategy AI**: Chiedi a Jesse di generare una strategia su misura per il tuo indice.
-- **Deadline Tracker**: Conto alla rovescia intelligente per la consegna della tesi.
-
-### 🧘 Zen Mode & Produttività
-- **Focus Timer**: Pomodoro timer integrato (25:00).
-- **Ambienti Sonori**: Pioggia, Café, Camino (con controlli di volume indipendenti).
-- **Word Tracker**: Grafico giornaliero delle parole scritte.
-
-### 📝 Strumenti di Scrittura
-- **Citation Generator**: Genera bibliografie istantanee in formato classico o BibTeX selezionando i testi letti.
-- **Export**: Scarica la tua bibliografia in `.txt`.
+It runs entirely in your browser using **LocalStorage** for speed and privacy. No backend, no login, just you and your research.
 
 ---
 
-## 🛠 Tech Stack
+## ✨ Features (Verified)
 
-Un approccio "No-Build" elegante e leggero per la massima velocità di iterazione.
+### 🧠 Active Intelligence (The Squad)
+A specialized team of AI Agents performs a "forensic analysis" on your PDF sources.
+- **The Architect**: Generates `Mermaid.js` diagrams of the book's structure.
+- **The Relationist**: Maps conceptual connections (Concept A -> refutes -> Concept B).
+- **The Extractor**: Mines "Atomic Notes" suitable for direct citation.
+- **The Strategist**: Suggests academic arguments based on the text.
+*Powered by DeepSeek V3.2 / Qwen via OpenRouter.*
 
-- **Frontend**: HTML5 Semantico + Vanilla JS (ES6+).
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) (iniettato via CDN per prototyping rapido).
-- **Icons**: [Lucide Icons](https://lucide.dev/).
-- **Charts**: [Chart.js](https://www.chartjs.org/) per le statistiche.
-- **Markdown**: `marked.js` per il rendering delle risposte AI.
-- **Backend (Serverless)**: Vercel Functions (Node.js) per l'API proxy sicura verso OpenRouter.
-- **Persistence**: `localStorage` per salvare note, stati di lettura e progressi (Privacy First: i dati restano nel tuo browser).
+### 🎓 Exam Mode & Syllabus Importer
+Don't type manually. Paste your exam program text or URL.
+- **Jina Reader Integration**: Fetches clean text from any URL (`https://r.jina.ai/...`).
+- **DeepSeek Parser**: transforming messy syllabus text into structured JSON modules.
+- **Auto-Linking**: Intelligent guessing connects syllabus topics to your existing bibliography.
 
----
+### ⏱️ Focused Work
+- **Pomodoro 2.0**: Integrated timer with "Focus" (25m) and "Coffee Break" (7m) modes.
+- **Zen Mode**: A distraction-free, full-screen writing environment.
+- **Soundscapes**: Rain, Cafe, and Fireplace audio built-in.
 
-## 🚀 Installazione e Uso
+### 📊 Metric Tracking
+- **Word Tracker**: Daily thesis word count visualization.
+- **Reading Progress**: Visual bars for 'Todo', 'Reading', and 'Done' states.
 
-### Requisiti
-- Un account [Vercel](https://vercel.com/) (per il deploy e le Serverless Functions).
-- Una API Key di [OpenRouter](https://openrouter.ai/).
-
-### Setup Locale
-1. Clona la repository.
-2. Crea un file `.env` nella root con la tua chiave:
-   ```bash
-   OPENROUTER_KEY=sk-or-v1-tua-chiave...
-   ```
-3. Installa le dipendenze per Vercel CLI (opzionale, se vuoi testare l'API localmente):
-   ```bash
-   npm i -g vercel
-   vercel dev
-   ```
-4. Apri `http://localhost:3000`.
-
-### Struttura File
-- `index.html`: Il core dell'applicazione (Monolith). Contiene tutta la UI e la logica frontend.
-- `js/database.js`: Il "cervello" statico. Contiene l'array JSON `MASTER_DB` con i libri pre-caricati.
-- `api/chat.js`: L'endpoint serverless che gestisce le chiamate a DeepSeek e inietta il System Prompt.
-- `jesse/`: Cartella contenente le foto del cane Jesse.
+### ☁️ Data & Sync
+- **Local First**: All data (`MASTER_DB`, `courses`) lives in your browser's LocalStorage.
+- **Gist Ready**: Settings panel includes fields for GitHub Token & Gist ID (Sync implementation pending/manual).
 
 ---
 
-## 🤝 Contribuire
-Se vuoi aggiungere libri al `MASTER_DB`, modifica direttamente `js/database.js`. Assicurati di seguire lo schema JSON esistente:
-```json
-{ 
-  "id": "XX01", 
-  "author": "Cognome, N.", 
-  "year": "YYYY", 
-  "title": "Titolo", 
-  "pub": "Editore", 
-  "cat": "Categoria", 
-  "prio": "PRIORITY", 
-  "desc": "Breve descrizione" 
-}
-```
+## 🛠️ Setup & Installation
+
+### 1. "Fork & Go" (GitHub Pages)
+This project is designed to be hosted for free on GitHub Pages.
+1. **Fork** this repository.
+2. Go to **Settings > Pages**.
+3. Set source to `main` branch.
+4. Open your new URL (e.g., `username.github.io/millino-fagiolino`).
+
+### 2. API Key Configuration
+To unlock the AI features (The Squad, Jesse, Syllabus Import), you must configure your keys.
+1. Click the **Settings Gear ⚙️** (bottom-left).
+2. **OpenAI API Key**: Required for basic repair tasks (`gpt-4o-mini`).
+3. **OpenRouter Key** (Recommended): Required for **DeepSeek** and **Qwen** models aka "The Squad".
+4. Keys are saved securely in your browser's LocalStorage. They are **never** transmitted to any server other than the API provider.
 
 ---
 
-> *"Non si individua mai da soli."* — G. Simondon (probabilmente, se avesse usato questo OS)
+## 🏗️ Tech Stack
+- **Core**: HTML5, Vanilla JS (ES6+).
+- **Styling**: TailwindCSS (CDN).
+- **Visualization**: Chart.js, Mermaid.js.
+- **PDF Handling**: PDF.js (Mozilla).
+- **Effects**: Canvas Confetti.
+
+---
+
+> *"Bau!"* - Jesse (Principal AI Architect)
