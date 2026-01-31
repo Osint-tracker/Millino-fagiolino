@@ -22,6 +22,11 @@ class SquadEngine {
     static init(file) {
         if (!file) return;
         window.squadEngine = new SquadEngine();
+
+        // Non-blocking: Start in background with toast notification
+        showToast('🕵️ Squadra avviata in background...', 'info');
+
+        // User can close modal and continue working
         window.squadEngine.start(file);
     }
 
@@ -29,7 +34,7 @@ class SquadEngine {
         this.file = file;
         this.status = 'running';
 
-        // Show Modal
+        // Show Modal (user CAN close it - processing continues)
         this.renderModal();
         document.getElementById('squad-modal').classList.remove('hidden');
 

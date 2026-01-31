@@ -2029,18 +2029,38 @@ COMPORTAMENTO:
                 }
             }
 
+            // Get current bibliography for context
+            const materialsContext = biblioData.slice(0, 30).map(b => `${b.author} - ${b.title}`).join('\n');
+
             const systemPrompt = `
-            ROLE: You are an Academic Syllabus Parser.
+            ROLE: You are an Academic Syllabus Parser with INTELLIGENT MATERIAL LINKING.
             TASK: Extract structured course modules and exam details from the provided text.
+            
+            CRITICAL: You MUST LINK TOPICS TO MATERIALS.
+            For every Topic you find, analyze the Bibliography provided. 
+            - If a Topic mentions a specific author or chapter, create an EXPLICIT link.
+            - If no link is explicit, use your knowledge to GUESS the most likely book from the list. If uncertain, strictly prefix the title with '⚠️ [PROBABLE]' to warn the user. 
+            - Output the material reference in format "Author - Title (Chapter/Section if applicable)"
+            
+            AVAILABLE MATERIALS (from user's bibliography):
+            ${materialsContext || 'No materials loaded yet'}
+            
             OUTPUT: Valid JSON only.
             FORMAT:
             {
-                "topics": [ { "title": "Module Title", "goal": "Description/Objectives" } ],
+                "topics": [ 
+                    { 
+                        "title": "Module Title", 
+                        "goal": "Description/Objectives",
+                        "related_material": ["Author - Title (Ch. X)", "Author2 - Title"]
+                    } 
+                ],
                 "exam_info": { "mode": "Oral", "description": "Details about exam", "tips": "One strategic tip for the student" }
             }
             NOTES: 
             - 'mode' must be one of: 'Oral', 'Written', 'Project', 'Mixed'.
             - Translate content to ITALIAN.
+            - "related_material" MUST be an array of strings referencing materials from the bibliography above.
             `;
 
             try {
@@ -2577,13 +2597,31 @@ COMPORTAMENTO:
                     );
                 }
 
+                // Helper: Get sorting key with fallback logic
+                const getSortKey = (book) => {
+                    if (book.author && book.author.trim()) {
+                        // Extract surname: handle "Lastname, Firstname" or "Firstname Lastname" formats
+                        const author = book.author.trim();
+                        if (author.includes(',')) {
+                            return author.split(',')[0].trim(); // "Lastname, First" → "Lastname"
+                        } else {
+                            const parts = author.split(/\s+/);
+                            return parts.length > 1 ? parts[parts.length - 1] : parts[0]; // Last word = surname
+                        }
+                    } else if (book.title && book.title.trim()) {
+                        return book.title.trim(); // Fallback to title
+                    }
+                    return 'ZZZZZ'; // Push entries with nothing to end
+                };
+
                 // Apply sorting
                 switch (this.currentSort) {
                     case 'alpha':
                         sources.sort((a, b) => {
-                            const lastA = (a.author || '').split(/[,\s]+/).pop() || '';
-                            const lastB = (b.author || '').split(/[,\s]+/).pop() || '';
-                            return lastA.localeCompare(lastB);
+                            const keyA = getSortKey(a);
+                            const keyB = getSortKey(b);
+                            // Robust comparison: locale-aware, case-insensitive, handles accents
+                            return keyA.localeCompare(keyB, 'it', { sensitivity: 'base', ignorePunctuation: true });
                         });
                         break;
                     case 'year':
@@ -2883,20 +2921,7 @@ Respond with ONLY the template string, nothing else.`
         window.receiveBookData = function (data) {
             const newId = "AUTO_" + Date.now();
 
-            // v5.0 Data Formatting
-            const structureMD = data.structure?.mermaid ? `\n### 🧠 Struttura Logica\n\`\`\`mermaid\n${data.structure.mermaid}\n\`\`\`` : '';
-
-            let relationsMD = '';
-            if (data.connections && Array.isArray(data.connections)) {
-                relationsMD = '\n### 🔗 Relazioni Concettuali\n' + data.connections.map(c => `- **${c.source}** _${c.relation}_ **${c.target}**`).join('\n');
-            }
-
-            let notesMD = '';
-            if (data.quotes && Array.isArray(data.quotes)) {
-                notesMD = '\n### 💎 Atomic Notes\n' + data.quotes.map(q => `> "${q.quote}"\n> *${q.paraphrase}* #${q.tag}`).join('\n\n');
-            }
-
-            // Sanitize & Construct Book Object
+            // v6.0: Save Squad output to SEPARATE squadAnalysis property (NOT notes)
             const newBook = {
                 id: newId,
                 author: data.author || "Unknown Author",
@@ -2905,9 +2930,19 @@ Respond with ONLY the template string, nothing else.`
                 pub: data.pub || "Squad Engine Ingest",
                 cat: "User Added",
                 status: "todo",
-                notes: `[SQUAD V5.0 ANALYSIS]\n\n${data.desc || ''}\n${structureMD}\n${relationsMD}\n${notesMD}`,
-                tags: ["AI_SQUAD", ...(data.quotes || []).map(q => q.tag.replace('#', ''))],
-                subject: currentCourseId ? courses.find(c => c.id === currentCourseId).name : (currentSubject !== 'all' ? currentSubject : null)
+                notes: "", // Empty - no more dumping analysis here
+                tags: ["AI_SQUAD", ...(data.quotes || []).map(q => q.tag?.replace('#', '') || '')],
+                subject: currentCourseId ? courses.find(c => c.id === currentCourseId)?.name : (currentSubject !== 'all' ? currentSubject : null),
+
+                // NEW: squadAnalysis property for structured visualization
+                squadAnalysis: {
+                    architect: data.structure?.mermaid || '',
+                    relationist: data.connections || [],
+                    extractor: data.quotes || [],
+                    strategist: data.arguments || data.strategist || [],
+                    desc: data.desc || '',
+                    processedAt: new Date().toISOString()
+                }
             };
 
             // Add to TOP of list (unshift)
@@ -2915,6 +2950,9 @@ Respond with ONLY the template string, nothing else.`
 
             // Persist & Update UI
             saveData();
+
+            // Clear processing badge from any card
+            document.querySelectorAll('.squad-processing-badge').forEach(el => el.remove());
 
             // Switch to Database View to show result
             router('database');
@@ -3102,10 +3140,213 @@ Respond with ONLY the template string, nothing else.`
             renderCitationsList();
             renderConcepts(); // Refresh stats/concepts
         }
-        function openBookModal(id) { currentBookId = id; const b = biblioData.find(x => x.id === id); document.getElementById('modal-title').innerText = b.title; document.getElementById('modal-author').innerText = b.author; document.getElementById('modal-notes').value = b.notes || ''; document.getElementById('modal-tags').value = (b.tags || []).join(', '); document.getElementById('book-modal').classList.remove('hidden'); }
-        function closeModal() { document.getElementById('book-modal').classList.add('hidden'); }
-        function saveBookDetails() { const b = biblioData.find(x => x.id === currentBookId); b.notes = document.getElementById('modal-notes').value; b.tags = document.getElementById('modal-tags').value.split(',').map(t => t.trim()).filter(t => t); saveData(); closeModal(); runSearch(); renderConcepts(); }
-        function cycleStatus(id) { const i = biblioData.findIndex(x => x.id === id); const map = { 'todo': 'reading', 'reading': 'done', 'done': 'todo' }; biblioData[i].status = map[biblioData[i].status]; if (biblioData[i].status === 'done') confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 }, colors: ['#E7E5E4', '#F43F5E'] }); saveData(); renderStats(); runSearch(); }
+        function openBookModal(id) {
+            currentBookId = id;
+            const b = biblioData.find(x => x.id === id);
+            if (!b) return;
+
+            document.getElementById('modal-title').innerText = b.title;
+            document.getElementById('modal-author').innerText = b.author;
+            document.getElementById('modal-notes').value = b.notes || '';
+            document.getElementById('modal-tags').value = (b.tags || []).join(', ');
+
+            // Squad Analysis Tab - Render if squadAnalysis exists
+            const squadTab = document.getElementById('modal-squad-tab');
+            const squadContent = document.getElementById('modal-squad-content');
+
+            if (b.squadAnalysis && squadTab && squadContent) {
+                squadTab.classList.remove('hidden');
+                renderSquadAnalysis(b.squadAnalysis, squadContent);
+            } else if (squadTab) {
+                squadTab.classList.add('hidden');
+            }
+
+            // Reset to notes tab
+            switchBookModalTab('notes');
+
+            document.getElementById('book-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('book-modal').classList.add('hidden');
+        }
+
+        function saveBookDetails() {
+            const b = biblioData.find(x => x.id === currentBookId);
+            b.notes = document.getElementById('modal-notes').value;
+            b.tags = document.getElementById('modal-tags').value.split(',').map(t => t.trim()).filter(t => t);
+            saveData();
+            closeModal();
+            runSearch();
+            renderConcepts();
+        }
+
+        function cycleStatus(id) {
+            const i = biblioData.findIndex(x => x.id === id);
+            const map = { 'todo': 'reading', 'reading': 'done', 'done': 'todo' };
+            biblioData[i].status = map[biblioData[i].status];
+            if (biblioData[i].status === 'done') confetti({ particleCount: 60, spread: 60, origin: { y: 0.6 }, colors: ['#E7E5E4', '#F43F5E'] });
+            saveData();
+            renderStats();
+            runSearch();
+        }
+
+        // Book Modal Tab Switching
+        function switchBookModalTab(tab) {
+            ['notes', 'squad'].forEach(t => {
+                const content = document.getElementById(`modal-${t}-content`);
+                const tabBtn = document.getElementById(`modal-${t}-tab`);
+                if (content) content.classList.toggle('hidden', t !== tab);
+                if (tabBtn) {
+                    tabBtn.classList.toggle('bg-stone-900', t === tab);
+                    tabBtn.classList.toggle('text-white', t === tab);
+                    tabBtn.classList.toggle('bg-white', t !== tab);
+                    tabBtn.classList.toggle('text-stone-600', t !== tab);
+                }
+            });
+        }
+
+        // Squad Analysis Rendering
+        function renderSquadAnalysis(analysis, container) {
+            if (!analysis) {
+                container.innerHTML = '<p class="text-stone-400 text-sm italic text-center py-8">Nessuna analisi Squad disponibile.</p>';
+                return;
+            }
+
+            const uniqueId = 'squad-mermaid-' + Date.now();
+
+            let html = `
+                <div class="space-y-6">
+                    <!-- The Architect: Mermaid Graph -->
+                    ${analysis.architect ? `
+                        <div class="bg-stone-50 rounded-xl p-4 border border-stone-200">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="font-bold text-stone-800 text-sm flex items-center gap-2">
+                                    <span class="w-6 h-6 bg-stone-800 text-white rounded-full flex items-center justify-center text-xs">🏛️</span>
+                                    The Architect
+                                </h4>
+                                <button onclick="toggleMermaidEditMode('${uniqueId}')" class="text-[10px] text-stone-500 hover:text-stone-800 font-medium">
+                                    ✏️ Edit Code
+                                </button>
+                            </div>
+                            <div id="${uniqueId}-render" class="bg-white rounded-lg p-4 border border-stone-100 overflow-auto max-h-64"></div>
+                            <div id="${uniqueId}-edit" class="hidden mt-2">
+                                <textarea id="${uniqueId}-code" class="w-full h-40 font-mono text-xs bg-white border border-stone-200 rounded-lg p-3 outline-none focus:border-rose-300">${analysis.architect}</textarea>
+                                <button onclick="retryMermaidRender('${uniqueId}')" class="mt-2 text-xs bg-stone-800 text-white px-3 py-1.5 rounded-lg hover:bg-black">
+                                    🔄 Re-render
+                                </button>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- The Relationist: Concept Tags -->
+                    ${analysis.relationist && analysis.relationist.length > 0 ? `
+                        <div class="bg-rose-50 rounded-xl p-4 border border-rose-100">
+                            <h4 class="font-bold text-rose-800 text-sm flex items-center gap-2 mb-3">
+                                <span class="w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center text-xs">🔗</span>
+                                The Relationist
+                            </h4>
+                            <div class="space-y-2">
+                                ${analysis.relationist.map(r => `
+                                    <div class="flex items-center gap-2 text-xs bg-white rounded-lg p-2 border border-rose-100">
+                                        <span class="font-semibold text-stone-800">${r.source}</span>
+                                        <span class="bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full text-[10px] font-medium">${r.relation}</span>
+                                        <span class="font-semibold text-stone-800">${r.target}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- The Strategist: Strategy Cards -->
+                    ${analysis.strategist && analysis.strategist.length > 0 ? `
+                        <div class="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                            <h4 class="font-bold text-amber-800 text-sm flex items-center gap-2 mb-3">
+                                <span class="w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center text-xs">⚔️</span>
+                                The Strategist
+                            </h4>
+                            <ul class="space-y-2">
+                                ${analysis.strategist.map((s, i) => `
+                                    <li class="flex items-start gap-2 text-xs bg-white rounded-lg p-3 border border-amber-100">
+                                        <span class="w-5 h-5 bg-amber-500 text-white rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">${i + 1}</span>
+                                        <span class="text-stone-700 leading-relaxed">${s}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- The Extractor: Atomic Notes -->
+                    ${analysis.extractor && analysis.extractor.length > 0 ? `
+                        <div class="bg-green-50 rounded-xl p-4 border border-green-200">
+                            <h4 class="font-bold text-green-800 text-sm flex items-center gap-2 mb-3">
+                                <span class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs">💎</span>
+                                Atomic Notes
+                            </h4>
+                            <div class="space-y-3">
+                                ${analysis.extractor.map(q => `
+                                    <div class="bg-white rounded-lg p-3 border-l-2 border-green-400">
+                                        <div class="italic text-stone-600 text-[11px] mb-2">"${q.quote}"</div>
+                                        <div class="text-xs font-medium text-stone-800">${q.paraphrase}</div>
+                                        ${q.tag ? `<span class="inline-block mt-2 text-[9px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full">#${q.tag.replace('#', '')}</span>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            container.innerHTML = html;
+
+            // Render Mermaid if architect exists
+            if (analysis.architect) {
+                setTimeout(() => {
+                    try {
+                        const renderArea = document.getElementById(`${uniqueId}-render`);
+                        const mermaidEl = document.createElement('div');
+                        mermaidEl.className = 'mermaid';
+                        mermaidEl.textContent = analysis.architect;
+                        renderArea.appendChild(mermaidEl);
+                        mermaid.init(undefined, mermaidEl);
+                    } catch (e) {
+                        console.error('Mermaid render error:', e);
+                        document.getElementById(`${uniqueId}-render`).classList.add('hidden');
+                        document.getElementById(`${uniqueId}-edit`).classList.remove('hidden');
+                        showToast('Mermaid render fallito - usa Edit Mode', 'warning');
+                    }
+                }, 300);
+            }
+        }
+
+        function toggleMermaidEditMode(uniqueId) {
+            const renderArea = document.getElementById(`${uniqueId}-render`);
+            const editArea = document.getElementById(`${uniqueId}-edit`);
+            renderArea.classList.toggle('hidden');
+            editArea.classList.toggle('hidden');
+        }
+
+        function retryMermaidRender(uniqueId) {
+            const codeArea = document.getElementById(`${uniqueId}-code`);
+            const renderArea = document.getElementById(`${uniqueId}-render`);
+            const editArea = document.getElementById(`${uniqueId}-edit`);
+
+            renderArea.innerHTML = '';
+
+            try {
+                const mermaidEl = document.createElement('div');
+                mermaidEl.className = 'mermaid';
+                mermaidEl.textContent = codeArea.value;
+                renderArea.appendChild(mermaidEl);
+                mermaid.init(undefined, mermaidEl);
+
+                renderArea.classList.remove('hidden');
+                editArea.classList.add('hidden');
+                showToast('Diagram rendered!', 'success');
+            } catch (e) {
+                showToast('Syntax error in Mermaid code', 'error');
+            }
+        }
 
 
         // --- DASHBOARD LOGIC (NEW) ---
@@ -3542,7 +3783,11 @@ Respond with ONLY the template string, nothing else.`
         function toggleSound(id) { const el = document.getElementById('audio-' + id); const btn = document.getElementById('btn-' + id); if (el.paused) { el.play(); btn.classList.remove('text-stone-300'); btn.classList.add('text-stone-900'); } else { el.pause(); btn.classList.add('text-stone-300'); btn.classList.remove('text-stone-900'); } }
         function stopAllSounds() { ['rain', 'cafe', 'fire'].forEach(id => { document.getElementById('audio-' + id).pause(); document.getElementById('btn-' + id).classList.add('text-stone-300'); document.getElementById('btn-' + id).classList.remove('text-stone-900'); }); }
 
-        let timer, time = 1500, running = false, timerMode = 'focus'; // 'focus' (25m) or 'break' (7m)
+        // GLOBAL POMODORO TIMER STATE (FIX: Ensure global scope)
+        let timerInterval = null;
+        let time = 1500;
+        let running = false;
+        let timerMode = 'focus'; // 'focus' (25m) or 'break' (7m)
 
         function toggleTimer() {
             const d = document.getElementById('zen-timer');
@@ -3551,8 +3796,13 @@ Respond with ONLY the template string, nothing else.`
             const modeLabel = document.getElementById('timer-mode-label');
             const icon = document.getElementById('pomo-status-icon');
 
+            // FIX: Always clear any existing interval first to prevent stacking
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
             if (running) {
-                clearInterval(timer);
                 running = false;
                 modeLabel.innerText = "Paused";
                 modeLabel.classList.add('text-stone-400');
@@ -3567,7 +3817,7 @@ Respond with ONLY the template string, nothing else.`
                 btn.classList.add('animate-pulse');
                 if (timerMode === 'focus') btn.classList.add('border-rose-500');
 
-                timer = setInterval(() => {
+                timerInterval = setInterval(() => {
                     time--;
                     let m = Math.floor(time / 60), s = time % 60;
                     const t = `${m}:${s.toString().padStart(2, '0')}`;
@@ -3577,7 +3827,7 @@ Respond with ONLY the template string, nothing else.`
                     document.title = `${t} - Millino Fagiolino`;
 
                     if (time <= 0) {
-                        clearInterval(timer);
+                        clearInterval(timerInterval);
                         running = false;
                         btn.classList.remove('animate-pulse');
 
@@ -3609,7 +3859,7 @@ Respond with ONLY the template string, nothing else.`
         }
 
         function resetTimer() {
-            clearInterval(timer);
+            clearInterval(timerInterval);
             running = false;
             timerMode = 'focus';
             time = 1500;
