@@ -104,7 +104,7 @@ class SquadEngine {
 
         } catch (error) {
             console.error("Squad Engine Failure:", error);
-            alert("Errore nella pipeline AI: " + error.message);
+            showToast("Errore nella pipeline AI: " + error.message, 'error');
             document.getElementById('squad-modal').classList.add('hidden');
         }
     }
@@ -252,24 +252,153 @@ class SquadEngine {
 
         let html = '';
         if (id === 'architect') {
-            // Visualize Mermaid
-            html = `<div class="mermaid">${typeof data === 'string' ? data : 'graph TD; Error;'}</div>`;
-            // Trigger Mermaid Render (need a slight delay or explicit call)
-            setTimeout(() => { try { mermaid.init(undefined, outputBox.querySelectorAll('.mermaid')); } catch (e) { } }, 500);
+            // V6.0: Mermaid with Edit Mode Fallback
+            const mermaidCode = typeof data === 'string' ? data : 'graph TD; Error["No valid diagram"];';
+            const uniqueId = `mermaid-${Date.now()}`;
+
+            html = `
+                <div id="${uniqueId}-container" class="relative">
+                    <div id="${uniqueId}-render" class="mermaid-render-area"></div>
+                    <div id="${uniqueId}-edit" class="hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[10px] uppercase font-bold text-amber-600 tracking-wider">⚠️ Edit Mode - Mermaid rendering failed</span>
+                            <button onclick="window.squadEngine.retryMermaid('${uniqueId}')" class="text-[10px] font-bold text-rose-500 hover:text-rose-700">↻ Retry Render</button>
+                        </div>
+                        <textarea id="${uniqueId}-code" class="w-full h-32 text-[10px] font-mono bg-stone-900 text-green-400 p-2 rounded-lg border border-stone-700 resize-none" spellcheck="false">${mermaidCode}</textarea>
+                    </div>
+                </div>
+            `;
+
+            outputBox.innerHTML = html;
+
+            // Attempt Mermaid Render with Error Fallback
+            setTimeout(() => {
+                try {
+                    const renderArea = document.getElementById(`${uniqueId}-render`);
+                    const editArea = document.getElementById(`${uniqueId}-edit`);
+
+                    // Create mermaid element
+                    const mermaidEl = document.createElement('div');
+                    mermaidEl.className = 'mermaid';
+                    mermaidEl.textContent = mermaidCode;
+                    renderArea.appendChild(mermaidEl);
+
+                    mermaid.init(undefined, mermaidEl);
+
+                    // Check if render was successful (mermaid replaces content with SVG)
+                    setTimeout(() => {
+                        if (!renderArea.querySelector('svg')) {
+                            // Rendering failed, show Edit Mode
+                            renderArea.classList.add('hidden');
+                            editArea.classList.remove('hidden');
+                            showToast('Mermaid render fallito. Modalità Edit attiva.', 'warning');
+                        }
+                    }, 1000);
+
+                } catch (e) {
+                    console.error('Mermaid render error:', e);
+                    const renderArea = document.getElementById(`${uniqueId}-render`);
+                    const editArea = document.getElementById(`${uniqueId}-edit`);
+                    if (renderArea) renderArea.classList.add('hidden');
+                    if (editArea) editArea.classList.remove('hidden');
+                    showToast('Errore Mermaid: ' + e.message, 'error');
+                }
+            }, 500);
+
+            return; // Early return since we handled innerHTML already
 
         } else if (id === 'relationist' && Array.isArray(data)) {
-            html = data.map(d => `<div class="flex items-center gap-2 text-xs mb-1"><span class="font-bold">${d.source}</span> <span class="bg-stone-100 px-1 text-[10px] text-stone-500 rounded">${d.relation}</span> <span class="font-bold">${d.target}</span></div>`).join('');
+            // Enhanced relation display with hover effects
+            html = `<div class="space-y-2">` +
+                data.map(d => `
+                    <div class="flex items-center gap-2 text-xs p-2 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors cursor-default">
+                        <span class="font-bold text-stone-800">${d.source}</span>
+                        <span class="bg-rose-100 text-rose-600 px-2 py-0.5 text-[10px] font-medium rounded-full">${d.relation}</span>
+                        <span class="font-bold text-stone-800">${d.target}</span>
+                    </div>
+                `).join('') +
+                `</div>`;
 
         } else if (id === 'extractor' && Array.isArray(data)) {
-            html = data.map(q => `<div class="mb-3 border-l-2 border-rose-200 pl-2"><div class="italic text-stone-600 text-[11px] mb-1">"${q.quote}"</div><div class="text-xs font-medium text-stone-900">${q.paraphrase}</div><span class="text-[9px] text-rose-400 bg-rose-50 px-1 rounded">${q.tag}</span></div>`).join('');
+            // Enhanced quote cards
+            html = `<div class="space-y-3">` +
+                data.map(q => `
+                    <div class="bg-gradient-to-r from-rose-50 to-white p-3 rounded-lg border-l-2 border-rose-300 hover:border-rose-500 transition-all">
+                        <div class="italic text-stone-600 text-[11px] mb-2 leading-relaxed">"${q.quote}"</div>
+                        <div class="text-xs font-medium text-stone-800 mb-1">${q.paraphrase}</div>
+                        <span class="inline-block text-[9px] text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full font-medium">#${q.tag}</span>
+                    </div>
+                `).join('') +
+                `</div>`;
 
         } else if (id === 'strategist' && Array.isArray(data)) {
-            html = `<ul class="list-disc list-inside text-xs text-stone-600 space-y-1">${data.map(s => `<li>${s}</li>`).join('')}</ul>`;
+            // Enhanced strategy list with icons
+            html = `<ul class="space-y-2 text-xs text-stone-600">` +
+                data.map((s, i) => `
+                    <li class="flex items-start gap-2 p-2 bg-stone-50 rounded-lg">
+                        <span class="w-5 h-5 bg-stone-800 text-white rounded-full flex items-center justify-center text-[10px] font-bold shrink-0">${i + 1}</span>
+                        <span class="leading-relaxed">${s}</span>
+                    </li>
+                `).join('') +
+                `</ul>`;
+
+        } else if (id === 'archivist' && typeof data === 'object') {
+            // Final archive summary card
+            html = `
+                <div class="space-y-3">
+                    <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                        <span class="text-2xl">📚</span>
+                        <div>
+                            <div class="font-bold text-stone-800 text-sm">${data.title || 'Titolo'}</div>
+                            <div class="text-[10px] text-stone-500">${data.author || 'Autore'}</div>
+                        </div>
+                    </div>
+                    ${data.atomic_notes ? `
+                        <div class="text-[10px] uppercase font-bold text-stone-400 tracking-wider">📝 Note Atomiche: ${data.atomic_notes.length}</div>
+                    ` : ''}
+                </div>
+            `;
 
         } else {
-            html = `<pre class="text-[10px] bg-stone-50 p-2 rounded overflow-x-auto whitespace-pre-wrap">${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}</pre>`;
+            // Default JSON view
+            html = `<pre class="text-[10px] bg-stone-900 text-green-400 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap font-mono">${typeof data === 'string' ? data : JSON.stringify(data, null, 2)}</pre>`;
         }
+
         outputBox.innerHTML = html;
+    }
+
+    // V6.0: Retry Mermaid Render from Edit Mode
+    retryMermaid(uniqueId) {
+        const codeEl = document.getElementById(`${uniqueId}-code`);
+        const renderArea = document.getElementById(`${uniqueId}-render`);
+        const editArea = document.getElementById(`${uniqueId}-edit`);
+
+        if (!codeEl || !renderArea || !editArea) return;
+
+        const newCode = codeEl.value.trim();
+        renderArea.innerHTML = '';
+
+        try {
+            const mermaidEl = document.createElement('div');
+            mermaidEl.className = 'mermaid';
+            mermaidEl.textContent = newCode;
+            renderArea.appendChild(mermaidEl);
+
+            mermaid.init(undefined, mermaidEl);
+
+            setTimeout(() => {
+                if (renderArea.querySelector('svg')) {
+                    editArea.classList.add('hidden');
+                    renderArea.classList.remove('hidden');
+                    showToast('Mermaid renderizzato con successo!', 'success');
+                } else {
+                    showToast('Render ancora fallito. Controlla la sintassi.', 'warning');
+                }
+            }, 500);
+
+        } catch (e) {
+            showToast('Errore: ' + e.message, 'error');
+        }
     }
 
     renderModal() {

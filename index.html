@@ -222,6 +222,127 @@
             line-height: 1.6;
             font-size: 0.95rem;
         }
+
+        /* === TOAST NOTIFICATION SYSTEM === */
+        .toast-container {
+            position: fixed;
+            bottom: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
+            pointer-events: all;
+            animation: toastSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .toast-success {
+            background: white;
+            color: #1C1917;
+            border: 1px solid #F43F5E;
+        }
+
+        .toast-error {
+            background: #FFF1F2;
+            color: #881337;
+            border: 1px solid #1C1917;
+        }
+
+        .toast-warning {
+            background: #FFFBEB;
+            color: #92400E;
+            border: 1px solid #F59E0B;
+        }
+
+        .toast-info {
+            background: #1C1917;
+            color: white;
+            border: 1px solid #1C1917;
+        }
+
+        @keyframes toastSlideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes toastFadeOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+
+        /* === COURSE GRID SCROLL === */
+        .course-grid-scroll {
+            max-height: 28rem;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .course-grid-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .course-grid-scroll::-webkit-scrollbar-thumb {
+            background: #D6D3D1;
+            border-radius: 99px;
+        }
+
+        .course-grid-scroll::-webkit-scrollbar-thumb:hover {
+            background: #A8A29E;
+        }
+
+        /* === CONFIRM MODAL === */
+        .confirm-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(28, 25, 23, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease forwards;
+        }
+
+        .confirm-modal-box {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            max-width: 24rem;
+            width: 90%;
+            box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.2);
+            animation: toastSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* === JESSE MODE ACTIVE STATE === */
+        .jesse-mode-btn.active {
+            background: #1C1917 !important;
+            color: white !important;
+            border-color: #1C1917 !important;
+        }
     </style>
 </head>
 
@@ -790,6 +911,9 @@
                             <button onclick="switchCourseTab('import')" id="tab-btn-import"
                                 class="font-bold text-sm text-rose-400 pb-2 hover:text-rose-600 transition-colors">✨
                                 Importa AI</button>
+                            <button onclick="switchCourseTab('exam')" id="tab-btn-exam"
+                                class="font-bold text-sm text-amber-500 pb-2 hover:text-amber-600 transition-colors">🎯
+                                Exam Mode</button>
                         </div>
 
                         <!-- DETAILS TAB -->
@@ -861,6 +985,96 @@
                                 <div id="import-loader"
                                     class="hidden text-center mt-2 text-[10px] text-rose-400 animate-pulse font-bold">
                                     ANALISI IN CORSO...</div>
+                            </div>
+                        </div>
+
+                        <!-- EXAM MODE TAB -->
+                        <div id="tab-exam" class="hidden space-y-4">
+                            <!-- Header -->
+                            <div
+                                class="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 p-4 rounded-xl">
+                                <h4 class="font-bold text-amber-700 text-sm mb-1">🎯 Modalità Esame</h4>
+                                <p class="text-[10px] text-stone-600">Carica esami passati, genera domande con AI, e
+                                    simula l'esame.</p>
+                            </div>
+
+                            <!-- PDF Upload Section -->
+                            <div class="bg-white border border-stone-200 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-bold text-stone-700 text-xs uppercase tracking-wider">📄 Carica
+                                        Esami Passati</h5>
+                                    <span class="text-[9px] text-stone-400 font-mono" id="exam-pdf-count">0 PDF
+                                        caricati</span>
+                                </div>
+                                <input type="file" id="exam-pdf-upload" class="hidden" accept=".pdf" multiple
+                                    onchange="handleExamPdfUpload(this.files)">
+                                <button onclick="document.getElementById('exam-pdf-upload').click()"
+                                    class="w-full border-2 border-dashed border-stone-300 rounded-lg p-4 text-center hover:border-amber-400 hover:bg-amber-50 transition-all group cursor-pointer">
+                                    <span class="text-2xl block mb-1">📁</span>
+                                    <span class="text-xs text-stone-500 group-hover:text-amber-600 font-medium">Clicca
+                                        per caricare PDF</span>
+                                </button>
+                                <div id="exam-pdf-list" class="mt-3 space-y-2"></div>
+                            </div>
+
+                            <!-- Question Bank -->
+                            <div class="bg-white border border-stone-200 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-bold text-stone-700 text-xs uppercase tracking-wider">❓ Banca
+                                        Domande</h5>
+                                    <span class="text-[9px] text-stone-400 font-mono" id="exam-question-count">0
+                                        domande</span>
+                                </div>
+                                <div id="exam-questions-preview"
+                                    class="max-h-32 overflow-y-auto space-y-2 text-xs text-stone-600">
+                                    <p class="text-stone-400 italic text-center py-4">Nessuna domanda estratta</p>
+                                </div>
+                            </div>
+
+                            <!-- Simulation Modes -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <!-- AI Generated Mode -->
+                                <button onclick="runExamSimulation('ai')"
+                                    class="group relative bg-gradient-to-br from-rose-500 to-rose-600 text-white p-4 rounded-xl hover:from-rose-600 hover:to-rose-700 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
+                                    <div class="text-2xl mb-2">🤖</div>
+                                    <div class="font-bold text-sm">AI Generated</div>
+                                    <div class="text-[10px] opacity-80">Domande create da DeepSeek</div>
+                                    <!-- Tooltip -->
+                                    <div
+                                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-stone-900 text-white text-[10px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                        L'AI genera domande basate sul syllabus
+                                        <div
+                                            class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-900">
+                                        </div>
+                                    </div>
+                                </button>
+
+                                <!-- Random Pick Mode -->
+                                <button onclick="runExamSimulation('random')"
+                                    class="group relative bg-gradient-to-br from-amber-500 to-orange-500 text-white p-4 rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]">
+                                    <div class="text-2xl mb-2">🎲</div>
+                                    <div class="font-bold text-sm">Random Pick</div>
+                                    <div class="text-[10px] opacity-80">Da esami passati caricati</div>
+                                    <!-- Tooltip -->
+                                    <div
+                                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-stone-900 text-white text-[10px] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                        Estrae domande casuali dai PDF caricati
+                                        <div
+                                            class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stone-900">
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <!-- Exam Simulation Output -->
+                            <div id="exam-simulation-output" class="hidden bg-stone-900 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h5 class="font-bold text-white text-xs uppercase tracking-wider">📝 Simulazione in
+                                        Corso</h5>
+                                    <button onclick="closeExamSimulation()"
+                                        class="text-stone-400 hover:text-white text-xs">✕ Chiudi</button>
+                                </div>
+                                <div id="exam-question-display" class="text-white"></div>
                             </div>
                         </div>
 
@@ -1014,13 +1228,19 @@
                             analizzando la tua richiesta... Se ti è stato utile padrona, dammi del cibo, ho fame!!</div>
                     </div>
                 </div>
-                <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide">
-                    <button onclick="setMode('Socrajess')"
-                        class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Socrajess</button>
-                    <button onclick="setMode('critic')"
-                        class="whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-colors hover:border-rose-300">Relatore</button>
-                    <button onclick="setMode('discuss')"
-                        class="whitespace-nowrap bg-stone-800 text-white hover:bg-stone-900 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm transition-colors">🎓
+                <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex gap-2 overflow-x-auto scrollbar-hide"
+                    id="jesse-mode-container">
+                    <button onclick="setJesseMode('standard')" id="btn-mode-standard"
+                        class="jesse-mode-btn active whitespace-nowrap text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-all">🐕
+                        Standard</button>
+                    <button onclick="setJesseMode('socrajess')" id="btn-mode-socrajess"
+                        class="jesse-mode-btn whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-all hover:border-rose-300">🤔
+                        SocraJess</button>
+                    <button onclick="setJesseMode('critic')" id="btn-mode-critic"
+                        class="jesse-mode-btn whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-all hover:border-rose-300">⚖️
+                        Relatore</button>
+                    <button onclick="setJesseMode('discuss')" id="btn-mode-discuss"
+                        class="jesse-mode-btn whitespace-nowrap text-stone-600 hover:text-rose-600 text-[10px] font-bold border border-stone-200 bg-white px-3 py-1.5 rounded-full shadow-sm transition-all hover:border-rose-300">🎓
                         Discussione</button>
                 </div>
                 <div class="p-3 bg-white border-t border-stone-100 shrink-0 relative">
@@ -1071,6 +1291,47 @@
         let pinnedSources = JSON.parse(localStorage.getItem('millino_pinned')) || [];
         let deletedSources = JSON.parse(localStorage.getItem('millino_deleted')) || [];
         let aiSelectedSources = []; // Temporary, per session
+
+        // V6.0: Jesse Mode Persistence System
+        let currentJesseMode = 'standard';
+
+        // Persona System Prompts - Injected on EVERY API call
+        const JESSE_PERSONAS = {
+            standard: `Sei Jesse, un assistente cagnolino intelligente e fedele per studenti universitari. 
+PERSONALITÀ: 
+- Sei amichevole, empatico e utile.
+- Mantieni un tono professionale ma calmo.
+- Puoi fare riferimenti canini (cibo, code scodinzolanti) ma NON esagerare. Non dire "bau" ogni frase. 
+- Il tuo obiettivo primario è aiutare nello studio.`,
+
+            socrajess: `Sei SocraJess, la versione Socratica di Jesse. 
+REGOLE FERREE:
+- NON dare MAI risposte dirette.
+- Rispondi SOLO con domande che guidano lo studente a trovare la risposta da solo.
+- Usa il metodo maieutico: "Cosa pensi che significhi...?", "Come potresti collegare questo a...?"
+- Se ti chiedono una risposta diretta, rispondi con una domanda che li aiuti a raggiungerla.
+- Mantieni un tono incoraggiante ma sfidante.
+- Occasionalmente fai un riferimento canino (es: "Interessante osso da masticare...")`,
+
+            critic: `Sei il Relatore Severo, una versione critica e pignola di Jesse.
+PERSONALITÀ:
+- Sei un professore universitario esigente che prepara lo studente per la discussione della tesi.
+- Fai domande incalzanti e cerca falle nei ragionamenti.
+- Chiedi citazioni precise, date, nomi degli autori.
+- Segnala quando una risposta è imprecisa o superficiale.
+- Non essere cattivo, ma sii rigoroso. L'obiettivo è PREPARARE lo studente.
+- Usa frasi come: "Sii più preciso", "Quale autore sostiene questo?", "Questa è un'opinione o un fatto?"`,
+
+            discuss: `Sei la Commissione di Laurea simulata.
+CONTESTO: Lo studente sta difendendo la sua tesi magistrale.
+COMPORTAMENTO:
+- Fai domande tecniche e profonde sui contenuti della tesi.
+- Simula i controargomenti che un membro della commissione potrebbe fare.
+- Chiedi di approfondire, di fare collegamenti tra capitoli.
+- Valuta le risposte e dai feedback costruttivo.
+- Mantieni un tono formale ma non ostile.
+- Occasionalmente inserisci: "La commissione apprezza..." o "Potrebbe elaborare meglio..."`
+        };
 
         // --- MASTER DB (85 Fonti) ---
 
@@ -1345,11 +1606,21 @@
             if (token && gist) { showToast("Impostazioni Cloud Salvate"); loadDataFromCloud(); }
         }
 
-        function forceReset() { if (confirm("Vuoi resettare tutto?")) { localStorage.removeItem('millino_progress'); localStorage.removeItem('millino_custom_books'); localStorage.removeItem('millino_pinned'); localStorage.removeItem('millino_deleted'); localStorage.removeItem('custom_roadmap'); localStorage.removeItem('millino_courses'); location.reload(); } }
+        function forceReset() {
+            showConfirmModal("Vuoi resettare tutto? Questa azione non può essere annullata.", () => {
+                localStorage.removeItem('millino_progress');
+                localStorage.removeItem('millino_custom_books');
+                localStorage.removeItem('millino_pinned');
+                localStorage.removeItem('millino_deleted');
+                localStorage.removeItem('custom_roadmap');
+                localStorage.removeItem('millino_courses');
+                location.reload();
+            });
+        }
 
         // --- DYNAMIC COURSE CRUD & MODULE EDITOR ---
         function switchCourseTab(tab) {
-            ['details', 'modules', 'import'].forEach(t => {
+            ['details', 'modules', 'import', 'exam'].forEach(t => {
                 const p = document.getElementById('tab-' + t);
                 const b = document.getElementById('tab-btn-' + t);
                 if (p) p.classList.add('hidden');
@@ -1407,7 +1678,7 @@
             const examMode = document.getElementById('edit-course-exam-mode').value;
             const examDesc = document.getElementById('edit-course-exam-desc').value;
 
-            if (!name || !prof) return alert("Inserisci almeno Nome e Professore!");
+            if (!name || !prof) return showToast("Inserisci almeno Nome e Professore!", 'warning');
 
             const examInfo = { mode: examMode, description: examDesc, tips: "" }; // Tips populated by AI if imported
 
@@ -1517,7 +1788,7 @@
             const goal = document.getElementById('mod-editor-goal').value;
             const sourceIds = Array.from(document.querySelectorAll('#mod-sources-list .source-chip')).map(el => el.dataset.id);
 
-            if (!title) return alert("Inserisci un titolo.");
+            if (!title) return showToast("Inserisci un titolo.", 'warning');
 
             const course = courses.find(c => c.id === editingCourseId);
             const newModule = { title, goal, texts: sourceIds, matchTags: [] };
@@ -1596,7 +1867,7 @@
         // --- AI SYLLABUS IMPORTER ---
         async function runSyllabusImport() {
             let text = document.getElementById('import-text').value.trim();
-            if (!text) return alert("Incolla qualcosa (Testo o URL)!");
+            if (!text) return showToast("Incolla qualcosa (Testo o URL)!", 'warning');
 
             const loader = document.getElementById('import-loader');
             loader.classList.remove('hidden');
@@ -1618,7 +1889,7 @@
                     text = `SOURCE URL: ${text}\n\nCONTENT:\n${pageText}`;
                     showToast("Pagina scaricata con successo! 📄");
                 } catch (e) {
-                    alert("Impossibile leggere il link. Incolla il testo manualmente.\nErrore: " + e.message);
+                    showToast("Impossibile leggere il link. Incolla il testo manualmente.", 'error');
                     loader.classList.add('hidden');
                     btn.innerHTML = originalBtnText;
                     return;
@@ -1726,17 +1997,17 @@
                         document.getElementById('edit-course-exam-desc').value = c.exam_info.description;
                     }
 
-                    alert("✅ Syllabus importato con successo!");
+                    showToast("✅ Syllabus importato con successo!", 'success');
                     renderModuleList(); // Refresh modules list view
                     // Force switch to modules tab to show results
                     switchCourseTab('modules');
 
                 } else {
-                    alert("⚠️ Attenzione: Salva il corso prima di vedere i moduli importati.");
+                    showToast("⚠️ Salva il corso prima di vedere i moduli importati.", 'warning');
                 }
 
             } catch (e) {
-                alert("Errore importazione: " + e.message);
+                showToast("Errore importazione: " + e.message, 'error');
                 console.error(e);
             } finally {
                 loader.classList.add('hidden');
@@ -1750,6 +2021,229 @@
             if (v.includes('proj') || v.includes('proget')) return 'Project';
             if (v.includes('mix')) return 'Mixed';
             return 'Oral';
+        }
+
+        // --- V6.0 EXAM MODE FUNCTIONS ---
+        // Storage for exam PDFs and questions per course
+        let examQuestionBank = JSON.parse(localStorage.getItem('millino_exam_bank') || '{}');
+
+        async function handleExamPdfUpload(files) {
+            if (!files || files.length === 0) return;
+            if (!editingCourseId) return showToast('Salva prima il corso!', 'warning');
+
+            const loader = document.getElementById('exam-pdf-count');
+            const listEl = document.getElementById('exam-pdf-list');
+
+            // Initialize course bank if not exists
+            if (!examQuestionBank[editingCourseId]) {
+                examQuestionBank[editingCourseId] = { pdfs: [], questions: [] };
+            }
+
+            showToast('Elaborazione PDF in corso...', 'info');
+
+            for (const file of files) {
+                try {
+                    // Extract text using PDF.js
+                    const text = await extractPdfText(file);
+
+                    // Store PDF metadata
+                    examQuestionBank[editingCourseId].pdfs.push({
+                        name: file.name,
+                        date: new Date().toISOString(),
+                        text: text.slice(0, 50000) // Limit storage
+                    });
+
+                    // Extract questions from text using simple heuristics
+                    const extractedQuestions = extractQuestionsFromText(text);
+                    examQuestionBank[editingCourseId].questions.push(...extractedQuestions);
+
+                } catch (e) {
+                    console.error('PDF extraction error:', e);
+                    showToast(`Errore con ${file.name}: ${e.message}`, 'error');
+                }
+            }
+
+            // Save to localStorage
+            localStorage.setItem('millino_exam_bank', JSON.stringify(examQuestionBank));
+
+            // Update UI
+            updateExamTabUI();
+            showToast(`${files.length} PDF elaborati con successo!`, 'success');
+        }
+
+        async function extractPdfText(file) {
+            // Check if PDF.js is loaded
+            if (typeof pdfjsLib === 'undefined') {
+                throw new Error('PDF.js non caricato. Ricarica la pagina.');
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent();
+                const pageText = content.items.map(item => item.str).join(' ');
+                fullText += pageText + '\n\n';
+            }
+
+            return fullText;
+        }
+
+        function extractQuestionsFromText(text) {
+            const questions = [];
+
+            // Simple regex patterns to find questions
+            const patterns = [
+                /(?:^|\n)(?:\d+[\.\)\:]|[\u2022\-\*])\s*(.{20,200}\?)/gm, // Numbered or bulleted questions
+                /(?:^|\n)(?:Domanda|Question|Quesito|Esercizio)[^:]*:\s*(.{20,300})/gi, // Labeled questions
+                /(?:^|\n)(.{30,200}\?)/gm // Any sentence ending with ?
+            ];
+
+            patterns.forEach(pattern => {
+                let match;
+                while ((match = pattern.exec(text)) !== null) {
+                    const q = match[1].trim();
+                    if (q.length > 15 && !questions.some(existing => existing.text === q)) {
+                        questions.push({
+                            text: q,
+                            source: 'pdf_extract',
+                            timestamp: Date.now()
+                        });
+                    }
+                }
+            });
+
+            return questions.slice(0, 50); // Limit to 50 questions per PDF
+        }
+
+        function updateExamTabUI() {
+            if (!editingCourseId) return;
+
+            const bank = examQuestionBank[editingCourseId] || { pdfs: [], questions: [] };
+
+            // Update PDF count
+            const pdfCountEl = document.getElementById('exam-pdf-count');
+            if (pdfCountEl) pdfCountEl.textContent = `${bank.pdfs.length} PDF caricati`;
+
+            // Update PDF list
+            const listEl = document.getElementById('exam-pdf-list');
+            if (listEl && bank.pdfs.length > 0) {
+                listEl.innerHTML = bank.pdfs.map((pdf, i) => `
+                    <div class="flex items-center justify-between bg-stone-50 rounded-lg px-3 py-2 text-xs">
+                        <span class="text-stone-700 font-medium truncate max-w-[180px]">📄 ${pdf.name}</span>
+                        <button onclick="removeExamPdf(${i})" class="text-rose-500 hover:text-rose-700 font-bold">✕</button>
+                    </div>
+                `).join('');
+            }
+
+            // Update question count
+            const qCountEl = document.getElementById('exam-question-count');
+            if (qCountEl) qCountEl.textContent = `${bank.questions.length} domande`;
+
+            // Update questions preview
+            const previewEl = document.getElementById('exam-questions-preview');
+            if (previewEl && bank.questions.length > 0) {
+                previewEl.innerHTML = bank.questions.slice(0, 5).map(q => `
+                    <div class="bg-stone-50 rounded-lg p-2 text-[11px] text-stone-700">
+                        ${q.text.slice(0, 80)}${q.text.length > 80 ? '...' : ''}
+                    </div>
+                `).join('') + (bank.questions.length > 5 ? `<div class="text-center text-stone-400 text-[10px]">...e altre ${bank.questions.length - 5} domande</div>` : '');
+            }
+        }
+
+        function removeExamPdf(index) {
+            if (!editingCourseId || !examQuestionBank[editingCourseId]) return;
+
+            examQuestionBank[editingCourseId].pdfs.splice(index, 1);
+            localStorage.setItem('millino_exam_bank', JSON.stringify(examQuestionBank));
+            updateExamTabUI();
+            showToast('PDF rimosso', 'info');
+        }
+
+        async function runExamSimulation(mode) {
+            if (!editingCourseId) return showToast('Apri un corso prima!', 'warning');
+
+            const outputEl = document.getElementById('exam-simulation-output');
+            const displayEl = document.getElementById('exam-question-display');
+            outputEl.classList.remove('hidden');
+
+            if (mode === 'random') {
+                // Random pick from question bank
+                const bank = examQuestionBank[editingCourseId];
+                if (!bank || bank.questions.length === 0) {
+                    displayEl.innerHTML = '<p class="text-amber-400">⚠️ Nessuna domanda nella banca. Carica dei PDF prima!</p>';
+                    return;
+                }
+
+                const randomQuestions = bank.questions
+                    .sort(() => Math.random() - 0.5)
+                    .slice(0, 5);
+
+                displayEl.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="text-[10px] uppercase tracking-wider text-amber-400 font-bold mb-3">🎲 Domande Casuali</div>
+                        ${randomQuestions.map((q, i) => `
+                            <div class="bg-stone-800 rounded-lg p-3">
+                                <div class="text-[10px] text-amber-400 font-bold mb-1">Domanda ${i + 1}</div>
+                                <div class="text-sm text-white leading-relaxed">${q.text}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+            } else if (mode === 'ai') {
+                // AI-generated questions
+                displayEl.innerHTML = '<div class="animate-pulse text-rose-400 text-center py-8">🤖 Generazione domande con DeepSeek...</div>';
+
+                try {
+                    const course = courses.find(c => c.id === editingCourseId);
+                    const modules = course?.modules || [];
+                    const examInfo = course?.exam_info || {};
+
+                    const context = `
+                        Corso: ${course?.name}
+                        Moduli: ${modules.map(m => m.title).join(', ')}
+                        Tipo Esame: ${examInfo.mode || 'Orale'}
+                        Descrizione Esame: ${examInfo.description || 'N/A'}
+                    `;
+
+                    const apiKey = localStorage.getItem('millino_openai_key');
+                    if (!apiKey) throw new Error('Manca chiave API');
+
+                    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                        body: JSON.stringify({
+                            model: 'gpt-4o-mini',
+                            messages: [
+                                { role: 'system', content: 'Sei un professore universitario che prepara domande d\'esame. Genera 5 domande realistiche e impegnative per testare la preparazione dello studente. Rispondi SOLO con le domande numerate, senza introduzioni.' },
+                                { role: 'user', content: `Genera 5 domande d'esame per questo corso:\n${context}` }
+                            ],
+                            temperature: 0.8
+                        })
+                    });
+
+                    if (!res.ok) throw new Error('API error');
+                    const data = await res.json();
+                    const questions = data.choices[0].message.content;
+
+                    displayEl.innerHTML = `
+                        <div class="space-y-4">
+                            <div class="text-[10px] uppercase tracking-wider text-rose-400 font-bold mb-3">🤖 Domande Generate da AI</div>
+                            <div class="bg-stone-800 rounded-lg p-4 text-sm text-white leading-relaxed whitespace-pre-line">${questions}</div>
+                        </div>
+                    `;
+
+                } catch (e) {
+                    displayEl.innerHTML = `<p class="text-rose-400">❌ Errore: ${e.message}</p>`;
+                }
+            }
+        }
+
+        function closeExamSimulation() {
+            document.getElementById('exam-simulation-output').classList.add('hidden');
         }
 
         // IMPLEMENTATION: Global Callback for Squad Engine
@@ -1794,7 +2288,7 @@
             runSearch(); // Update list immediately
 
             // Success Trigger
-            alert(`✅ Squad Engine V5.0 Success!\n"${newBook.title}" è stato aggiunto al database con Grafici e Note Atomiche.`);
+            showToast(`✅ Squad Engine: "${newBook.title}" aggiunto al database!`, 'success');
         };
 
         function initApp() {
@@ -1922,14 +2416,15 @@
 
         function deleteSource(id) {
             const book = biblioData.find(b => b.id === id);
-            if (confirm(`Sei sicuro di voler eliminare "${book.title}"?`)) {
+            showConfirmModal(`Sei sicuro di voler eliminare "${book.title}"?`, () => {
                 deletedSources.push(id);
                 // Also remove from Pinned/AI Select to be clean
                 pinnedSources = pinnedSources.filter(x => x !== id);
                 aiSelectedSources = aiSelectedSources.filter(x => x !== id);
                 saveData();
                 runSearch();
-            }
+                showToast('Fonte rimossa', 'info');
+            });
         }
 
         // --- BOOK MODAL LOGIC ---
@@ -1947,7 +2442,7 @@
             const year = document.getElementById('add-book-year').value.trim();
             const subject = document.getElementById('add-book-subject').value.trim();
 
-            if (!title || !author) return alert("Inserisci almeno Titolo e Autore!");
+            if (!title || !author) return showToast("Inserisci almeno Titolo e Autore!", 'warning');
 
             const newId = "U" + Date.now().toString().slice(-4);
             const newBook = {
@@ -2225,10 +2720,32 @@
         }
 
         // --- JESSE & CHAT ---
+        // V6.0: Jesse Mode Persistence - Mode is GLOBAL and injected on every API call
+        function setJesseMode(mode) {
+            currentJesseMode = mode;
+            aiMode = mode; // For backward compatibility
+
+            // Update button active states
+            document.querySelectorAll('.jesse-mode-btn').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(`btn-mode-${mode}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Mode-specific greeting message
+            const modeMessages = {
+                standard: "🐕 Ciao padrona! Sono tornato in modalità standard. Come posso aiutarti oggi?",
+                socrajess: "🤔 Modalità SocraJess attivata! Da ora risponderò solo con domande per guidare il tuo ragionamento...",
+                critic: "⚖️ Modalità Relatore Severo attivata. Preparati, sarò rigoroso ma costruttivo!",
+                discuss: "🎓 Benvenuta alla simulazione della Discussione di Laurea. La commissione è pronta. Difendi la tua tesi!"
+            };
+
+            addMessage(modeMessages[mode] || modeMessages.standard, 'bot');
+            showToast(`Modalità Jesse: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`, 'info');
+        }
+
+        // Legacy compatibility wrapper
         function setMode(m) {
-            aiMode = m;
-            const msg = m === 'discuss' ? "Grrr... facciamo sul serio! Sono la commissione di laurea. Difendi la tua tesi, padrona!" : (m === 'Socrajess' ? "Modalità Socrajess on: ti risponderò solo con domande, bau!" : "Modalità Relatore Severo: preparati, sarò pignolissimo!");
-            addMessage(msg, 'bot');
+            const modeMap = { 'Socrajess': 'socrajess', 'critic': 'critic', 'discuss': 'discuss' };
+            setJesseMode(modeMap[m] || 'standard');
         }
 
         function toggleChat() {
@@ -2281,26 +2798,24 @@
                 if (course) contextData = biblioData.filter(b => b.subject === course.name);
             }
 
-            let systemInstruction = `Sei Jesse, un assistente cagnolino intelligente e fedele per studenti universitari. 
-            PERSONALITÀ: 
-            - Sei amichevole, empatico e utile.
-            - Mantieni un tono professionale ma calmo.
-            - Puoi fare riferimenti canini (cibo, code scodinzolanti) ma NON esagerare. Non dire "bau" ogni frase. 
-            - Il tuo obiettivo primario è aiutare nello studio.
+            // V6.0: Use JESSE_PERSONAS map - persona is ALWAYS injected based on currentJesseMode
+            const basePersona = JESSE_PERSONAS[currentJesseMode] || JESSE_PERSONAS.standard;
+
+            let systemInstruction = `${basePersona}
 
             CONTESTO ATTUALE:
-            - Corso Attivo: ${currentCourseId ? courses.find(c => c.id === currentCourseId).name : "Panoramica Generale"}
+            - Corso Attivo: ${currentCourseId ? courses.find(c => c.id === currentCourseId)?.name : "Panoramica Generale"}
+            - Modalità Jesse: ${currentJesseMode}
             
             REGOLE CITAZIONI:
             - Quando citi una fonte dal CONTESTO, usa SEMPRE il formato "Autore - Titolo opera".
             - Esempio: "Come dice Simondon in L'individuazione..." invece di "Come dice S01...".
             - È fondamentale essere precisi citando il titolo corretto dell'opera che trovi nel database.
             - NON usare mai gli ID (es: S01, D01) a meno che l'utente non lo chieda esplicitamente.
-            - Modalità: ${activeMode}
             
             ISTRUZIONI FOTO: Se chiedono foto, rispondi entusiasta (la foto sarà aggiunta automaticamente).`;
 
-            // PERSONA OVERRIDE (Academic Tone)
+            // PERSONA OVERRIDE (Academic Tone - only for "Scrivi Bozza" button)
             if (personaOverride === 'academic_draft') {
                 systemInstruction = `Sei un Assistente Accademico di alto livello per Tesi di Laurea.
                 - NON SEI UN CANE. Ignora qualsiasi istruzione precedente su "Jesse" o "Bau".
@@ -2441,7 +2956,7 @@
                             modeLabel.innerText = "COFFEE BREAK";
                             modeLabel.className = "text-[8px] uppercase font-bold text-teal-400 tracking-widest";
                             mainDisplay.className = "font-mono text-xl font-bold tracking-widest text-teal-100";
-                            alert("🧠 Focus completato. Ora 7 minuti di pausa!");
+                            showToast("🧠 Focus completato! Ora 7 minuti di pausa.", 'success');
                         } else {
                             timerMode = 'focus';
                             time = 25 * 60; // 25 Minutes
@@ -2449,7 +2964,7 @@
                             modeLabel.innerText = "FOCUS MODE";
                             modeLabel.className = "text-[8px] uppercase font-bold text-stone-400 tracking-widest";
                             mainDisplay.className = "font-mono text-xl font-bold tracking-widest text-white";
-                            alert("☕ Pausa finita. Si torna a lavorare.");
+                            showToast("☕ Pausa finita. Si torna a lavorare!", 'info');
                         }
 
                         // Update Display immediately
@@ -2478,16 +2993,66 @@
         }
         function updateWordCount() { const v = parseInt(document.getElementById('word-input').value); if (v) { const d = new Date().toLocaleDateString('it-IT'); const i = wordHistory.findIndex(h => h.date === d); if (i >= 0) wordHistory[i].count = v; else wordHistory.push({ date: d, count: v }); localStorage.setItem('word_history', JSON.stringify(wordHistory)); renderTracker(); } }
 
-        // --- TOAST NOTIFICATION ---
-        function showToast(msg) {
+        // --- V6.0 TOAST NOTIFICATION SYSTEM ---
+        // Types: 'success' (white/rose), 'error' (rose/dark), 'warning' (amber), 'info' (stone-900)
+        function showToast(msg, type = 'success') {
+            // Remove existing toast if present
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+
             const toast = document.createElement('div');
-            toast.className = "fixed bottom-10 left-1/2 -translate-x-1/2 bg-stone-900 text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-2 animate-fadeIn";
-            toast.innerHTML = `<span>✨</span> ${msg}`;
+            toast.className = `toast toast-${type}`;
+
+            // Type-specific icons
+            const icons = {
+                success: '✨',
+                error: '❌',
+                warning: '⚠️',
+                info: '💬'
+            };
+
+            toast.innerHTML = `<span>${icons[type] || icons.success}</span> ${msg}`;
             document.body.appendChild(toast);
+
+            // Auto-dismiss with fade-out animation
             setTimeout(() => {
-                toast.classList.add('opacity-0', 'transition-opacity', 'duration-500');
-                setTimeout(() => toast.remove(), 500);
-            }, 2000);
+                toast.style.animation = 'toastFadeOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                setTimeout(() => toast.remove(), 400);
+            }, 2500);
+        }
+
+        // --- CONFIRM MODAL (Replacement for browser confirm()) ---
+        function showConfirmModal(message, onConfirm, onCancel = null) {
+            const backdrop = document.createElement('div');
+            backdrop.className = 'confirm-modal-backdrop';
+            backdrop.innerHTML = `
+                <div class="confirm-modal-box">
+                    <p class="text-stone-800 font-medium text-sm mb-6">${message}</p>
+                    <div class="flex justify-end gap-3">
+                        <button id="confirm-cancel" class="px-4 py-2 text-xs font-bold text-stone-500 hover:bg-stone-100 rounded-lg transition-colors">Annulla</button>
+                        <button id="confirm-ok" class="px-5 py-2 text-xs font-bold bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-colors">Conferma</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(backdrop);
+
+            document.getElementById('confirm-cancel').onclick = () => {
+                backdrop.remove();
+                if (onCancel) onCancel();
+            };
+
+            document.getElementById('confirm-ok').onclick = () => {
+                backdrop.remove();
+                onConfirm();
+            };
+
+            // Close on backdrop click
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    backdrop.remove();
+                    if (onCancel) onCancel();
+                }
+            });
         }
 
         function selectAllCitations() { document.querySelectorAll('.cite-cb').forEach(cb => cb.checked = true); generateBibliography(); }
@@ -2541,7 +3106,7 @@
             const resultBox = document.getElementById('schedule-result');
             const loader = document.getElementById('schedule-output');
 
-            if (!input) return alert("Inserisci la tua disponibilità!");
+            if (!input) return showToast("Inserisci la tua disponibilità!", 'warning');
 
             // UI Reset
             resultBox.classList.add('hidden');
@@ -2694,7 +3259,7 @@
         }
         // --- ICS EXPORT LOGIC ---
         function downloadIcs() {
-            if (!lastGeneratedSchedule) return alert("Nessun programma da esportare!");
+            if (!lastGeneratedSchedule) return showToast("Nessun programma da esportare!", 'warning');
 
             let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Millino Fagiolino//IT\nCALSCALE:GREGORIAN\n";
             const daysMap = { "lunedì": 1, "martedì": 2, "mercoledì": 3, "giovedì": 4, "venerdì": 5, "sabato": 6, "domenica": 0 };
