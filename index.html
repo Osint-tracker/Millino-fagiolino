@@ -3087,7 +3087,7 @@ Respond with ONLY the template string, nothing else.`
             renderJournal();
             renderTracker();
             renderRoadmap(); // Initial render might be empty if no course selected? Or default
-            renderCitationsList();
+            CitationEngine.init();
             renderConcepts();
         }
         function router(v) {
