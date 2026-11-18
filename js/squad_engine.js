@@ -135,7 +135,7 @@ class SquadEngine {
 
         try {
             // AUTH & CONFIG
-            let apiKey = localStorage.getItem('millino_openrouter_key');
+            let apiKey = sessionStorage.getItem('millino_openrouter_key');
             let endpoint = "https://openrouter.ai/api/v1/chat/completions";
             let model = agent.model; // e.g., 'deepseek/deepseek-chat'
             let headers = {
@@ -146,7 +146,7 @@ class SquadEngine {
 
             // Fallback to OpenAI if OpenRouter key is missing
             if (!apiKey) {
-                apiKey = localStorage.getItem('millino_openai_key');
+                apiKey = sessionStorage.getItem('millino_openai_key');
                 if (!apiKey) throw new Error("Missing API Key. Check Settings.");
 
                 endpoint = "https://api.openai.com/v1/chat/completions";
