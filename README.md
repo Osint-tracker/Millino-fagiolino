@@ -4,6 +4,7 @@ Agenda universitaria offline per il primo anno MIREES a Forlì. Il branch contie
 
 - [Guida e installazione](docs/STUDY-OS.md)
 - [Audit, correzioni e limiti verificati](docs/AUDIT.md)
+- [Anteprima della Home mobile](docs/anteprima-home.png)
 
 ## Millino Fagiolino originale (Research OS v6.0)
 > **Client-Side Research OS for PhD Candidates.**

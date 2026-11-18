@@ -144,7 +144,9 @@ export function propose(s, first = day(), days = 28, earliest = 0) {
   const kept = s.plan.filter((p) => p.status === "planned" && !past(p));
   const deadline = (t) => {
     const exam = s.courses.find((c) => c.id === t.course)?.exam;
-    return t.due || (exam ? addDays(exam, -(t.examLeadDays || 0)) : "9999-12-31");
+    return (
+      t.due || (exam ? addDays(exam, -(t.examLeadDays || 0)) : "9999-12-31")
+    );
   };
   const tasks = s.tasks
     .filter((t) => !t.done && s.courses.find((c) => c.id === t.course)?.enabled)
@@ -220,10 +222,11 @@ export function propose(s, first = day(), days = 28, earliest = 0) {
   };
 }
 export function accept(s, p) {
-  const missed = new Set(p.missed.map(x=>x.id));
-  for (const old of s.plan) if(old.status==="planned" && missed.has(old.id)) old.status = "missed";
-  const ids=new Set(s.plan.map(x=>x.id));
-  s.plan.push(...p.slots.filter(x=>!ids.has(x.id)));
+  const missed = new Set(p.missed.map((x) => x.id));
+  for (const old of s.plan)
+    if (old.status === "planned" && missed.has(old.id)) old.status = "missed";
+  const ids = new Set(s.plan.map((x) => x.id));
+  s.plan.push(...p.slots.filter((x) => !ids.has(x.id)));
 }
 export function record(
   s,

@@ -13,3 +13,10 @@ Base di confronto: commit 3452e1c. La nuova area MIREES convive con la versione 
 Il catalogo è stato letto dalle sette pagine ufficiali. Le stime e le proposte sono modificabili e non certificano il carico complessivo di un esame. Il test dell’import verifica parsing e conferma su un esempio controllato. L’app permette di tornare al testo manuale quando il servizio remoto è assente.
 Il test WebDAV verifica protocollo e conflitti con un server simulato. La compatibilità con il servizio personale e i costi/risposte del provider AI dipendono dalle credenziali dell’utente. Le funzioni tesi legacy conservano dipendenze CDN e non fanno parte della garanzia offline.
 Il wrapper Android è compilato con Gradle. L’emulatore software disponibile si è bloccato durante il boot senza accelerazione hardware. La prova interattiva su dispositivo, il comportamento del tasto Indietro e la consegna effettiva dei promemoria rimangono da verificare. Nessun test su smartphone fisico è stato eseguito.
+
+## Collaudo del 18 novembre 2026
+
+- Due suite Chromium eseguite. La prima prova registrazione di 75 minuti, modifica del piano, backup, riapertura e scrittura offline. La seconda prova una bozza modificabile, un vero file PDF, estrazione delle domande, cifratura, download e rifiuto di una scrittura WebDAV concorrente.
+- Il parser è stato provato anche sulle copie HTML delle sette schede Unibo scaricate il giorno del test. Tutte hanno restituito una bozza non vuota. Le righe estratte possono includere titoli o istruzioni e richiedono revisione.
+- Gradle ha generato APK di debug e Android App Bundle. Verificata firma APK v2, package `it.mirees.studyos`, Android minimo API 24 e target API 36. Il modulo UI contenuto nell’APK è stato confrontato byte per byte col sorgente consegnato.
+- SHA-256 dell’APK consegnato: `9f5828af62123b57e6dbae472e669204b45f0902baf222cb5ddb0fe7b0e01ef3`.

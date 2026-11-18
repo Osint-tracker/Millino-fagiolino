@@ -1,4 +1,5 @@
-import test from "node:test";
+import test, { beforeEach } from "node:test";
+import { readFile } from "node:fs/promises";
 import assert from "node:assert/strict";
 import {
   initial,
@@ -9,9 +10,26 @@ import {
   record,
   studied,
   remaining,
+  workLeft,
+  replaceWorkspace,
   validate,
   addDays,
 } from "../study/core.mjs";
+beforeEach(t=>t.mock.timers.enable({apis:["Date"],now:new Date("2026-11-18T12:00:00Z")}));
+test("ricalibra il residuo sul ritmo osservato e ripristina esattamente la copia scelta",()=>{
+  const state=initial(), backup=structuredClone(state), task=state.tasks[0], end=Date.now();
+  record(state, task.id, end-75*60000, end, 40);
+  assert.equal(workLeft(state,task),113);
+  state.documents=[];replaceWorkspace(state,backup);
+  assert.deepEqual(state,backup);
+});
+test("il frontend legacy conserva un solo percorso di importazione PDF",async()=>{
+  const html=await readFile(new URL("../index.html",import.meta.url),"utf8");
+  for(const name of ["handleExamPdfUpload","extractPdfText","extractQuestionsFromText"]){
+    assert.equal(html.split("function "+name+"(").length-1,1);
+    assert.ok(!html.includes("window."+name+" ="));
+  }
+});
 test("proposta deterministica; lezioni, treni, capienza e post-socialist escluso", () => {
   const s = initial(),
     snapshot = structuredClone(s),

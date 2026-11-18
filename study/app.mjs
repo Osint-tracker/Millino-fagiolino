@@ -406,8 +406,7 @@ function calendar() {
       row(
         button(
           "Accetta piano",
-          () =>
-            change((s) => accept(s,preview)),
+          () => change((s) => accept(s, preview)),
           "primary",
         ),
         button("Scarta", () => {
@@ -431,12 +430,35 @@ function calendar() {
     const d = addDays(startDate, i),
       events = fixed(state, d),
       plan = state.plan.filter((p) => p.date === d);
-    if (i && span > 7 && !events.length && !plan.length) continue;
+    const milestones = [
+      ...state.courses
+        .filter((c) => c.enabled && c.exam === d)
+        .map((c) => "Esame · " + c.title),
+      ...state.tasks
+        .filter((t) => !t.done && t.due === d)
+        .map((t) => "Consegna · " + t.title),
+    ];
+    if (i && span > 7 && !events.length && !plan.length && !milestones.length)
+      continue;
     heading(when(d));
-    for (const e of events)
-      view.append(meta(time(e.start) + "–" + time(e.end) + " · " + e.title));
+    for (const title of milestones)
+      view.append(box(el("strong", title), meta("Orario da verificare")));
+    for (const e of events) {
+      const line = meta(time(e.start) + "–" + time(e.end) + " · " + e.title);
+      const index = state.events.indexOf(e);
+      if (index >= 0)
+        line.append(
+          " ",
+          button("Rimuovi impegno", () => {
+            if (confirm("Rimuovere questo impegno dal calendario?"))
+              return change((s) => s.events.splice(index, 1));
+          }),
+        );
+      view.append(line);
+    }
     view.append(...plan.map(entry));
-    if (!events.length && !plan.length) view.append(meta("Libero"));
+    if (!events.length && !plan.length && !milestones.length)
+      view.append(meta("Libero"));
   }
 }
 function move(p) {
@@ -616,6 +638,32 @@ function taskForm(c, t) {
 }
 function courses() {
   view.append(el("h1", "Materie"));
+  view.append(
+    button("Aggiungi materia o modulo", () =>
+      edit(
+        "Nuovo insegnamento",
+        [
+          field("course", "Insegnamento", "text", "", { required: true }),
+          field("title", "Modulo (facoltativo)"),
+          field("teacher", "Docente"),
+          field("credits", "CFU", "number", "", { min: 0, max: 60 }),
+        ],
+        (f) =>
+          change((s) =>
+            s.courses.push({
+              id: crypto.randomUUID(),
+              course: f.course.trim(),
+              title: f.title.trim() || f.course.trim(),
+              teacher: f.teacher,
+              credits: f.credits ? +f.credits : "—",
+              enabled: true,
+              exam: "",
+              source: "Inserimento personale",
+            }),
+          ),
+      ),
+    ),
+  );
   for (const c of state.courses) {
     const info = outlines[c.id] || ["", [], []],
       n = el("details"),
