@@ -1,1 +1,6 @@
-{"appId":"it.mirees.studyos","appName":"MIREES Study OS","webDir":"dist","android":{"allowMixedContent":false}}
+{
+  "appId": "it.mirees.studyos",
+  "appName": "MIREES Study OS",
+  "webDir": "dist",
+  "android": { "allowMixedContent": false }
+}

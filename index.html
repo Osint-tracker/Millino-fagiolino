@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Millino Fagiolino | Research OS v4.4 (Stable)</title>
+    <script>if (!new URLSearchParams(location.search).has("legacy")) location.replace("./study/" + location.hash);</script>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 
@@ -349,7 +350,6 @@
 </head>
 
 <body class="flex h-full w-full overflow-hidden">
-    <script>if (!new URLSearchParams(location.search).has("legacy")) location.replace("./study/" + location.hash);</script>
 
     <div id="zen-mode"
         class="fixed inset-0 bg-white z-[100] hidden flex flex-col items-center justify-center p-8 overflow-hidden">
@@ -776,6 +776,8 @@
                                     <input type="text" id="gist-id"
                                         class="w-full bg-stone-50 border border-stone-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-stone-200 font-mono text-xs"
                                         placeholder="e.g. 8f7d..." onchange="saveCloudSettings()">
+                                    <button type="button" onclick="loadDataFromCloud()">Scarica copia Gist</button>
+                                    <button type="button" onclick="if(confirm('Sovrascrivere la copia Gist con i dati locali?')) syncDataToCloud()">Aggiorna copia Gist</button>
                                 </div>
                             </div>
                         </div>
@@ -1852,7 +1854,7 @@ COMPORTAMENTO:
             const gist = document.getElementById('gist-id').value.trim();
             if (token) sessionStorage.setItem('millino_gh_token', token);
             if (gist) localStorage.setItem('millino_gist_id', gist);
-            if (token && gist) { showToast("Impostazioni Cloud Salvate"); loadDataFromCloud(); }
+            if (token && gist) showToast("Impostazioni Cloud Salvate");
             if (!token) sessionStorage.removeItem("millino_gh_token");
         }
 
