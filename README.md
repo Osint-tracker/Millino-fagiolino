@@ -1,4 +1,12 @@
-# 🐕 Millino Fagiolino (Research OS v6.0)
+# MIREES Study OS
+
+Agenda universitaria offline per il primo anno MIREES a Forlì. Il branch contiene il workspace web e il progetto nativo Android. La guida include primo avvio, personalizzazione dell’orario, calendario, verifica dei progressi, backup e compilazione.
+
+- [Guida e installazione](docs/STUDY-OS.md)
+- [Audit, correzioni e limiti verificati](docs/AUDIT.md)
+- [Anteprima della Home mobile](docs/anteprima-home.png)
+
+## Millino Fagiolino originale (Research OS v6.0)
 > **Client-Side Research OS for PhD Candidates.**
 > *Forged in the fires of late-night study sessions.*
 

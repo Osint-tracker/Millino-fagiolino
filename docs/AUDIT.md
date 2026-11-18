@@ -1,0 +1,22 @@
+# Audit e registro delle correzioni
+Base di confronto: commit 3452e1c. La nuova area MIREES convive con la versione tesi. Le osservazioni sul legacy derivano dal codice del repository. La copertura browser riguarda i percorsi indicati sotto.
+| Gravità | Componente e riscontro | Intervento e verifica |
+|---|---|---|
+| Alta | Exam Mode ridefiniva upload, estrazione PDF e parser delle domande. L’ultima versione ignorava il gestore multiplo e rendeva stringhe invece di salvare gli oggetti attesi. | Rimosse le ridefinizioni. Corretti conteggio, svuotamento anteprima ed escaping di domande e nomi file. Il nuovo percorso è provato nel browser con un PDF reale. |
+| Alta | Il salvataggio locale avviava automaticamente PATCH Gist e l’avvio poteva rimpiazzare dati locali con una copia remota. Il payload legacy ometteva la banca domande e altri dati. | Caricamento e download legacy espliciti. Archivio locale esportabile. Nel nuovo workspace, transazioni IndexedDB, backup completo e WebDAV cifrato con precondizioni. Test browser di esportazione, ripristino e conflitto. |
+| Alta | Token GitHub e chiavi AI venivano scritti stabilmente in localStorage. Il backend chat accettava richieste prive di un token personale. | Le nuove credenziali legacy usano la sessione. Backend opzionale protetto da token e limiti di richiesta. Chiavi preesistenti nelle vecchie installazioni possono essere revocate e rimosse dall’utente. |
+| Alta | Materiali e risposte esterne erano interpolati in HTML in varie viste. | La nuova interfaccia rende testo, note, bozze e risposte tramite nodi DOM. Il parser del syllabus usa un template inerte. I percorsi del vecchio frontend oltre quelli corretti richiedono ulteriore revisione prima di usare contenuti non fidati. |
+| Alta | Il prompt del syllabus invitava a indovinare associazioni bibliografiche e poteva sovrascrivere gli argomenti. | Rimossa l’istruzione di inferenza, aggiunte conferme in legacy. Nel nuovo importer niente modello: recupero limitato agli identificativi ufficiali, editing delle righe e conferma prima del salvataggio. Test browser su pagina controllata. |
+| Media | Scheduler AI senza collision check affidabile né collegamento con le sessioni reali. Dashboard centrata sui libri. | Motore locale con dipendenze, lezioni, trasferte, limiti, scadenze, tempo misurato e avanzamento. Proposta verificabile prima dell’accettazione. Test su conflitti, sessioni saltate, 75 minuti e ripassi. |
+| Media | Frontend monolitico e asset esterni necessari al vecchio sito. | Area MIREES modulare, cache locale web e asset inclusi nel progetto Android. Test Chromium a 390 px con riapertura e aggiornamento offline. |
+## Limiti di verifica
+Il catalogo è stato letto dalle sette pagine ufficiali. Le stime e le proposte sono modificabili e non certificano il carico complessivo di un esame. Il test dell’import verifica parsing e conferma su un esempio controllato. L’app permette di tornare al testo manuale quando il servizio remoto è assente.
+Il test WebDAV verifica protocollo e conflitti con un server simulato. La compatibilità con il servizio personale e i costi/risposte del provider AI dipendono dalle credenziali dell’utente. Le funzioni tesi legacy conservano dipendenze CDN e non fanno parte della garanzia offline.
+Il wrapper Android è compilato con Gradle. L’emulatore software disponibile si è bloccato durante il boot senza accelerazione hardware. La prova interattiva su dispositivo, il comportamento del tasto Indietro e la consegna effettiva dei promemoria rimangono da verificare. Nessun test su smartphone fisico è stato eseguito.
+
+## Collaudo del 18 novembre 2026
+
+- Due suite Chromium eseguite. La prima prova registrazione di 75 minuti, modifica del piano, backup, riapertura e scrittura offline. La seconda prova una bozza modificabile, un vero file PDF, estrazione delle domande, cifratura, download e rifiuto di una scrittura WebDAV concorrente.
+- Il parser è stato provato anche sulle copie HTML delle sette schede Unibo scaricate il giorno del test. Tutte hanno restituito una bozza non vuota. Le righe estratte possono includere titoli o istruzioni e richiedono revisione.
+- Gradle ha generato APK di debug e Android App Bundle. Verificata firma APK v2, package `it.mirees.studyos`, Android minimo API 24 e target API 36. Il modulo UI contenuto nell’APK è stato confrontato byte per byte col sorgente consegnato.
+- SHA-256 dell’APK consegnato: `9f5828af62123b57e6dbae472e669204b45f0902baf222cb5ddb0fe7b0e01ef3`.

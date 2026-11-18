@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Millino Fagiolino | Research OS v4.4 (Stable)</title>
+    <script>if (!new URLSearchParams(location.search).has("legacy")) location.replace("./study/" + location.hash);</script>
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
 
@@ -775,6 +776,8 @@
                                     <input type="text" id="gist-id"
                                         class="w-full bg-stone-50 border border-stone-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-stone-200 font-mono text-xs"
                                         placeholder="e.g. 8f7d..." onchange="saveCloudSettings()">
+                                    <button type="button" onclick="loadDataFromCloud()">Scarica copia Gist</button>
+                                    <button type="button" onclick="if(confirm('Sovrascrivere la copia Gist con i dati locali?')) syncDataToCloud()">Aggiorna copia Gist</button>
                                 </div>
                             </div>
                         </div>
@@ -1702,7 +1705,7 @@ COMPORTAMENTO:
 
             // Avvio App
             mergeData();
-            loadDataFromCloud(); // V5.0 Cloud Sync Init
+            // Remote downloads require explicit confirmation in Settings.
             initApp();
             initAudio();
         });
@@ -1738,12 +1741,12 @@ COMPORTAMENTO:
             localStorage.setItem('millino_courses', JSON.stringify(courses));
 
             // CLOUD SYNC TRIGGER
-            syncDataToCloud();
+            // Keep local saves independent of explicit cloud operations.
         }
 
         // --- CLOUD SYNC LOGIC (GITHUB GIST) ---
         async function syncDataToCloud() {
-            const token = localStorage.getItem('millino_gh_token');
+            const token = sessionStorage.getItem('millino_gh_token');
             const gistId = localStorage.getItem('millino_gist_id');
             if (!token || !gistId) return; // No sync configured
 
@@ -1786,7 +1789,7 @@ COMPORTAMENTO:
         }
 
         async function loadDataFromCloud() {
-            const token = localStorage.getItem('millino_gh_token');
+            const token = sessionStorage.getItem('millino_gh_token');
             const gistId = localStorage.getItem('millino_gist_id');
             if (!token || !gistId) return;
 
@@ -1807,7 +1810,7 @@ COMPORTAMENTO:
                 // Alternatively, just load it if we trust the cloud as master.
                 // For this V5.0, let's assume Cloud is Master on Init.
 
-                if (content.updated_at) {
+                if (content.updated_at && confirm("Sostituire i dati locali con questa copia Gist del " + content.updated_at + "?")) {
                     console.log("📥 Loading Data from Cloud...", content.updated_at);
 
                     // Update LocalStorage
@@ -1849,9 +1852,10 @@ COMPORTAMENTO:
         function saveCloudSettings() {
             const token = document.getElementById('github-token').value.trim();
             const gist = document.getElementById('gist-id').value.trim();
-            if (token) localStorage.setItem('millino_gh_token', token);
+            if (token) sessionStorage.setItem('millino_gh_token', token);
             if (gist) localStorage.setItem('millino_gist_id', gist);
-            if (token && gist) { showToast("Impostazioni Cloud Salvate"); loadDataFromCloud(); }
+            if (token && gist) showToast("Impostazioni Cloud Salvate");
+            if (!token) sessionStorage.removeItem("millino_gh_token");
         }
 
         function forceReset() {
@@ -2116,6 +2120,7 @@ COMPORTAMENTO:
         async function runSyllabusImport() {
             let text = document.getElementById('import-text').value.trim();
             if (!text) return showToast("Incolla qualcosa (Testo o URL)!", 'warning');
+            if (!confirm("Inviare il syllabus al provider AI configurato? Per gli URL viene usato anche Jina Reader. I risultati sono bozze.")) return;
 
             const loader = document.getElementById('import-loader');
             loader.classList.remove('hidden');
@@ -2156,7 +2161,7 @@ COMPORTAMENTO:
             CRITICAL: You MUST LINK TOPICS TO MATERIALS.
             For every Topic you find, analyze the Bibliography provided. 
             - If a Topic mentions a specific author or chapter, create an EXPLICIT link.
-            - If no link is explicit, use your knowledge to GUESS the most likely book from the list. If uncertain, strictly prefix the title with '⚠️ [PROBABLE]' to warn the user. 
+            - If the source does not explicitly specify a link, leave related_material empty. Never guess a link. 
             - Output the material reference in format "Author - Title (Chapter/Section if applicable)"
             
             AVAILABLE MATERIALS (from user's bibliography):
@@ -2182,7 +2187,7 @@ COMPORTAMENTO:
 
             try {
                 // TRY OPENROUTER FIRST (Best for parsing)
-                let apiKey = localStorage.getItem('millino_openrouter_key');
+                let apiKey = sessionStorage.getItem('millino_openrouter_key');
                 let endpoint = "https://openrouter.ai/api/v1/chat/completions";
                 let model = "deepseek/deepseek-v3.2"; // or qwen/qwen-turbo
                 let extraHeaders = {
@@ -2192,7 +2197,7 @@ COMPORTAMENTO:
 
                 // Fallback to OpenAI if no OpenRouter key
                 if (!apiKey) {
-                    apiKey = localStorage.getItem('millino_openai_key');
+                    apiKey = sessionStorage.getItem('millino_openai_key');
                     if (!apiKey) throw new Error("Manca la chiave API (OpenRouter o OpenAI). Configurala nelle impostazioni.");
                     endpoint = "https://api.openai.com/v1/chat/completions";
                     model = "gpt-4o-mini";
@@ -2245,7 +2250,8 @@ COMPORTAMENTO:
 
                     // Merge Topics
                     if (result.topics && Array.isArray(result.topics)) {
-                        c.topics = result.topics.map(t => ({ ...t, texts: [] }));
+                        if (!confirm("Sostituire gli argomenti del corso con la bozza AI?")) return;
+                        c.topics = result.topics.map(t => ({ title: examEscape(String(t.title || "")), goal: examEscape(String(t.goal || "")), texts: [] }));
                     }
 
                     // Merge Exam Info
@@ -2309,6 +2315,7 @@ COMPORTAMENTO:
 
             showToast('Elaborazione PDF in corso...', 'info');
 
+            let savedCount = 0;
             for (const file of files) {
                 try {
                     // Extract text using PDF.js
@@ -2324,6 +2331,7 @@ COMPORTAMENTO:
                     // Extract questions from text using simple heuristics
                     const extractedQuestions = extractQuestionsFromText(text);
                     examQuestionBank[editingCourseId].questions.push(...extractedQuestions);
+                    savedCount++;
 
                 } catch (e) {
                     console.error('PDF extraction error:', e);
@@ -2336,7 +2344,7 @@ COMPORTAMENTO:
 
             // Update UI
             updateExamTabUI();
-            showToast(`${files.length} PDF elaborati con successo!`, 'success');
+            if (savedCount) showToast(`${savedCount} PDF elaborati`, 'success');
         }
 
         async function extractPdfText(file) {
@@ -2386,6 +2394,8 @@ COMPORTAMENTO:
             return questions.slice(0, 50); // Limit to 50 questions per PDF
         }
 
+        function examEscape(s) { const node = document.createElement("span"); node.textContent = s; return node.innerHTML; }
+
         function updateExamTabUI() {
             if (!editingCourseId) return;
 
@@ -2397,10 +2407,10 @@ COMPORTAMENTO:
 
             // Update PDF list
             const listEl = document.getElementById('exam-pdf-list');
-            if (listEl && bank.pdfs.length > 0) {
+            if (listEl) {
                 listEl.innerHTML = bank.pdfs.map((pdf, i) => `
                     <div class="flex items-center justify-between bg-stone-50 rounded-lg px-3 py-2 text-xs">
-                        <span class="text-stone-700 font-medium truncate max-w-[180px]">📄 ${pdf.name}</span>
+                        <span class="text-stone-700 font-medium truncate max-w-[180px]">📄 ${examEscape(pdf.name)}</span>
                         <button onclick="removeExamPdf(${i})" class="text-rose-500 hover:text-rose-700 font-bold">✕</button>
                     </div>
                 `).join('');
@@ -2412,10 +2422,10 @@ COMPORTAMENTO:
 
             // Update questions preview
             const previewEl = document.getElementById('exam-questions-preview');
-            if (previewEl && bank.questions.length > 0) {
+            if (previewEl) {
                 previewEl.innerHTML = bank.questions.slice(0, 5).map(q => `
                     <div class="bg-stone-50 rounded-lg p-2 text-[11px] text-stone-700">
-                        ${q.text.slice(0, 80)}${q.text.length > 80 ? '...' : ''}
+                        ${examEscape(q.text.slice(0, 80))}${q.text.length > 80 ? '...' : ''}
                     </div>
                 `).join('') + (bank.questions.length > 5 ? `<div class="text-center text-stone-400 text-[10px]">...e altre ${bank.questions.length - 5} domande</div>` : '');
             }
@@ -2477,7 +2487,7 @@ COMPORTAMENTO:
                         Descrizione Esame: ${examInfo.description || 'N/A'}
                     `;
 
-                    const apiKey = localStorage.getItem('millino_openai_key');
+                    const apiKey = sessionStorage.getItem('millino_openai_key');
                     if (!apiKey) throw new Error('Manca chiave API');
 
                     const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -2966,7 +2976,7 @@ COMPORTAMENTO:
                 }
 
                 // Send to DeepSeek for analysis
-                const apiKey = localStorage.getItem('millino_openai_key');
+                const apiKey = sessionStorage.getItem('millino_openai_key');
                 if (!apiKey) throw new Error('API key not configured');
 
                 const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -4038,7 +4048,7 @@ Respond with ONLY the template string, nothing else.`
 
             try {
                 // CLIENT-SIDE FETCH (Compatible with GitHub Pages)
-                const apiKey = localStorage.getItem('millino_openai_key');
+                const apiKey = sessionStorage.getItem('millino_openai_key');
                 if (!apiKey) throw new Error("Manca la chiave API. Configurala nelle impostazioni ⚙️.");
 
                 const endpoint = "https://api.openai.com/v1/chat/completions";
@@ -4395,9 +4405,9 @@ Respond with ONLY the template string, nothing else.`
 
         // --- SETTINGS LOGIC ---
         function openSettingsModal() {
-            document.getElementById('openai-key-input').value = localStorage.getItem('millino_openai_key') || '';
-            document.getElementById('openrouter-key-input').value = localStorage.getItem('millino_openrouter_key') || '';
-            document.getElementById('github-token').value = localStorage.getItem('millino_gh_token') || '';
+            document.getElementById('openai-key-input').value = sessionStorage.getItem('millino_openai_key') || '';
+            document.getElementById('openrouter-key-input').value = sessionStorage.getItem('millino_openrouter_key') || '';
+            document.getElementById('github-token').value = sessionStorage.getItem('millino_gh_token') || '';
             document.getElementById('gist-id').value = localStorage.getItem('millino_gist_id') || '';
             document.getElementById('settings-modal').classList.remove('hidden');
         }
@@ -4406,18 +4416,18 @@ Respond with ONLY the template string, nothing else.`
             const key = document.getElementById('openai-key-input').value.trim();
             const orKey = document.getElementById('openrouter-key-input').value.trim();
 
-            if (key) localStorage.setItem('millino_openai_key', key);
-            else localStorage.removeItem('millino_openai_key');
+            if (key) sessionStorage.setItem('millino_openai_key', key);
+            else sessionStorage.removeItem('millino_openai_key');
 
-            if (orKey) localStorage.setItem('millino_openrouter_key', orKey);
-            else localStorage.removeItem('millino_openrouter_key');
+            if (orKey) sessionStorage.setItem('millino_openrouter_key', orKey);
+            else sessionStorage.removeItem('millino_openrouter_key');
 
             showToast("Chiavi API salvate 🔑");
         }
 
         async function fetchScheduleWithRetry(userPrompt, context, systemInst, retries = 1, genModel = null, statusCallback = null) {
             const callOpenRouterDirect = async (messages, model) => {
-                const key = localStorage.getItem('millino_openrouter_key');
+                const key = sessionStorage.getItem('millino_openrouter_key');
                 if (!key) throw new Error("Manca la chiave OpenRouter! Configurala nelle impostazioni.");
 
                 const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -4440,7 +4450,7 @@ Respond with ONLY the template string, nothing else.`
             };
 
             const callOpenAIDirect = async (messages) => {
-                const key = localStorage.getItem('millino_openai_key');
+                const key = sessionStorage.getItem('millino_openai_key');
                 if (!key) throw new Error("Manca la chiave OpenAI locale per la riparazione.");
                 const r = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: 'POST',
@@ -4476,7 +4486,7 @@ Respond with ONLY the template string, nothing else.`
             let finalJson = tryParseJson(rawDraft);
 
             // PHASE 2: REPAIR (GPT-4o-mini Hybrid)
-            const localKey = localStorage.getItem('millino_openai_key');
+            const localKey = sessionStorage.getItem('millino_openai_key');
             if (statusCallback) statusCallback(localKey ? "GPT-4o-mini (Locale): Riparazione..." : "GPT-4o-mini (Server): Riparazione...");
 
             const judgePrompt = `SYSTEM: Sei un Riparatore di JSON. USER CONSTRAINTS: "${userPrompt}" CONTEXT: ${context} INPUT DRAFT: ${rawDraft} TASK: 1. Rispetta vincoli. 2. Fix JSON. OUTPUT: SOLO JSON ARRAY.`;
@@ -4628,66 +4638,6 @@ Respond with ONLY the template string, nothing else.`
                     showToast("Libro eliminato.", "success");
                 }
             );
-        }
-
-        // --- EXAM MODE & PDF UTILS (FIXED) ---
-        if (typeof pdfjsLib !== 'undefined') {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-        }
-
-        window.handleExamPdfUpload = async function () {
-            const input = document.getElementById('exam-pdf-upload');
-            if (!input || !input.files[0]) return showToast("Carica un PDF con le domande!", 'warning');
-
-            const file = input.files[0];
-            showToast("Analisi PDF in corso...", "info");
-
-            try {
-                const text = await extractPdfText(file);
-                console.log("PDF Text Len:", text.length);
-
-                const questions = extractQuestionsFromText(text);
-
-                if (questions.length === 0) {
-                    showToast("Nessuna domanda trovata. (Formato: '1. Domanda?')", "warning");
-                    return;
-                }
-
-                renderExamQuestions(questions);
-                showToast(`Caricate ${questions.length} domande!`, "success");
-            } catch (e) {
-                console.error(e);
-                showToast("Errore PDF: " + e.message, "error");
-            }
-        };
-
-        async function extractPdfText(file) {
-            const arrayBuffer = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-            let fullText = "";
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const content = await page.getTextContent();
-                fullText += content.items.map(item => item.str).join(' ') + "\n";
-            }
-            return fullText;
-        }
-
-        function extractQuestionsFromText(text) {
-            // Loose Regex: Numbered lines OR lines ending in ?
-            return text.split('\n')
-                .map(l => l.trim())
-                .filter(l => /^\d+[\.\)]/.test(l) || (l.length > 10 && l.endsWith('?')));
-        }
-
-        function renderExamQuestions(questions) {
-            const list = document.getElementById('exam-questions-list');
-            if (list) {
-                list.innerHTML = questions.map((q, i) =>
-                    `<div class="p-2 border-b border-stone-100 text-sm text-stone-700 hover:bg-stone-50"><strong class="text-rose-500">${i + 1}.</strong> ${q.replace(/^\d+[\.\)]\s*/, '')}</div>`
-                ).join('');
-                document.getElementById('exam-mode-ui')?.classList.remove('hidden');
-            }
         }
 
     </script>

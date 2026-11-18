@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MIREES Study OS</string>
+    <string name="title_activity_main">MIREES Study OS</string>
+    <string name="package_name">it.mirees.studyos</string>
+    <string name="custom_url_scheme">it.mirees.studyos</string>
+</resources>
